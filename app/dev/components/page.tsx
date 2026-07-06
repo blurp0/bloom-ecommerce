@@ -100,6 +100,71 @@ export default function ComponentGalleryPage() {
                     <ThemeBadge />
                 </div>
 
+                {/* ── Claymorphism Demo ─────────────────────────────────────────────── */}
+                <section className="space-y-4">
+                    <h2 className="text-2xl font-semibold text-text-primary">Claymorphism Demo</h2>
+                    <p className="text-sm text-text-muted">
+                        Compound clay utility classes applied at the component level. Hover over cards
+                        and buttons to see the lift effect. On mobile ({'<'}768px), shadows cap at <code>sm</code>{' '}
+                        and hover lift is disabled.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Clay Product Card */}
+                        <div className="clay-card bg-bg-surface border border-border-default p-0 overflow-hidden">
+                            <div className="h-40 bg-bg-elevated flex items-center justify-center text-text-muted text-sm">
+                                Product Image
+                            </div>
+                            <div className="p-4 space-y-2">
+                                <h3 className="text-lg font-semibold text-text-primary">Blush Pink Bouquet</h3>
+                                <p className="text-sm text-text-muted">Medium — Handcrafted with roses and eucalyptus</p>
+                                <div className="flex justify-between items-center pt-2">
+                                    <span className="text-xl font-bold text-text-primary">₱850</span>
+                                    <button className="clay-button bg-accent-primary text-text-primary px-4 py-2 text-sm font-medium cursor-pointer">
+                                        Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Clay Stat Card (KPI style) */}
+                        <div className="clay-card bg-bg-surface border border-border-default p-6 flex flex-col items-start gap-2">
+                            <div className="h-10 w-10 rounded-[12px] bg-accent-primary/20 flex items-center justify-center text-accent-secondary">
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <span className="text-3xl font-bold text-text-primary">₱12,450</span>
+                            <span className="text-sm text-text-muted">Revenue Today</span>
+                            <span className="text-xs text-state-success">+18% vs last week</span>
+                        </div>
+
+                        {/* Clay Stat Card (orders) */}
+                        <div className="clay-card bg-bg-surface border border-border-default p-6 flex flex-col items-start gap-2">
+                            <div className="h-10 w-10 rounded-[12px] bg-accent-primary/20 flex items-center justify-center text-accent-secondary">
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                            </div>
+                            <span className="text-3xl font-bold text-text-primary">8</span>
+                            <span className="text-sm text-text-muted">Pending Orders</span>
+                            <span className="text-xs text-state-warning">3 need attention</span>
+                        </div>
+                    </div>
+
+                    {/* Clay Button variants */}
+                    <div className="flex flex-wrap gap-3 pt-2">
+                        <button className="clay-button bg-accent-primary text-text-primary px-5 py-2.5 text-sm font-medium cursor-pointer">
+                            Primary Action
+                        </button>
+                        <button className="clay-button bg-accent-secondary text-white px-5 py-2.5 text-sm font-medium cursor-pointer">
+                            Secondary Action
+                        </button>
+                        <button className="clay-button bg-bg-surface border border-border-interactive text-text-primary px-5 py-2.5 text-sm font-medium cursor-pointer">
+                            Outline Action
+                        </button>
+                    </div>
+                </section>
+
                 {/* ── Card ──────────────────────────────────────────────────────────── */}
                 <Section title="Card">
                     <DemoPanel title="Default Card">

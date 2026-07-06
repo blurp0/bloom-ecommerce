@@ -312,3 +312,140 @@
 .dark .shadow-clay-lg {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.16);
 }
+
+/* ── Claymorphism Compound Utilities ───────────────────────────────────────── */
+/*
+ * Compound utility classes that pair shadow scale with border-radius and
+ * optional hover lift. Apply at the *component* level only — not to page
+ * backgrounds, data tables, navbars, modals, or fixed-position elements.
+ *
+ * Mobile rule (below md / 768px):
+ *   - All card shadows capped at `sm` to avoid muddy rendering on small screens.
+ *   - Hover lift (`translate-y`) disabled entirely — touch devices have no hover.
+ *
+ * Reduced motion:
+ *   - The global .reduce-motion rule shortens transitions to 0.01ms.
+ */
+
+/* Hover lift base — reusable on any clay element */
+.clay-hover-lift {
+  transition: transform 300ms ease-out, box-shadow 300ms ease-out;
+}
+
+.clay-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-clay-md, 0 4px 16px rgba(168, 216, 234, 0.15), 0 1px 4px rgba(0, 0, 0, 0.04));
+}
+
+[data-theme="pink"] .clay-hover-lift:hover {
+  box-shadow: var(--shadow-clay-md, 0 4px 16px rgba(244, 194, 194, 0.15), 0 1px 4px rgba(0, 0, 0, 0.04));
+}
+
+.dark .clay-hover-lift:hover {
+  box-shadow: var(--shadow-clay-md, 0 4px 16px rgba(0, 0, 0, 0.32), 0 1px 4px rgba(0, 0, 0, 0.12));
+}
+
+/* Card — rounded-2xl (16px), sm shadow, hover lift to md */
+.clay-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(168, 216, 234, 0.12);
+  transition: transform 300ms ease-out, box-shadow 300ms ease-out;
+}
+
+.clay-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(168, 216, 234, 0.15), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="pink"] .clay-card {
+  box-shadow: 0 2px 8px rgba(244, 194, 194, 0.12);
+}
+
+[data-theme="pink"] .clay-card:hover {
+  box-shadow: 0 4px 16px rgba(244, 194, 194, 0.15), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.dark .clay-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+}
+
+.dark .clay-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32), 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* Button — rounded-xl (12px), sm shadow, hover lift */
+.clay-button {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(168, 216, 234, 0.12);
+  transition: transform 300ms ease-out, box-shadow 300ms ease-out;
+}
+
+.clay-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(168, 216, 234, 0.15), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="pink"] .clay-button {
+  box-shadow: 0 2px 8px rgba(244, 194, 194, 0.12);
+}
+
+[data-theme="pink"] .clay-button:hover {
+  box-shadow: 0 4px 16px rgba(244, 194, 194, 0.15), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.dark .clay-button {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+}
+
+.dark .clay-button:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32), 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* Mobile shadow cap — below md breakpoint, force all card shadows to sm */
+@media (max-width: 767px) {
+
+  .clay-card,
+  .clay-card:hover {
+    transform: none !important;
+    box-shadow: 0 2px 8px rgba(168, 216, 234, 0.12) !important;
+  }
+
+  [data-theme="pink"] .clay-card,
+  [data-theme="pink"] .clay-card:hover {
+    box-shadow: 0 2px 8px rgba(244, 194, 194, 0.12) !important;
+  }
+
+  .dark .clay-card,
+  .dark .clay-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24) !important;
+  }
+
+  .clay-button,
+  .clay-button:hover {
+    transform: none !important;
+    box-shadow: 0 2px 8px rgba(168, 216, 234, 0.12) !important;
+  }
+
+  [data-theme="pink"] .clay-button,
+  [data-theme="pink"] .clay-button:hover {
+    box-shadow: 0 2px 8px rgba(244, 194, 194, 0.12) !important;
+  }
+
+  .dark .clay-button,
+  .dark .clay-button:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24) !important;
+  }
+
+  .clay-hover-lift:hover {
+    transform: none !important;
+    box-shadow: 0 2px 8px rgba(168, 216, 234, 0.12) !important;
+  }
+
+  [data-theme="pink"] .clay-hover-lift:hover {
+    box-shadow: 0 2px 8px rgba(244, 194, 194, 0.12) !important;
+  }
+
+  .dark .clay-hover-lift:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24) !important;
+  }
+}
