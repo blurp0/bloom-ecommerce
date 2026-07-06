@@ -1,0 +1,55 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { House, ShoppingBag, Search, ShoppingCart, User } from "lucide-react";
+
+const tabs = [
+    { href: "/", label: "Home", icon: House },
+    { href: "/products", label: "Shop", icon: ShoppingBag },
+    { href: "/search", label: "Search", icon: Search },
+    { href: "/cart", label: "Cart", icon: ShoppingCart },
+    { href: "/account", label: "Account", icon: User },
+];
+
+export default function BottomTabBar() {
+    const pathname = usePathname();
+
+    function isActive(href: string): boolean {
+        if (href === "/") {
+            return pathname === "/";
+        }
+        return pathname.startsWith(href);
+    }
+
+    return (
+        <nav
+            className="fixed bottom-0 left-0 right-0 z-20 flex h-16 items-center justify-around bg-bg-surface border-t border-border-default lg:hidden"
+            style={{
+                paddingBottom: "env(safe-area-inset-bottom, 0px)",
+                touchAction: "manipulation",
+            }}
+        >
+            {tabs.map((tab) => {
+                const active = isActive(tab.href);
+                const Icon = tab.icon;
+                return (
+                    <Link
+                        key={tab.href}
+                        href={tab.href}
+                        className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] h-full ${active
+                                ? "text-accent-secondary"
+                                : "text-text-muted"
+                            }`}
+                        aria-label={tab.label}
+                    >
+                        <Icon className="h-5 w-5" aria-hidden="true" />
+                        <span className="text-[10px] font-medium leading-tight">
+                            {tab.label}
+                        </span>
+                    </Link>
+                );
+            })}
+        </nav>
+    );
+}
