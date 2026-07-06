@@ -5,8 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
+    --font-heading: var(--font-heading);
+    --font-body: var(--font-body);
+    --font-sans: var(--font-body);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -45,85 +46,241 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* Custom Design Tokens */
+    --color-bg-base: var(--bg-base);
+    --color-bg-surface: var(--bg-surface);
+    --color-bg-elevated: var(--bg-elevated);
+    --color-text-primary: var(--text-primary);
+    --color-text-muted: var(--text-muted);
+    --color-accent-primary: var(--accent-primary);
+    --color-accent-secondary: var(--accent-secondary);
+    --color-accent-primary-hover: var(--accent-primary-hover);
+    --color-accent-secondary-hover: var(--accent-secondary-hover);
+    --color-border-default: var(--border-default);
+    --color-border-interactive: var(--border-interactive);
+    --color-state-error: var(--state-error);
+    --color-state-success: var(--state-success);
+    --color-state-warning: var(--state-warning);
 }
 
+/* Base styling / Default (Blue Theme - Light Mode) */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --bg-base: #faf9f7;
+    --bg-surface: #ffffff;
+    --bg-elevated: #eef6fa;
+    --text-primary: #2d2a26;
+    --text-muted: #8a8580;
+    --accent-primary: #a8d8ea;
+    --accent-secondary: #6fb8d9;
+    --accent-primary-hover: #8bc4da;
+    --accent-secondary-hover: #559ebd;
+    --border-default: #e8e5e1;
+    --border-interactive: #4a9dc2;
+    --state-error: #d9534f;
+    --state-success: #5cb85c;
+    --state-warning: #f0ad4e;
+
+    /* shadcn mappings */
+    --background: var(--bg-base);
+    --foreground: var(--text-primary);
+    --card: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --popover: var(--bg-surface);
+    --popover-foreground: var(--text-primary);
+    --primary: var(--accent-primary);
+    --primary-foreground: var(--text-primary);
+    --secondary: var(--accent-secondary);
+    --secondary-foreground: var(--text-primary);
+    --muted: var(--bg-elevated);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--bg-elevated);
+    --accent-foreground: var(--text-primary);
+    --destructive: var(--state-error);
+    --destructive-foreground: #ffffff;
+    --border: var(--border-interactive);
+    --input: var(--border-interactive);
+    --ring: var(--border-interactive);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
 }
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+/* Blue Theme - Dark Mode */
+.dark, [data-theme="blue"].dark {
+    --bg-base: #1a1816;
+    --bg-surface: #242220;
+    --bg-elevated: #1f2c33;
+    --text-primary: #f0ece8;
+    --text-muted: #8a8580;
+    --accent-primary: #a8d8ea;
+    --accent-secondary: #6fb8d9;
+    --accent-primary-hover: #8bc4da;
+    --accent-secondary-hover: #559ebd;
+    --border-default: #3a3836;
+    --border-interactive: #5aa8c9;
+    --state-error: #e57373;
+    --state-success: #81c784;
+    --state-warning: #ffb74d;
+
+    /* shadcn mappings override */
+    --background: var(--bg-base);
+    --foreground: var(--text-primary);
+    --card: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --popover: var(--bg-surface);
+    --popover-foreground: var(--text-primary);
+    --primary: var(--accent-primary);
+    --primary-foreground: var(--text-primary);
+    --secondary: var(--accent-secondary);
+    --secondary-foreground: var(--text-primary);
+    --muted: var(--bg-elevated);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--bg-elevated);
+    --accent-foreground: var(--text-primary);
+    --destructive: var(--state-error);
+    --destructive-foreground: #ffffff;
+    --border: var(--border-interactive);
+    --input: var(--border-interactive);
+    --ring: var(--border-interactive);
+}
+
+/* Pink Theme - Light Mode */
+[data-theme="pink"] {
+    --bg-base: #faf9f7;
+    --bg-surface: #ffffff;
+    --bg-elevated: #faeef1;
+    --text-primary: #2d2a26;
+    --text-muted: #8a8580;
+    --accent-primary: #f4c2c2;
+    --accent-secondary: #e08ba0;
+    --accent-primary-hover: #e8a8a8;
+    --accent-secondary-hover: #c96b83;
+    --border-default: #e8e5e1;
+    --border-interactive: #d4708f;
+    --state-error: #d9534f;
+    --state-success: #5cb85c;
+    --state-warning: #f0ad4e;
+
+    /* shadcn mappings override */
+    --background: var(--bg-base);
+    --foreground: var(--text-primary);
+    --card: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --popover: var(--bg-surface);
+    --popover-foreground: var(--text-primary);
+    --primary: var(--accent-primary);
+    --primary-foreground: var(--text-primary);
+    --secondary: var(--accent-secondary);
+    --secondary-foreground: var(--text-primary);
+    --muted: var(--bg-elevated);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--bg-elevated);
+    --accent-foreground: var(--text-primary);
+    --destructive: var(--state-error);
+    --destructive-foreground: #ffffff;
+    --border: var(--border-interactive);
+    --input: var(--border-interactive);
+    --ring: var(--border-interactive);
+}
+
+/* Pink Theme - Dark Mode */
+[data-theme="pink"].dark {
+    --bg-base: #1a1816;
+    --bg-surface: #242220;
+    --bg-elevated: #2e2024;
+    --text-primary: #f0ece8;
+    --text-muted: #8a8580;
+    --accent-primary: #f4c2c2;
+    --accent-secondary: #e08ba0;
+    --accent-primary-hover: #e8a8a8;
+    --accent-secondary-hover: #c96b83;
+    --border-default: #3a3836;
+    --border-interactive: #d4708f;
+    --state-error: #e57373;
+    --state-success: #81c784;
+    --state-warning: #ffb74d;
+
+    /* shadcn mappings override */
+    --background: var(--bg-base);
+    --foreground: var(--text-primary);
+    --card: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --popover: var(--bg-surface);
+    --popover-foreground: var(--text-primary);
+    --primary: var(--accent-primary);
+    --primary-foreground: var(--text-primary);
+    --secondary: var(--accent-secondary);
+    --secondary-foreground: var(--text-primary);
+    --muted: var(--bg-elevated);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--bg-elevated);
+    --accent-foreground: var(--text-primary);
+    --destructive: var(--state-error);
+    --destructive-foreground: #ffffff;
+    --border: var(--border-interactive);
+    --input: var(--border-interactive);
+    --ring: var(--border-interactive);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
-    @apply font-sans;
-    }
+    font-family: var(--font-body, 'Nunito Sans', system-ui, sans-serif);
+  }
 }
+
+/* ── Reduce Motion ─────────────────────────────────────────────────────────── */
+
+/**
+ * Applied when the user enables "Reduced Motion" in the theme settings
+ * (or OS-level prefers-reduced-motion). The .reduce-motion class is set
+ * on <html> by both theme-script.tsx (on load) and ThemeProvider.tsx (on change).
+ *
+ * 1. Shorten hover-lift transitions to near-instant.
+ * 2. Disable the two signature motion moments (Add to Cart fly, Order
+ *    Confirmation timeline fill) — they are guarded by this class in
+ *    their respective feature components.
+ */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}
+
+/* Also respect the OS-level media query as a fallback */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Clay Shadow Utilities ─────────────────────────────────────────────────── */
+/*
+ * These utility classes express the claymorphism shadow scale from ui-ux-context.md.
+ * The tint color is theme-agnostic at the CSS level (raw rgba is unavoidable here
+ * because CSS variables can't be used inside rgba() in older Tailwind shadow syntax).
+ * Blue-tinted in light, neutral in dark — applied via [data-theme] overrides.
+ */
+.shadow-clay-sm  { box-shadow: 0 2px 8px rgba(168,216,234,0.12); }
+.shadow-clay-md  { box-shadow: 0 4px 16px rgba(168,216,234,0.15), 0 1px 4px rgba(0,0,0,0.04); }
+.shadow-clay-lg  { box-shadow: 0 8px 32px rgba(168,216,234,0.18), 0 2px 8px rgba(0,0,0,0.06); }
+
+[data-theme="pink"] .shadow-clay-sm  { box-shadow: 0 2px 8px rgba(244,194,194,0.12); }
+[data-theme="pink"] .shadow-clay-md  { box-shadow: 0 4px 16px rgba(244,194,194,0.15), 0 1px 4px rgba(0,0,0,0.04); }
+[data-theme="pink"] .shadow-clay-lg  { box-shadow: 0 8px 32px rgba(244,194,194,0.18), 0 2px 8px rgba(0,0,0,0.06); }
+
+.dark .shadow-clay-sm  { box-shadow: 0 2px 8px rgba(0,0,0,0.24); }
+.dark .shadow-clay-md  { box-shadow: 0 4px 16px rgba(0,0,0,0.32), 0 1px 4px rgba(0,0,0,0.12); }
+.dark .shadow-clay-lg  { box-shadow: 0 8px 32px rgba(0,0,0,0.40), 0 2px 8px rgba(0,0,0,0.16); }
