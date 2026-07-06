@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "skills": {
+    "enhance-prompt": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/stitch-utilities/skills/enhance-prompt/SKILL.md",
+      "computedHash": "28c47bcbc0e8d81f48fbbbe41d227efe4018a32c5d4674b0d052a70d215072d3"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "781bd6d3f9b19f8c9af6b53d8d0e4876d0183841b565db34ca7092ffa412d111"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "20c0ed05adb01fde3db5bb1aeefd61d33db2471bdadfd9c9ce19d30dd54a12fd"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+    },
+    "code-reviewer": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/code-reviewer/SKILL.md",
+      "computedHash": "6CF3740AA233959CFA06FAFE22FBF6D6761D0DC5E8CE958922A498465A72A9FD"
+    },
+    "security-reviewer": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/security-reviewer/SKILL.md",
+      "computedHash": "EB9E0EEEB2DCC41590E153BC7552117D11CD6CC365EB4240B241847C48B3EF48"
+    },
+    "performance-reviewer": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/performance-reviewer/SKILL.md",
+      "computedHash": "8E6A45E021DAE303BDC09E34D909D7FC2C6D43F0EDE65DA86CC26F81152E5E3D"
+    },
+    "frontend-designer": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/frontend-designer/SKILL.md",
+      "computedHash": "BB840A499871A3023D0228C15008C0B0640A72B3A7EBB97060FFEA0E3DD3AB57"
+    },
+    "doc-reviewer": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/doc-reviewer/SKILL.md",
+      "computedHash": "84CD906F7BB7D1D84D91C256503A1F76B2260EA071ABEA77BB25D4C11CFB4832"
+    },
+    "pr-test-analyzer": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/pr-test-analyzer/SKILL.md",
+      "computedHash": "E3324275141738023C3D11E40C65926B503495775167AEE87862F0C01262A1F5"
+    },
+    "silent-failure-hunter": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/silent-failure-hunter/SKILL.md",
+      "computedHash": "4CA1A606692B170C8ED81CE27DA18EC3D7CE0DC13C285F478A9FE989965481AE"
+    },
+    "pr-review": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/pr-review/SKILL.md",
+      "computedHash": "1C45B7023BD2D0968695DB5B597F4A1EDCEA5E436B4CE2B651EA3205530B8C09"
+    }
+  }
+}
