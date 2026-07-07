@@ -55,6 +55,8 @@
   --color-text-muted: var(--text-muted);
   --color-accent-primary: var(--accent-primary);
   --color-accent-secondary: var(--accent-secondary);
+  --color-accent-primary-foreground: var(--accent-primary-foreground);
+  --color-accent-secondary-foreground: var(--accent-secondary-foreground);
   --color-accent-primary-hover: var(--accent-primary-hover);
   --color-accent-secondary-hover: var(--accent-secondary-hover);
   --color-border-default: var(--border-default);
@@ -73,6 +75,8 @@
   --text-muted: #8a8580;
   --accent-primary: #a8d8ea;
   --accent-secondary: #6fb8d9;
+  --accent-primary-foreground: #1a3a47;
+  --accent-secondary-foreground: #0f2a38;
   --accent-primary-hover: #8bc4da;
   --accent-secondary-hover: #559ebd;
   --border-default: #e8e5e1;
@@ -89,9 +93,9 @@
   --popover: var(--bg-surface);
   --popover-foreground: var(--text-primary);
   --primary: var(--accent-primary);
-  --primary-foreground: var(--text-primary);
+  --primary-foreground: var(--accent-primary-foreground);
   --secondary: var(--accent-secondary);
-  --secondary-foreground: var(--text-primary);
+  --secondary-foreground: var(--accent-secondary-foreground);
   --muted: var(--bg-elevated);
   --muted-foreground: var(--text-muted);
   --accent: var(--bg-elevated);
@@ -114,6 +118,8 @@
   --text-muted: #8a8580;
   --accent-primary: #a8d8ea;
   --accent-secondary: #6fb8d9;
+  --accent-primary-foreground: #1a3a47;
+  --accent-secondary-foreground: #0f2a38;
   --accent-primary-hover: #8bc4da;
   --accent-secondary-hover: #559ebd;
   --border-default: #3a3836;
@@ -130,9 +136,9 @@
   --popover: var(--bg-surface);
   --popover-foreground: var(--text-primary);
   --primary: var(--accent-primary);
-  --primary-foreground: var(--text-primary);
+  --primary-foreground: var(--accent-primary-foreground);
   --secondary: var(--accent-secondary);
-  --secondary-foreground: var(--text-primary);
+  --secondary-foreground: var(--accent-secondary-foreground);
   --muted: var(--bg-elevated);
   --muted-foreground: var(--text-muted);
   --accent: var(--bg-elevated);
@@ -153,6 +159,8 @@
   --text-muted: #8a8580;
   --accent-primary: #f4c2c2;
   --accent-secondary: #e08ba0;
+  --accent-primary-foreground: #4a1a24;
+  --accent-secondary-foreground: #3a0f1a;
   --accent-primary-hover: #e8a8a8;
   --accent-secondary-hover: #c96b83;
   --border-default: #e8e5e1;
@@ -169,9 +177,9 @@
   --popover: var(--bg-surface);
   --popover-foreground: var(--text-primary);
   --primary: var(--accent-primary);
-  --primary-foreground: var(--text-primary);
+  --primary-foreground: var(--accent-primary-foreground);
   --secondary: var(--accent-secondary);
-  --secondary-foreground: var(--text-primary);
+  --secondary-foreground: var(--accent-secondary-foreground);
   --muted: var(--bg-elevated);
   --muted-foreground: var(--text-muted);
   --accent: var(--bg-elevated);
@@ -192,6 +200,8 @@
   --text-muted: #8a8580;
   --accent-primary: #f4c2c2;
   --accent-secondary: #e08ba0;
+  --accent-primary-foreground: #4a1a24;
+  --accent-secondary-foreground: #3a0f1a;
   --accent-primary-hover: #e8a8a8;
   --accent-secondary-hover: #c96b83;
   --border-default: #3a3836;
@@ -208,9 +218,9 @@
   --popover: var(--bg-surface);
   --popover-foreground: var(--text-primary);
   --primary: var(--accent-primary);
-  --primary-foreground: var(--text-primary);
+  --primary-foreground: var(--accent-primary-foreground);
   --secondary: var(--accent-secondary);
-  --secondary-foreground: var(--text-primary);
+  --secondary-foreground: var(--accent-secondary-foreground);
   --muted: var(--bg-elevated);
   --muted-foreground: var(--text-muted);
   --accent: var(--bg-elevated);
