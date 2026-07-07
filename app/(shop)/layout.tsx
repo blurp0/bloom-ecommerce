@@ -1,12 +1,14 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BottomTabBar from "@/components/layout/BottomTabBar";
+import { syncUser } from "@/lib/user/sync";
 
-export default function ShopLayout({
+export default async function ShopLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    await syncUser();
     return (
         <div className="flex min-h-screen flex-col">
             <Navbar />
