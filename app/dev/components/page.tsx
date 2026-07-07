@@ -18,6 +18,13 @@ import { Toggle } from '@/components/ui/toggle';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { BentoGrid } from '@/components/shared/BentoGrid';
+import {
+    SkeletonCardGrid,
+    SkeletonLines,
+    SkeletonMessageThread,
+} from '@/components/shared/Skeletons';
 import {
     Dialog,
     DialogContent,
@@ -100,12 +107,12 @@ export default function ComponentGalleryPage() {
                     <ThemeBadge />
                 </div>
 
-                {/* ── Claymorphism Demo ─────────────────────────────────────────────── */}
+                {/* -- Claymorphism Demo ------------------------------------------------ */}
                 <section className="space-y-4">
                     <h2 className="text-2xl font-semibold text-text-primary">Claymorphism Demo</h2>
                     <p className="text-sm text-text-muted">
                         Compound clay utility classes applied at the component level. Hover over cards
-                        and buttons to see the lift effect. On mobile ({'<'}768px), shadows cap at <code>sm</code>{' '}
+                        and buttons to see the lift effect. On mobile ({'<'}768px), shadows cap at <code>sm</code>
                         and hover lift is disabled.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -179,7 +186,7 @@ export default function ComponentGalleryPage() {
                                 </div>
                                 <p className="mt-3 text-sm text-text-muted">
                                     A handcrafted bouquet with blush pink roses, eucalyptus, and
-                                    baby's breath in a kraft-paper wrap.
+                                    baby breath in a kraft-paper wrap.
                                 </p>
                             </CardContent>
                             <CardFooter className="flex justify-between">
@@ -364,6 +371,69 @@ export default function ComponentGalleryPage() {
                             <Badge className="bg-state-success text-white hover:bg-state-success">Delivered</Badge>
                             <Badge className="bg-state-warning text-white hover:bg-state-warning">Pending</Badge>
                         </div>
+                    </DemoPanel>
+                </Section>
+
+                {/* ── Shared Primitives (Empty / Skeleton / Bento) ─────────────── */}
+                <Section title="Shared Primitives (EmptyState / Skeleton / BentoGrid)">
+                    <DemoPanel title="EmptyState">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <EmptyState
+                                title="No products found"
+                                description="Try adjusting your filters, or browse by occasion."
+                                variant="default"
+                                primaryAction={<button className="clay-button bg-accent-primary text-text-primary px-5 py-2 text-sm font-medium">Browse catalog</button>}
+                                secondaryAction={<button className="clay-button bg-bg-surface border border-border-interactive text-text-primary px-5 py-2 text-sm font-medium">Clear filters</button>}
+                                icon={<div className="h-10 w-10 rounded-xl bg-accent-primary/20 flex items-center justify-center text-accent-secondary">✿</div>}
+                            />
+
+                            <EmptyState
+                                title="Out of stock"
+                                description="We&apos;ll notify you when this bouquet is available again."
+                                variant="compact"
+                                primaryAction={<button className="clay-button bg-accent-secondary text-text-primary px-5 py-2 text-sm font-medium">Get notified</button>}
+                            />
+                        </div>
+                    </DemoPanel>
+
+                    <DemoPanel title="Skeleton Variants">
+                        <div className="space-y-8">
+                            <div>
+                                <h3 className="text-base font-semibold text-text-primary mb-3">SkeletonCardGrid</h3>
+                                <SkeletonCardGrid count={6} />
+                            </div>
+
+                            <div>
+                                <h3 className="text-base font-semibold text-text-primary mb-3">SkeletonLines</h3>
+                                <SkeletonLines lines={4} className="space-y-3" />
+                            </div>
+
+                            <div>
+                                <h3 className="text-base font-semibold text-text-primary mb-3">SkeletonMessageThread</h3>
+                                <SkeletonMessageThread pairs={3} />
+                            </div>
+                        </div>
+                    </DemoPanel>
+
+                    <DemoPanel title="BentoGrid Layout">
+                        <BentoGrid columns={3} gap="md" className="w-full">
+                            <div className="p-5 rounded-2xl border border-border-default bg-bg-elevated">
+                                <div className="text-text-primary font-semibold">Tile A</div>
+                                <div className="text-text-muted text-sm mt-1">Standard item</div>
+                            </div>
+                            <div className="p-5 rounded-2xl border border-border-default bg-bg-surface">
+                                <div className="text-text-primary font-semibold">Tile B</div>
+                                <div className="text-text-muted text-sm mt-1">Standard item</div>
+                            </div>
+                            <div className="p-5 rounded-2xl border border-border-default bg-bg-elevated">
+                                <div className="text-text-primary font-semibold">Tile C</div>
+                                <div className="text-text-muted text-sm mt-1">Standard item</div>
+                            </div>
+                            <div className="p-5 rounded-2xl border border-border-default bg-bg-surface">
+                                <div className="text-text-primary font-semibold">Tile D</div>
+                                <div className="text-text-muted text-sm mt-1">Stacks nicely on mobile</div>
+                            </div>
+                        </BentoGrid>
                     </DemoPanel>
                 </Section>
 
@@ -553,7 +623,7 @@ export default function ComponentGalleryPage() {
             </div>
 
             {/* Toast container */}
-            <Toaster richColors closeButton />
+            <Toaster />
 
             {/* Floating settings panel */}
             <ThemeSettingsStub />

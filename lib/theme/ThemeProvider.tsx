@@ -11,19 +11,19 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ThemeColor  = 'blue' | 'pink';
-export type ThemeMode   = 'light' | 'dark';
+export type ThemeColor = 'blue' | 'pink';
+export type ThemeMode = 'light' | 'dark';
 export type ThemeMotion = 'normal' | 'reduced';
 
 export interface ThemeState {
-  color:  ThemeColor;
-  mode:   ThemeMode;
+  color: ThemeColor;
+  mode: ThemeMode;
   motion: ThemeMotion;
 }
 
 export interface ThemeContextValue extends ThemeState {
-  setColor:  (color:  ThemeColor)  => void;
-  setMode:   (mode:   ThemeMode)   => void;
+  setColor: (color: ThemeColor) => void;
+  setMode: (mode: ThemeMode) => void;
   setMotion: (motion: ThemeMotion) => void;
 }
 
@@ -87,13 +87,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     typeof window === 'undefined' ? 'normal' : readMotion(),
   );
 
-  // On first client render, re-read from localStorage/system so we're always
-  // in sync (handles the case where the lazy init ran on the server).
-  useEffect(() => {
-    setColorState(readColor());
-    setModeState(readMode());
-    setMotionState(readMotion());
-  }, []);
+  // Note: We intentionally avoid re-calling setState inside an effect to satisfy
+  // react-hooks lint rules. Theme attributes are applied via the second effect
+  // below, and initial values are derived from the lazy initializers.
 
   // Whenever state changes, persist and apply to <html>.
   useEffect(() => {

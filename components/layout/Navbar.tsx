@@ -15,7 +15,7 @@ export default function Navbar() {
                 {/* Left: Logo */}
                 <Link
                     href="/"
-                    className="font-heading text-xl font-normal text-text-primary hover:text-accent-secondary transition-colors shrink-0"
+                    className="font-heading text-xl font-normal text-text-primary hover:text-accent-secondary transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-secondary focus-visible:ring-offset-0"
                 >
                     Bloom & Bind
                 </Link>
@@ -27,16 +27,17 @@ export default function Navbar() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors"
+                                className="text-sm font-medium text-text-muted hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-secondary focus-visible:ring-offset-0 rounded-md px-1"
                             >
                                 {link.label}
                             </Link>
                         ))}
                     </nav>
+
                     {/* Search — visible on desktop only */}
                     <Link
                         href="/search"
-                        className="hidden lg:inline-flex items-center justify-center h-10 w-10 rounded-lg text-text-muted hover:text-accent-secondary hover:bg-bg-elevated transition-colors"
+                        className="hidden lg:inline-flex items-center justify-center h-[44px] w-[44px] rounded-lg text-text-muted hover:text-accent-secondary hover:bg-bg-elevated transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-secondary focus-visible:ring-offset-0"
                         aria-label="Search"
                     >
                         <Search className="h-5 w-5" aria-hidden="true" />
@@ -45,7 +46,7 @@ export default function Navbar() {
                     {/* Cart with badge placeholder */}
                     <Link
                         href="/cart"
-                        className="relative inline-flex items-center justify-center h-10 w-10 rounded-lg text-text-muted hover:text-accent-secondary hover:bg-bg-elevated transition-colors"
+                        className="relative inline-flex items-center justify-center h-[44px] w-[44px] rounded-lg text-text-muted hover:text-accent-secondary hover:bg-bg-elevated transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-secondary focus-visible:ring-offset-0"
                         aria-label="Cart"
                     >
                         <ShoppingCart className="h-5 w-5" aria-hidden="true" />
@@ -57,7 +58,7 @@ export default function Navbar() {
                     {/* Account */}
                     <Link
                         href="/account"
-                        className="inline-flex items-center justify-center h-10 w-10 rounded-lg text-text-muted hover:text-accent-secondary hover:bg-bg-elevated transition-colors"
+                        className="inline-flex items-center justify-center h-[44px] w-[44px] rounded-lg text-text-muted hover:text-accent-secondary hover:bg-bg-elevated transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-secondary focus-visible:ring-offset-0"
                         aria-label="Account"
                     >
                         <User className="h-5 w-5" aria-hidden="true" />
