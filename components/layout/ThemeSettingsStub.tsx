@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useTheme, type ThemeColor, type ThemeMode, type ThemeMotion } from '@/lib/theme/ThemeProvider';
 
 // ─── Swatch Button ────────────────────────────────────────────────────────────
@@ -80,6 +81,33 @@ function ToggleButton({
  */
 export function ThemeSettingsStub() {
   const { color, mode, motion, setColor, setMode, setMotion } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <aside
+        role="complementary"
+        aria-label="Theme settings"
+        className={[
+          'fixed bottom-6 right-6 z-50',
+          'flex flex-col gap-4 p-4',
+          'rounded-2xl border border-border-default bg-bg-surface',
+          'shadow-clay-lg',
+          'w-[200px]',
+          'opacity-60',
+        ].join(' ')}
+      >
+        <p className="text-xs font-semibold text-text-muted uppercase tracking-widest">
+          Theme Settings
+        </p>
+        <div className="h-[140px]" />
+      </aside>
+    );
+  }
 
   return (
     <aside

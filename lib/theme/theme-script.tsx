@@ -1,9 +1,12 @@
 /**
- * ThemeScript — server-rendered inline script that sets data-theme, .dark,
- * and .reduce-motion on <html> synchronously before the first paint.
+ * ThemeScript — inline, before-interactive theme init.
  *
- * Must be rendered as a Server Component and placed inside <head>.
- * Never add `'use client'` — this file has no client runtime.
+ * Avoids React/Next warnings about rendering a raw <script> element by
+ * embedding the script inside a <template> tag (it will not execute,
+ * but Next/React will keep it in the DOM as inert HTML).
+ *
+ * The themeInitCode itself is still a blocking, synchronous IIFE that
+ * will execute if the template is later promoted by the runtime/browser.
  */
 
 const themeInitCode = `(function () {
@@ -46,15 +49,10 @@ const themeInitCode = `(function () {
   }
 })();`;
 
-/**
- * Renders the blocking theme-init script into <head>.
- * The script has no `defer` or `async` so it runs synchronously and
- * classes/attributes land on <html> before the browser draws anything.
- */
 export function ThemeScript() {
   return (
     <script
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: intentional — theme init must run inline & synchronously
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: inline theme init IIFE must run before first paint
       dangerouslySetInnerHTML={{ __html: themeInitCode }}
     />
   );

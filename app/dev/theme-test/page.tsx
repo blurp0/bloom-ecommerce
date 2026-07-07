@@ -1,31 +1,51 @@
 'use client';
 
+import * as React from 'react';
 import { ThemeSettingsStub } from '@/components/layout/ThemeSettingsStub';
 import { useTheme } from '@/lib/theme/ThemeProvider';
+import { useHasMounted } from '@/lib/hooks/useHasMounted';
 
 // ─── Color Swatch Grid ────────────────────────────────────────────────────────
 
 const TOKEN_SWATCHES = [
-  { name: '--bg-base',                 tailwind: 'bg-bg-base',                border: true  },
-  { name: '--bg-surface',              tailwind: 'bg-bg-surface',             border: true  },
-  { name: '--bg-elevated',             tailwind: 'bg-bg-elevated',            border: false },
-  { name: '--text-primary',            tailwind: 'bg-text-primary',           border: false },
-  { name: '--text-muted',              tailwind: 'bg-text-muted',             border: false },
-  { name: '--accent-primary',          tailwind: 'bg-accent-primary',         border: false },
-  { name: '--accent-secondary',        tailwind: 'bg-accent-secondary',       border: false },
-  { name: '--accent-primary-hover',    tailwind: 'bg-accent-primary-hover',   border: false },
-  { name: '--accent-secondary-hover',  tailwind: 'bg-accent-secondary-hover', border: false },
-  { name: '--border-default',          tailwind: 'bg-border-default',         border: false },
-  { name: '--border-interactive',      tailwind: 'bg-border-interactive',     border: false },
-  { name: '--state-error',             tailwind: 'bg-state-error',            border: false },
-  { name: '--state-success',           tailwind: 'bg-state-success',          border: false },
-  { name: '--state-warning',           tailwind: 'bg-state-warning',          border: false },
+  { name: '--bg-base', tailwind: 'bg-bg-base', border: true },
+  { name: '--bg-surface', tailwind: 'bg-bg-surface', border: true },
+  { name: '--bg-elevated', tailwind: 'bg-bg-elevated', border: false },
+  { name: '--text-primary', tailwind: 'bg-text-primary', border: false },
+  { name: '--text-muted', tailwind: 'bg-text-muted', border: false },
+  { name: '--accent-primary', tailwind: 'bg-accent-primary', border: false },
+  { name: '--accent-secondary', tailwind: 'bg-accent-secondary', border: false },
+  { name: '--accent-primary-hover', tailwind: 'bg-accent-primary-hover', border: false },
+  { name: '--accent-secondary-hover', tailwind: 'bg-accent-secondary-hover', border: false },
+  { name: '--border-default', tailwind: 'bg-border-default', border: false },
+  { name: '--border-interactive', tailwind: 'bg-border-interactive', border: false },
+  { name: '--state-error', tailwind: 'bg-state-error', border: false },
+  { name: '--state-success', tailwind: 'bg-state-success', border: false },
+  { name: '--state-warning', tailwind: 'bg-state-warning', border: false },
 ] as const;
 
 // ─── Active Badge ─────────────────────────────────────────────────────────────
 
 function ThemeBadge() {
   const { color, mode, motion } = useTheme();
+  const mounted = useHasMounted();
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-accent-primary text-text-primary border border-border-interactive">
+          Loading Theme
+        </span>
+        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-bg-elevated text-text-primary border border-border-default">
+          Loading Mode
+        </span>
+        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-bg-elevated text-text-primary border border-border-default">
+          Motion: Loading
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-wrap gap-2 items-center">
       <span className="px-3 py-1 rounded-full text-xs font-semibold bg-accent-primary text-text-primary border border-border-interactive">
@@ -96,9 +116,8 @@ export default function ThemeTestPage() {
                 className="flex flex-col rounded-2xl overflow-hidden border border-border-default bg-bg-surface shadow-sm"
               >
                 <div
-                  className={`h-20 ${token.tailwind} ${
-                    token.border ? 'border-b border-border-default' : ''
-                  } transition-colors duration-200`}
+                  className={`h-20 ${token.tailwind} ${token.border ? 'border-b border-border-default' : ''
+                    } transition-colors duration-200`}
                 />
                 <div className="p-3 bg-bg-surface">
                   <p className="font-mono text-xs font-semibold text-text-primary break-all">
