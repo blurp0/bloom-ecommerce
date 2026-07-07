@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,28 @@ import { useTheme } from '@/lib/theme/ThemeProvider';
 
 function ThemeBadge() {
     const { color, mode, motion } = useTheme();
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <div className="flex flex-wrap gap-2 items-center">
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-accent-primary text-text-primary border border-border-interactive">
+                    {color.charAt(0).toUpperCase() + color.slice(1)} Theme
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-bg-elevated text-text-primary border border-border-default">
+                    Loading Mode
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-bg-elevated text-text-primary border border-border-default">
+                    Motion: Loading
+                </span>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-wrap gap-2 items-center">
             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-accent-primary text-text-primary border border-border-interactive">
@@ -529,12 +552,12 @@ export default function ComponentGalleryPage() {
                     <DemoPanel title="Account & Sort Menus">
                         <div className="flex flex-wrap gap-3">
                             <DropdownMenu>
-                                <DropdownMenuTrigger>
-                                    <Button variant="outline" className="gap-2">
-                                        <Settings className="h-4 w-4" />
-                                        Account Menu
-                                        <ChevronDown className="h-3 w-3" />
-                                    </Button>
+                                <DropdownMenuTrigger
+                                    className="group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-md border border-border-interactive bg-bg-surface px-4 py-2 text-sm font-medium text-text-primary shadow-none hover:bg-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary disabled:pointer-events-none disabled:opacity-50"
+                                >
+                                    <Settings className="h-4 w-4" />
+                                    <span>Account Menu</span>
+                                    <ChevronDown className="h-3 w-3" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-48">
                                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -548,11 +571,11 @@ export default function ComponentGalleryPage() {
                             </DropdownMenu>
 
                             <DropdownMenu>
-                                <DropdownMenuTrigger>
-                                    <Button variant="outline" className="gap-2">
-                                        Sort By
-                                        <ChevronDown className="h-3 w-3" />
-                                    </Button>
+                                <DropdownMenuTrigger
+                                    className="group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-md border border-border-interactive bg-bg-surface px-4 py-2 text-sm font-medium text-text-primary shadow-none hover:bg-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary disabled:pointer-events-none disabled:opacity-50"
+                                >
+                                    <span>Sort By</span>
+                                    <ChevronDown className="h-3 w-3" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-40">
                                     <DropdownMenuLabel>Sort Options</DropdownMenuLabel>

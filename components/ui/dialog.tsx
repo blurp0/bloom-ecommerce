@@ -11,8 +11,25 @@ function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
-function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props) {
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+function DialogTrigger({
+  children,
+  ...props
+}: DialogPrimitive.Trigger.Props & { children?: React.ReactNode }) {
+  return (
+    <DialogPrimitive.Trigger
+      data-slot="dialog-trigger"
+      {...(props as unknown as object)}
+      // If children are provided, render them directly so consumers can pass
+      // a Button without nesting a <button> inside a <button>.
+      {...(children
+        ? ({
+          render: () => children,
+        } as unknown as Partial<
+          DialogPrimitive.Trigger.Props & { render: () => React.ReactNode }
+        >)
+        : null)}
+    />
+  )
 }
 
 function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {
