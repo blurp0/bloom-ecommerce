@@ -1,12 +1,6 @@
 import Link from "next/link";
 import { Search, ShoppingCart, User } from "lucide-react";
-
-const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/products", label: "Shop" },
-    { href: "/occasions", label: "Occasions" },
-    { href: "/customization/custom-request", label: "Custom" },
-];
+import { navLinks } from "@/lib/nav-config";
 
 export default function Navbar() {
     return (

@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, ShoppingBag, Search, ShoppingCart, User } from "lucide-react";
-
-const tabs = [
-    { href: "/", label: "Home", icon: House },
-    { href: "/products", label: "Shop", icon: ShoppingBag },
-    { href: "/search", label: "Search", icon: Search },
-    { href: "/cart", label: "Cart", icon: ShoppingCart },
-    { href: "/account", label: "Account", icon: User },
-];
+import { bottomTabs as tabs } from "@/lib/nav-config";
 
 export default function BottomTabBar() {
     const pathname = usePathname();
@@ -19,7 +11,7 @@ export default function BottomTabBar() {
         if (href === "/") {
             return pathname === "/";
         }
-        return pathname.startsWith(href);
+        return pathname === href || pathname.startsWith(href + "/");
     }
 
     return (
@@ -42,6 +34,7 @@ export default function BottomTabBar() {
                             : "text-text-muted"
                             }`}
                         aria-label={tab.label}
+                        aria-current={active ? "page" : undefined}
                     >
                         <Icon className="h-5 w-5" aria-hidden="true" />
                         <span className="text-[10px] font-medium leading-tight">

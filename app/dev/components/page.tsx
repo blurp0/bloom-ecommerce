@@ -48,16 +48,13 @@ import { toast } from 'sonner';
 import { Heart, Settings, ChevronDown, ShoppingCart } from 'lucide-react';
 import { ThemeSettingsStub } from '@/components/layout/ThemeSettingsStub';
 import { useTheme } from '@/lib/theme/ThemeProvider';
+import { useHasMounted } from '@/lib/hooks/useHasMounted';
 
 // ─── Active Badge ─────────────────────────────────────────────────────────────
 
 function ThemeBadge() {
     const { color, mode, motion } = useTheme();
-    const [mounted, setMounted] = React.useState(false);
-
-    React.useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = useHasMounted();
 
     if (!mounted) {
         return (

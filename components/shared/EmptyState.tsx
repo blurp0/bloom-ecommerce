@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { cn } from "@/lib/utils"
 
 type EmptyStateVariant = "default" | "compact"
 
@@ -21,12 +22,12 @@ export function EmptyState({
 
     return (
         <div
-            className={[
+            className={cn(
                 "w-full rounded-2xl border border-border-default bg-bg-surface",
-                "shadow-sm px-6 py-10 sm:px-8",
+                "shadow-sm px-6 sm:px-8",
                 isCompact ? "py-6" : "py-10",
                 "flex flex-col items-center text-center space-y-4",
-            ].join(" ")}
+            )}
         >
             {icon ? <div className="text-text-muted">{icon}</div> : null}
 
@@ -41,10 +42,10 @@ export function EmptyState({
 
             {(primaryAction || secondaryAction) ? (
                 <div
-                    className={[
-                        "flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2",
-                        isCompact ? "pt-0" : "",
-                    ].join(" ")}
+                    className={cn(
+                        "flex flex-col sm:flex-row gap-3 sm:gap-4",
+                        isCompact ? "pt-0" : "pt-2",
+                    )}
                 >
                     {primaryAction ? primaryAction : null}
                     {secondaryAction ? secondaryAction : null}

@@ -51,12 +51,9 @@ const themeInitCode = `(function () {
 
 export function ThemeScript() {
   return (
-    // Inert container to prevent Next/React complaining about a <script> tag
-    // rendered directly by React.
-    <template
-      id="theme-init"
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: template holds the inline init IIFE
-      dangerouslySetInnerHTML={{ __html: `<script>${themeInitCode}</script>` }}
+    <script
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: inline theme init IIFE must run before first paint
+      dangerouslySetInnerHTML={{ __html: themeInitCode }}
     />
   );
 }

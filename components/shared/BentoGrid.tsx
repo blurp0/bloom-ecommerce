@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { cn } from "@/lib/utils"
 
 type BentoGridProps = {
     children: ReactNode
@@ -28,12 +29,12 @@ export function BentoGrid({
 
     return (
         <div
-            className={[
+            className={cn(
                 "grid grid-cols-1 md:grid-cols-2",
                 colsClass,
                 gapToClass[gap],
-                className ?? "",
-            ].join(" ")}
+                className,
+            )}
         >
             {children}
         </div>

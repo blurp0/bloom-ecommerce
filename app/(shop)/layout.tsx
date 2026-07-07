@@ -10,11 +10,13 @@ export default function ShopLayout({
     return (
         <div className="flex min-h-screen flex-col">
             <Navbar />
-            <div id="skip-content" />
+            <div id="skip-content" tabIndex={-1} className="outline-none" />
             <div className="mx-auto w-full max-w-7xl flex-1 px-6 py-8 pb-24 lg:px-8 lg:pb-8">
                 {children}
             </div>
-            <Footer />
+            <div className="pb-16 lg:pb-0">
+                <Footer />
+            </div>
             <BottomTabBar />
         </div>
     );

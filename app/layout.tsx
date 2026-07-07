@@ -53,7 +53,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-bg-base text-text-primary">
         {/* Skip navigation for keyboard users */}
         <a
-          href="#skip-content"
+          href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-accent-primary focus:text-text-primary focus:font-medium"
         >
           Skip to content

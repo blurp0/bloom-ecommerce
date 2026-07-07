@@ -18,16 +18,8 @@ function DialogTrigger({
   return (
     <DialogPrimitive.Trigger
       data-slot="dialog-trigger"
-      {...(props as unknown as object)}
-      // If children are provided, render them directly so consumers can pass
-      // a Button without nesting a <button> inside a <button>.
-      {...(children
-        ? ({
-          render: () => children,
-        } as unknown as Partial<
-          DialogPrimitive.Trigger.Props & { render: () => React.ReactNode }
-        >)
-        : null)}
+      {...props}
+      {...(children ? { render: (renderProps: React.HTMLAttributes<HTMLElement>) => React.cloneElement(children as React.ReactElement, renderProps) } : null)}
     />
   )
 }

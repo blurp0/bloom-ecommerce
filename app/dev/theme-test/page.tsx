@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { ThemeSettingsStub } from '@/components/layout/ThemeSettingsStub';
 import { useTheme } from '@/lib/theme/ThemeProvider';
+import { useHasMounted } from '@/lib/hooks/useHasMounted';
 
 // ─── Color Swatch Grid ────────────────────────────────────────────────────────
 
@@ -27,17 +28,13 @@ const TOKEN_SWATCHES = [
 
 function ThemeBadge() {
   const { color, mode, motion } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHasMounted();
 
   if (!mounted) {
     return (
       <div className="flex flex-wrap gap-2 items-center">
         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-accent-primary text-text-primary border border-border-interactive">
-          {color.charAt(0).toUpperCase() + color.slice(1)} Theme
+          Loading Theme
         </span>
         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-bg-elevated text-text-primary border border-border-default">
           Loading Mode
