@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search, ShoppingCart, User } from "lucide-react";
 import { navLinks } from "@/lib/nav-config";
+import NavAccountButton from "./NavAccountButton";
 
 export default function Navbar() {
     return (
@@ -50,13 +51,7 @@ export default function Navbar() {
                     </Link>
 
                     {/* Account */}
-                    <Link
-                        href="/account"
-                        className="inline-flex items-center justify-center h-[44px] w-[44px] rounded-lg text-text-muted hover:text-accent-secondary hover:bg-bg-elevated transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-secondary focus-visible:ring-offset-0"
-                        aria-label="Account"
-                    >
-                        <User className="h-5 w-5" aria-hidden="true" />
-                    </Link>
+                    <NavAccountButton />
                 </div>
             </div>
         </header>

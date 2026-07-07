@@ -4,6 +4,8 @@ import "./globals.css";
 import "@/lib/env";
 import { ThemeScript } from "@/lib/theme/theme-script";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
+import { ClerkProvider } from "@clerk/nextjs";
+import { SIGN_IN_URL, SIGN_UP_URL } from "@/lib/clerk/config";
 
 const varelaRound = Varela_Round({
   variable: "--font-heading",
@@ -37,6 +39,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <ClerkProvider
+      signInUrl={SIGN_IN_URL}
+      signUpUrl={SIGN_UP_URL}
+    >
     <html
       lang="en"
       // data-theme and .dark will be set synchronously by ThemeScript.
@@ -65,5 +71,6 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
+    </ClerkProvider>
   );
 }
