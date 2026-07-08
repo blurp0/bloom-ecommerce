@@ -392,7 +392,8 @@ const CUSTOMER_USERS = [
 
 // ── Helpers ────────────────────────────────────────────
 
-const CLOUDINARY_BASE = "https://res.cloudinary.com/demo/image/upload";
+const CLOUDINARY_CLOUD_NAME = "demo";
+const CLOUDINARY_BASE = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
 function placeholderUrl(index: number): string {
     // Must be a valid public Cloudinary demo CDN asset so next/image doesn't throw.
