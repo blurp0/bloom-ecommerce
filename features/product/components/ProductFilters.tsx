@@ -64,23 +64,22 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Track previous URL-derived values to detect external changes
-  // (back/forward navigation, clearFilters, etc.) without needing a
-  // setState-in-effect. When the URL changes, we update local state inline.
-  const prevSearch = useRef(currentSearch);
-  const prevMin = useRef(currentMinPrice);
-  const prevMax = useRef(currentMaxPrice);
+  // State-based previous-value tracking to detect external URL changes
+  // (back/forward navigation, clearFilters, etc.) without ref mutation during render.
+  const [prevSearch, setPrevSearch] = useState(currentSearch);
+  const [prevMin, setPrevMin] = useState(currentMinPrice);
+  const [prevMax, setPrevMax] = useState(currentMaxPrice);
 
-  if (prevSearch.current !== currentSearch) {
-    prevSearch.current = currentSearch;
+  if (prevSearch !== currentSearch) {
+    setPrevSearch(currentSearch);
     if (searchValue !== currentSearch) setSearchValue(currentSearch);
   }
-  if (prevMin.current !== currentMinPrice) {
-    prevMin.current = currentMinPrice;
+  if (prevMin !== currentMinPrice) {
+    setPrevMin(currentMinPrice);
     if (minPrice !== currentMinPrice) setMinPrice(currentMinPrice);
   }
-  if (prevMax.current !== currentMaxPrice) {
-    prevMax.current = currentMaxPrice;
+  if (prevMax !== currentMaxPrice) {
+    setPrevMax(currentMaxPrice);
     if (maxPrice !== currentMaxPrice) setMaxPrice(currentMaxPrice);
   }
 
@@ -158,9 +157,19 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
   const handlePriceBlur = useCallback(
     (field: "minPrice" | "maxPrice") => {
       const value = field === "minPrice" ? minPrice : maxPrice;
-      // Allow empty or valid numbers
-      if (value && isNaN(Number(value))) {
-        return; // Don't update URL for invalid input
+      if (value && isNaN(Number(value))) return;
+      const min = Number(minPrice || 0);
+      const max = Number(maxPrice || 0);
+      if (minPrice && maxPrice && min > max) {
+        // Clamp: set the changed field to the other field's value
+        if (field === "minPrice") {
+          setMinPrice(maxPrice);
+          updateUrl({ minPrice: maxPrice || undefined });
+        } else {
+          setMaxPrice(minPrice);
+          updateUrl({ maxPrice: minPrice || undefined });
+        }
+        return;
       }
       updateUrl({ [field]: value || undefined });
     },
@@ -194,7 +203,6 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
             onChange={(e) => updateUrl({ category: e.target.value || undefined })}
             className="filter-select w-full appearance-none rounded-[12px] border border-[var(--border-interactive)] bg-surface px-3 py-2.5 pr-8 text-body text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
             aria-label="Filter by category"
-            style={{ colorScheme: 'dark' }}
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
@@ -219,7 +227,6 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
             onChange={(e) => updateUrl({ occasion: e.target.value || undefined })}
             className="filter-select w-full appearance-none rounded-[12px] border border-[var(--border-interactive)] bg-surface px-3 py-2.5 pr-8 text-body text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
             aria-label="Filter by occasion"
-            style={{ colorScheme: 'dark' }}
           >
             {OCCASION_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -278,7 +285,6 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
             onChange={(e) => updateUrl({ sort: e.target.value || undefined })}
             className="filter-select w-full appearance-none rounded-[12px] border border-[var(--border-interactive)] bg-surface px-3 py-2.5 pr-8 text-body text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
             aria-label="Sort products"
-            style={{ colorScheme: 'dark' }}
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>

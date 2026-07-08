@@ -24,13 +24,9 @@ export default function Navbar() {
     // differs from what we're tracking), avoiding the setState-in-effect
     // pattern while still keeping the input controlled.
     const [query, setQuery] = useState(urlQuery);
-    const prevUrlQuery = useRef(urlQuery);
-    if (prevUrlQuery.current !== urlQuery) {
-        prevUrlQuery.current = urlQuery;
-        // Synchronize during render rather than in an effect.
-        // This is intentional: React allows derived state updates when a prop/
-        // upstream value changes, as long as it happens inline (not in an effect).
-        // See: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+    const [prevUrlQuery, setPrevUrlQuery] = useState(urlQuery);
+    if (prevUrlQuery !== urlQuery) {
+        setPrevUrlQuery(urlQuery);
         if (query !== urlQuery) {
             setQuery(urlQuery);
         }
