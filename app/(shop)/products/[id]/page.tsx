@@ -24,13 +24,13 @@ type ProductWithRelations = Prisma.ProductGetPayload<{
   include: typeof productInclude;
 }>;
 
-/** cuid() IDs are 25 chars, alphanumeric. Reject anything else early. */
-const VALID_ID = /^[a-z0-9]{20,30}$/i;
+/** Slugs are lowercase alphanumeric with hyphens, 2–100 chars. */
+const VALID_SLUG = /^[a-z0-9-]{2,100}$/;
 
-async function fetchProduct(id: string): Promise<ProductWithRelations | null> {
-  if (!VALID_ID.test(id)) return null;
+async function fetchProduct(slug: string): Promise<ProductWithRelations | null> {
+  if (!VALID_SLUG.test(slug)) return null;
   return prisma.product.findFirst({
-    where: { id, isActive: true },
+    where: { slug, isActive: true },
     include: productInclude,
   });
 }
@@ -72,8 +72,8 @@ function toDetailData(product: ProductWithRelations) {
 export async function generateMetadata({
   params,
 }: ProductPageParams): Promise<Metadata> {
-  const { id } = await params;
-  const raw = await fetchProduct(id);
+  const { id: slug } = await params;
+  const raw = await fetchProduct(slug);
 
   if (!raw) {
     return { title: "Product Not Found | Bloom & Bind" };
@@ -100,8 +100,8 @@ export async function generateMetadata({
 export default async function ProductDetailPage({
   params,
 }: ProductPageParams) {
-  const { id } = await params;
-  const raw = await fetchProduct(id);
+  const { id: slug } = await params;
+  const raw = await fetchProduct(slug);
 
   if (!raw) notFound();
 
