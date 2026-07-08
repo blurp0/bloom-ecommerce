@@ -111,6 +111,7 @@
 /* Blue Theme - Dark Mode */
 .dark,
 [data-theme="blue"].dark {
+  color-scheme: dark;
   --bg-base: #1a1816;
   --bg-surface: #242220;
   --bg-elevated: #1f2c33;
@@ -193,6 +194,7 @@
 
 /* Pink Theme - Dark Mode */
 [data-theme="pink"].dark {
+  color-scheme: dark;
   --bg-base: #1a1816;
   --bg-surface: #242220;
   --bg-elevated: #2e2024;
@@ -243,6 +245,38 @@
 
   html {
     font-family: var(--font-body, 'Nunito Sans', system-ui, sans-serif);
+  }
+
+  /**
+   * Explicit background and color on native <select>/<option> for
+   * Windows compatibility — without this, the dropdown options can
+   * render invisible text on dark-mode system themes.
+   * Per code-standards.md: "Style native <select> with explicit
+   * background-color and color for Windows compatibility."
+   */
+  select {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+  }
+
+  select option {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+  }
+
+  /**
+   * Force native selects in dark mode to use the dark surface and text colors.
+   * On Windows, the native dropdown popup ignores inherited colors and uses
+   * the OS theme unless explicitly overridden with !important.
+   */
+  .dark select {
+    background-color: #242220 !important;
+    color: #f0ece8 !important;
+  }
+
+  .dark select option {
+    background-color: #242220 !important;
+    color: #f0ece8 !important;
   }
 }
 
