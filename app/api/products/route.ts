@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const { category, occasion, minPrice, maxPrice, search, page, limit, sort } = parsed.data;
+  const { category, occasion, featured, minPrice, maxPrice, search, page, limit, sort } = parsed.data;
 
   try {
     // 2. Build the Prisma where clause
@@ -43,6 +43,10 @@ export async function GET(request: NextRequest) {
 
     if (occasion) {
       where.occasionTags = { has: occasion };
+    }
+
+    if (featured !== undefined) {
+      where.featured = featured === "true";
     }
 
     if (minPrice !== undefined || maxPrice !== undefined) {

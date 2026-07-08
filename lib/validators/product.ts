@@ -19,6 +19,7 @@ export const UpdateProductSchema = z.strictObject({
 export const ProductQuerySchema = z.strictObject({
   category: z.string().optional(),
   occasion: z.string().optional(),
+  featured: z.enum(["true", "false"]).optional(),
   minPrice: z.coerce.number().min(0, "minPrice must be >= 0").optional(),
   maxPrice: z.coerce.number().min(0, "maxPrice must be >= 0").optional(),
   search: z.string().min(1).max(100).optional(),

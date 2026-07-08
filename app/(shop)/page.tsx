@@ -1,14 +1,31 @@
-export default function Home() {
+import { Suspense } from "react"
+import type { Metadata } from "next"
+import { Hero } from "@/features/product/components/Hero"
+import { HomeBento } from "@/features/product/components/HomeBento"
+import { Skeleton } from "@/components/ui/skeleton"
+
+export const metadata: Metadata = {
+  title: "Bloom & Bind — Handcrafted Bouquets",
+  description:
+    "Discover crochet bouquets and artificial flower arrangements for every occasion, or design something uniquely yours.",
+}
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
-      <main className="text-center">
-        <h1 className="font-heading text-hero-title text-text-primary">
-          Bloom & Bind
-        </h1>
-        <p className="mt-4 text-body text-text-muted">
-          Customizable eCommerce platform for handmade bouquets
-        </p>
-      </main>
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: "var(--bg-base)" }}
+    >
+      <Hero />
+      <Suspense
+        fallback={
+          <div className="w-full px-6 md:px-12 py-12">
+            <Skeleton className="h-[500px] w-full rounded-[16px]" />
+          </div>
+        }
+      >
+        <HomeBento />
+      </Suspense>
     </div>
-  );
+  )
 }

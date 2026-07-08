@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useProducts } from "@/features/product/hooks/useProducts";
 import ProductGrid from "@/features/product/components/ProductGrid";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -58,8 +59,21 @@ function OccasionProducts({ occasion }: { occasion: Occasion }) {
   return <ProductGrid products={products} />;
 }
 
-export default function OccasionsClient() {
-  const [selected, setSelected] = useState<Occasion | null>(null);
+function OccasionsInner() {
+  const searchParams = useSearchParams();
+  const occasionParam = searchParams.get("occasion");
+
+  const [selected, setSelected] = useState<Occasion | null>(() =>
+    occasionParam ? (OCCASIONS.find((o) => o.slug === occasionParam) ?? null) : null
+  );
+
+  // Sync if the URL param changes (e.g. browser back/forward)
+  useEffect(() => {
+    const match = occasionParam
+      ? (OCCASIONS.find((o) => o.slug === occasionParam) ?? null)
+      : null;
+    setSelected(match);
+  }, [occasionParam]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -107,7 +121,6 @@ export default function OccasionsClient() {
       {/* Selected occasion header + products */}
       {selected && (
         <div className="flex flex-col gap-6">
-          {/* Occasion header */}
           <div className="clay-card rounded-[16px] border border-border-default bg-bg-elevated px-8 py-8">
             <h2 className="font-heading text-section-title text-text-primary">
               {selected.emoji} {selected.label} Bouquets
@@ -116,18 +129,23 @@ export default function OccasionsClient() {
               {selected.description}
             </p>
           </div>
-
-          {/* Products */}
           <OccasionProducts occasion={selected} />
         </div>
       )}
 
-      {/* Prompt when nothing is selected */}
       {!selected && (
         <p className="text-sm text-text-muted text-center py-4">
           Select an occasion above to see recommended bouquets.
         </p>
       )}
     </div>
+  );
+}
+
+export default function OccasionsClient() {
+  return (
+    <Suspense fallback={<SkeletonCardGrid count={4} />}>
+      <OccasionsInner />
+    </Suspense>
   );
 }

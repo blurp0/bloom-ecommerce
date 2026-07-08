@@ -445,6 +445,87 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32), 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
+/* ── Homepage Theme-Reactive Gradients ────────────────────────────────────── */
+/*
+ * All color-mix() and gradient backgrounds for the homepage Hero and HomeBento
+ * components live here so the browser re-evaluates them live when data-theme
+ * switches on <html>. Never put color-mix() inside React inline style props —
+ * those are static strings that don't update on attribute changes.
+ */
+
+/* Hero — full-section radial gradient mesh */
+.hero-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 20%,
+      color-mix(in srgb, var(--accent-primary) 8%, transparent),
+      transparent 70%),
+    radial-gradient(ellipse 60% 50% at 10% 80%,
+      color-mix(in srgb, var(--accent-secondary) 5%, transparent),
+      transparent 60%),
+    var(--bg-base);
+}
+
+/* Hero right panel — decorative radial blob */
+.hero-blob-bg {
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--accent-primary) 40%, transparent),
+    transparent 70%
+  );
+}
+
+/* Hero right panel — main decorative card fill */
+.hero-card-fill {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-primary) 30%, var(--bg-elevated)),
+    color-mix(in srgb, var(--accent-secondary) 20%, var(--bg-surface))
+  );
+}
+
+/* Hero eyebrow pill */
+.hero-eyebrow-pill {
+  background-color: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+}
+
+/* Bento — occasion tile gradient background */
+.bento-occasion-bg {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent-primary) 35%, var(--bg-elevated)) 0%,
+    color-mix(in srgb, var(--accent-secondary) 25%, var(--bg-surface)) 100%
+  );
+}
+
+/* Bento — occasion pill chips (semi-transparent surface) */
+.bento-occasion-pill {
+  background-color: color-mix(in srgb, var(--bg-surface) 70%, transparent);
+}
+
+/* Bento — featured product tile fallback (no image) */
+.bento-product-fallback {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-primary) 20%, var(--bg-elevated)),
+    var(--bg-surface)
+  );
+}
+
+/* Bento — custom request CTA tile background */
+.bento-cta-bg {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-secondary) 12%, var(--bg-elevated)) 0%,
+    var(--bg-elevated) 100%
+  );
+}
+
+/* Bento — bespoke pill badge */
+.bento-bespoke-pill {
+  background-color: color-mix(in srgb, var(--accent-secondary) 15%, transparent);
+}
+
 /* Mobile shadow cap — below md breakpoint, force all card shadows to sm */
 @media (max-width: 767px) {
 
