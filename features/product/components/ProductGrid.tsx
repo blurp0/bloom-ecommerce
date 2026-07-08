@@ -72,24 +72,28 @@ export default function ProductGrid({
   );
 }
 
+import type { ProductsResponse } from "@/features/product/hooks/useProducts";
+
 /**
- * Fetches products from the API and returns a typed array.
+ * Fetches products from the API and returns a typed response.
  *
  * Used by server components to load product data.
+ * Requires NEXT_PUBLIC_APP_URL to be set — throws a clear error if missing
+ * so misconfiguration is surfaced immediately rather than silently falling
+ * back to localhost (which fails in production).
  */
 export async function fetchProducts(
   searchParams?: Record<string, string>
-): Promise<{
-  products: ProductCardProduct[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  } | null;
-}> {
+): Promise<ProductsResponse> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) {
+    throw new Error(
+      "NEXT_PUBLIC_APP_URL is not set. Cannot resolve the products API URL."
+    );
+  }
+
   const params = new URLSearchParams(searchParams ?? {});
-  const url = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/products?${params.toString()}`;
+  const url = `${appUrl}/api/products?${params.toString()}`;
 
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) {

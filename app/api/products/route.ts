@@ -12,6 +12,21 @@ import { Prisma } from "@prisma/client";
  * Query parameters validated via ProductQuerySchema:
  *   category, occasion, minPrice, maxPrice, search, page, limit, sort
  */
+
+const productListInclude = {
+  category: true,
+  images: { orderBy: { order: "asc" as const } },
+  variants: { orderBy: { price: "asc" as const } },
+  reviews: { select: { rating: true } },
+} satisfies Prisma.ProductInclude;
+
+type ProductListItem = Prisma.ProductGetPayload<{
+  include: typeof productListInclude;
+}>;
+
+type ReviewRating = ProductListItem["reviews"][number];
+type VariantPrice = ProductListItem["variants"][number];
+
 export async function GET(request: NextRequest) {
   // 1. Parse and validate query parameters
   const { searchParams } = request.nextUrl;
@@ -73,8 +88,10 @@ export async function GET(request: NextRequest) {
       // Check if token search yields results; if not, fall back to trigram
       const tokenCount = await prisma.product.count({ where });
       if (tokenCount === 0) {
-        // Trigram similarity: match products where name or description is
-        // similar to the full query (threshold 0.1 — permissive for short names)
+        // Trigram similarity: fetch enough rows to cover the requested page.
+        // Using offset + limit ensures page 2+ has enough candidates.
+        const skip = (page - 1) * limit;
+        const trigramLimit = skip + limit;
         const similar = await prisma.$queryRaw<{ id: string }[]>`
           SELECT id FROM "Product"
           WHERE "isActive" = true
@@ -83,16 +100,19 @@ export async function GET(request: NextRequest) {
               OR similarity(description, ${search}) > 0.1
             )
           ORDER BY GREATEST(similarity(name, ${search}), similarity(description, ${search})) DESC
-          LIMIT ${limit}
+          LIMIT ${trigramLimit}
         `;
         trigramFallbackIds = similar.map((r) => r.id);
-        // Replace where clause with ID list
+        // Replace where clause with ID list (preserves ordering via Prisma)
         delete where.AND;
         where.id = { in: trigramFallbackIds };
       }
     }
 
     // 3. Determine sort order
+    // For rating_desc we must fetch all matching products and sort in-memory
+    // because Prisma cannot ORDER BY an aggregated field inline.
+    const isRatingSort = sort === "rating_desc";
     let orderBy: Prisma.ProductOrderByWithRelationInput;
     switch (sort) {
       case "price_asc":
@@ -101,37 +121,36 @@ export async function GET(request: NextRequest) {
       case "price_desc":
         orderBy = { basePrice: "desc" };
         break;
-      case "rating_desc":
-        orderBy = { createdAt: "desc" };
-        break;
       default:
+        // newest — also used as a stable secondary sort for rating_desc
         orderBy = { createdAt: "desc" };
     }
 
     // 4. Fetch total count for pagination
     const total = await prisma.product.count({ where });
 
-    // 5. Fetch products for the current page
+    // 5. Fetch products
+    //    For rating_desc: fetch ALL matching rows (no skip/take) so we can
+    //    sort by rating first, then paginate the sorted result in memory.
+    //    For all other sorts: apply DB-level skip/take directly.
     const skip = (page - 1) * limit;
-    const products = await prisma.product.findMany({
+
+    const rawProducts = await prisma.product.findMany({
       where,
       orderBy,
-      skip,
-      take: limit,
-      include: {
-        category: true,
-        images: { orderBy: { order: "asc" } },
-        variants: { orderBy: { price: "asc" } },
-        reviews: { select: { rating: true } },
-      },
+      ...(isRatingSort ? {} : { skip, take: limit }),
+      include: productListInclude,
     });
 
     // 6. Compute review metrics and format response
-    const productsWithMetrics = products.map((product: any) => {
+    const productsWithMetrics = rawProducts.map((product: ProductListItem) => {
       const reviewCount = product.reviews.length;
       const averageRating =
         reviewCount > 0
-          ? product.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewCount
+          ? product.reviews.reduce(
+              (sum: number, r: ReviewRating) => sum + r.rating,
+              0
+            ) / reviewCount
           : null;
 
       return {
@@ -148,27 +167,33 @@ export async function GET(request: NextRequest) {
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
         images: product.images,
-        variants: product.variants.map((v: any) => ({ ...v, price: Number(v.price) })),
-        averageRating: averageRating !== null ? Math.round(averageRating * 10) / 10 : null,
+        variants: product.variants.map((v: VariantPrice) => ({
+          ...v,
+          price: Number(v.price),
+        })),
+        averageRating:
+          averageRating !== null ? Math.round(averageRating * 10) / 10 : null,
         reviewCount,
       };
     });
 
-    // 7. Handle rating_desc sort in-memory
-    let sortedProducts = productsWithMetrics;
-    if (sort === "rating_desc") {
-      sortedProducts = [...productsWithMetrics].sort((a: any, b: any) => {
-        const aRating = a.averageRating ?? 0;
-        const bRating = b.averageRating ?? 0;
-        return bRating - aRating;
-      });
+    // 7. Apply rating sort + pagination in-memory (only for rating_desc)
+    let pagedProducts = productsWithMetrics;
+    if (isRatingSort) {
+      pagedProducts = [...productsWithMetrics]
+        .sort((a, b) => {
+          const aRating = a.averageRating ?? 0;
+          const bRating = b.averageRating ?? 0;
+          return bRating - aRating;
+        })
+        .slice(skip, skip + limit);
     }
 
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
       data: {
-        products: sortedProducts,
+        products: pagedProducts,
         pagination: {
           total,
           page,

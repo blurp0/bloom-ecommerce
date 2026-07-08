@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { ArrowRight, Sparkles } from "lucide-react"
 import { BentoGrid } from "@/components/shared/BentoGrid"
 import { useProducts } from "@/features/product/hooks/useProducts"
@@ -24,6 +25,7 @@ const OCCASION_TILES = [
 ]
 
 export function HomeBento() {
+  const router = useRouter()
   const { data, isLoading } = useProducts({ featured: "true", limit: "2" })
   const featuredProducts = data?.products ?? []
 
@@ -59,8 +61,16 @@ export function HomeBento() {
       <BentoGrid columns={4} gap="md" className="auto-rows-[200px]">
 
         {/* ── Tile 1: Occasion showcase — col-span-2 row-span-2 ── */}
-        <Link
-          href="/occasions"
+        <div
+          role="link"
+          tabIndex={0}
+          onClick={() => router.push("/occasions")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              router.push("/occasions")
+            }
+          }}
           className="bento-occasion-bg clay-card clay-hover-lift relative overflow-hidden col-span-1 md:col-span-2 md:row-span-2 border cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:outline-none group"
           style={{ borderColor: "var(--border-default)" }}
           aria-label="Shop by occasion"
@@ -106,7 +116,7 @@ export function HomeBento() {
               Explore all occasions <ArrowRight className="h-3 w-3" aria-hidden="true" />
             </span>
           </div>
-        </Link>
+        </div>
 
         {/* ── Tiles 2 & 3: Featured products — col-span-1 each ── */}
         {isLoading ? (

@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+        // Restrict to assets under our own Cloudinary account only.
+        pathname: "/xloqricm/**",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        // Allow the official Cloudinary demo account used for seeded placeholder assets.
+        pathname: "/demo/**",
       },
     ],
   },

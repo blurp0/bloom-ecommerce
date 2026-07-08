@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, ShoppingCart } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { navLinks } from "@/lib/nav-config";
 import NavAccountButton from "./NavAccountButton";
 
@@ -12,19 +12,29 @@ export default function Navbar() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const isSearchPage = pathname === "/search";
-    const [query, setQuery] = useState(
-        isSearchPage ? (searchParams.get("q") ?? "") : ""
-    );
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Sync input when navigating to/from search page
-    useEffect(() => {
-        if (isSearchPage) {
-            setQuery(searchParams.get("q") ?? "");
-        } else {
-            setQuery("");
+    // Derive the displayed query directly from the URL during render.
+    // No useEffect — the value is always in sync with searchParams without
+    // an extra render cycle.
+    const urlQuery = isSearchPage ? (searchParams.get("q") ?? "") : "";
+
+    // Local state tracks only characters the user is currently typing.
+    // It is reset whenever urlQuery changes (i.e. the URL-driven value
+    // differs from what we're tracking), avoiding the setState-in-effect
+    // pattern while still keeping the input controlled.
+    const [query, setQuery] = useState(urlQuery);
+    const prevUrlQuery = useRef(urlQuery);
+    if (prevUrlQuery.current !== urlQuery) {
+        prevUrlQuery.current = urlQuery;
+        // Synchronize during render rather than in an effect.
+        // This is intentional: React allows derived state updates when a prop/
+        // upstream value changes, as long as it happens inline (not in an effect).
+        // See: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+        if (query !== urlQuery) {
+            setQuery(urlQuery);
         }
-    }, [isSearchPage, searchParams]);
+    }
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -33,6 +43,7 @@ export default function Navbar() {
             router.push(`/search?q=${encodeURIComponent(trimmed)}`);
         }
     }
+
 
     return (
         <header className="sticky top-0 z-20 w-full bg-bg-surface border-b border-border-default">

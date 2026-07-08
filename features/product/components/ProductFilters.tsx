@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect, useRef, type FormEvent } from "react";
+import { useCallback, useState, useRef, type FormEvent } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
@@ -64,12 +64,25 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Sync local state when URL changes (e.g. back/forward)
-  useEffect(() => {
-    setSearchValue(currentSearch);
-    setMinPrice(currentMinPrice);
-    setMaxPrice(currentMaxPrice);
-  }, [currentSearch, currentMinPrice, currentMaxPrice]);
+  // Track previous URL-derived values to detect external changes
+  // (back/forward navigation, clearFilters, etc.) without needing a
+  // setState-in-effect. When the URL changes, we update local state inline.
+  const prevSearch = useRef(currentSearch);
+  const prevMin = useRef(currentMinPrice);
+  const prevMax = useRef(currentMaxPrice);
+
+  if (prevSearch.current !== currentSearch) {
+    prevSearch.current = currentSearch;
+    if (searchValue !== currentSearch) setSearchValue(currentSearch);
+  }
+  if (prevMin.current !== currentMinPrice) {
+    prevMin.current = currentMinPrice;
+    if (minPrice !== currentMinPrice) setMinPrice(currentMinPrice);
+  }
+  if (prevMax.current !== currentMaxPrice) {
+    prevMax.current = currentMaxPrice;
+    if (maxPrice !== currentMaxPrice) setMaxPrice(currentMaxPrice);
+  }
 
   /**
    * Updates the URL with the given params while preserving existing ones.

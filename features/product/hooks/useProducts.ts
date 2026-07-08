@@ -16,11 +16,18 @@ export type ProductsResponse = {
 export type ProductsParams = Record<string, string | undefined>;
 
 /**
- * Builds a query string from params, omitting undefined/empty values.
+ * Builds a normalized, stable query string from params.
+ *
+ * Keys are sorted alphabetically before appending to URLSearchParams so
+ * identical filters always produce the same string regardless of the order
+ * they were inserted — preventing spurious cache misses.
+ * Undefined/empty values are omitted.
  */
 function buildQueryString(params: ProductsParams): string {
   const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
+  // Sort keys for a stable, order-independent cache key.
+  for (const key of Object.keys(params).sort()) {
+    const value = params[key];
     if (value !== undefined && value !== "") {
       searchParams.set(key, value);
     }
@@ -42,11 +49,24 @@ export function useProducts(params: ProductsParams = {}) {
 
   return useQuery<ProductsResponse>({
     queryKey: ["products", queryString],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const url = `/api/products?${queryString}`;
-      const res = await fetch(url);
+      // Wire the AbortSignal so stale requests are cancelled when the
+      // queryKey changes rapidly (e.g. fast typing in the search box).
+      const res = await fetch(url, { signal });
       if (!res.ok) {
-        throw new Error(`Failed to fetch products: ${res.status}`);
+        // Surface the server / Zod error message when available instead
+        // of only exposing the HTTP status code.
+        let detail = "";
+        try {
+          const body = await res.json();
+          detail = body?.error ?? "";
+        } catch {
+          // JSON parse failure — ignore; status is already informative enough.
+        }
+        throw new Error(
+          `Failed to fetch products: ${res.status}${detail ? ` — ${detail}` : ""}`
+        );
       }
       const json = await res.json();
       return json.data;

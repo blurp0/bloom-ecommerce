@@ -69,6 +69,7 @@ export default function ProductGallery({
             fill
             sizes="(max-width: 767px) 100vw, 50vw"
             className="object-cover"
+            loading="eager"
             fetchPriority="high"
           />
         ) : (

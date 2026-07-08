@@ -268,15 +268,16 @@
    * Force native selects in dark mode to use the dark surface and text colors.
    * On Windows, the native dropdown popup ignores inherited colors and uses
    * the OS theme unless explicitly overridden with !important.
+   * Uses existing theme tokens so the overrides stay aligned when the palette changes.
    */
   .dark select {
-    background-color: #242220 !important;
-    color: #f0ece8 !important;
+    background-color: var(--bg-surface) !important;
+    color: var(--text-primary) !important;
   }
 
   .dark select option {
-    background-color: #242220 !important;
-    color: #f0ece8 !important;
+    background-color: var(--bg-surface) !important;
+    color: var(--text-primary) !important;
   }
 }
 

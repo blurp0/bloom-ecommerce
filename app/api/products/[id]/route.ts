@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/client";
+import { Prisma } from "@prisma/client";
 
 /**
  * GET /api/products/[id]
@@ -8,6 +9,29 @@ import { prisma } from "@/lib/prisma/client";
  * Returns 404 if the product is not found or is inactive.
  * Public endpoint — no authentication required.
  */
+
+const productDetailInclude = {
+  category: true,
+  images: { orderBy: { order: "asc" as const } },
+  variants: { orderBy: { price: "asc" as const } },
+  addOns: true,
+  reviews: {
+    orderBy: { createdAt: "desc" as const },
+    include: {
+      user: { select: { name: true } },
+    },
+  },
+  inventory: true,
+} satisfies Prisma.ProductInclude;
+
+type ProductDetail = Prisma.ProductGetPayload<{
+  include: typeof productDetailInclude;
+}>;
+
+type ReviewItem = ProductDetail["reviews"][number];
+type VariantItem = ProductDetail["variants"][number];
+type AddOnItem = ProductDetail["addOns"][number];
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -15,21 +39,9 @@ export async function GET(
   const { id } = await params;
 
   try {
-    const product: any = await prisma.product.findFirst({
+    const product: ProductDetail | null = await prisma.product.findFirst({
       where: { id, isActive: true },
-      include: {
-        category: true,
-        images: { orderBy: { order: "asc" } },
-        variants: { orderBy: { price: "asc" } },
-        addOns: true,
-        reviews: {
-          orderBy: { createdAt: "desc" },
-          include: {
-            user: { select: { name: true } },
-          },
-        },
-        inventory: true,
-      },
+      include: productDetailInclude,
     });
 
     if (!product) {
@@ -43,7 +55,8 @@ export async function GET(
     const reviewCount = product.reviews.length;
     const averageRating =
       reviewCount > 0
-        ? product.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewCount
+        ? product.reviews.reduce((sum: number, r: ReviewItem) => sum + r.rating, 0) /
+          reviewCount
         : null;
 
     return NextResponse.json({
@@ -61,9 +74,16 @@ export async function GET(
         createdAt: product.createdAt,
         updatedAt: product.updatedAt,
         images: product.images,
-        variants: product.variants.map((v: any) => ({ ...v, price: Number(v.price) })),
-        addOns: product.addOns.map((a: any) => ({ ...a, price: Number(a.price) })),
-        averageRating: averageRating !== null ? Math.round(averageRating * 10) / 10 : null,
+        variants: product.variants.map((v: VariantItem) => ({
+          ...v,
+          price: Number(v.price),
+        })),
+        addOns: product.addOns.map((a: AddOnItem) => ({
+          ...a,
+          price: Number(a.price),
+        })),
+        averageRating:
+          averageRating !== null ? Math.round(averageRating * 10) / 10 : null,
         reviewCount,
         reviews: product.reviews,
         inventory: product.inventory

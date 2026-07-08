@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useProducts } from "@/features/product/hooks/useProducts";
 import ProductGrid from "@/features/product/components/ProductGrid";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -60,20 +60,29 @@ function OccasionProducts({ occasion }: { occasion: Occasion }) {
 }
 
 function OccasionsInner() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const occasionParam = searchParams.get("occasion");
 
-  const [selected, setSelected] = useState<Occasion | null>(() =>
-    occasionParam ? (OCCASIONS.find((o) => o.slug === occasionParam) ?? null) : null
-  );
+  // Derive selected occasion directly from the URL param — no local state needed.
+  const selected = occasionParam
+    ? (OCCASIONS.find((o) => o.slug === occasionParam) ?? null)
+    : null;
 
-  // Sync if the URL param changes (e.g. browser back/forward)
-  useEffect(() => {
-    const match = occasionParam
-      ? (OCCASIONS.find((o) => o.slug === occasionParam) ?? null)
-      : null;
-    setSelected(match);
-  }, [occasionParam]);
+  /** Sync the clicked occasion back to the URL so selection is shareable
+   *  and browser back/forward navigation stays in sync. */
+  function handleSelect(occasion: Occasion) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (selected?.slug === occasion.slug) {
+      // Deselect: remove the param
+      params.delete("occasion");
+    } else {
+      params.set("occasion", occasion.slug);
+    }
+    const query = params.toString();
+    router.push(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -99,7 +108,7 @@ function OccasionsInner() {
             return (
               <button
                 key={occasion.slug}
-                onClick={() => setSelected(isActive ? null : occasion)}
+                onClick={() => handleSelect(occasion)}
                 aria-pressed={isActive}
                 className={[
                   "inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium",

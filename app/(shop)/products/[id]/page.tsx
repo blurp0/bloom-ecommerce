@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -27,13 +28,19 @@ type ProductWithRelations = Prisma.ProductGetPayload<{
 /** Slugs are lowercase alphanumeric with hyphens, 2–100 chars. */
 const VALID_SLUG = /^[a-z0-9-]{2,100}$/;
 
-async function fetchProduct(slug: string): Promise<ProductWithRelations | null> {
-  if (!VALID_SLUG.test(slug)) return null;
-  return prisma.product.findFirst({
-    where: { slug, isActive: true },
-    include: productInclude,
-  });
-}
+/**
+ * React.cache() ensures generateMetadata and ProductDetailPage share a
+ * single Prisma call per request — no double-fetch per server render.
+ */
+const fetchProduct = cache(
+  async (slug: string): Promise<ProductWithRelations | null> => {
+    if (!VALID_SLUG.test(slug)) return null;
+    return prisma.product.findFirst({
+      where: { slug, isActive: true },
+      include: productInclude,
+    });
+  }
+);
 
 function toDetailData(product: ProductWithRelations) {
   const reviewCount = product.reviews.length;
@@ -147,8 +154,10 @@ export default async function ProductDetailPage({
         </ol>
       </nav>
 
-      {/* Interactive product detail */}
-      <ProductDetail product={product} />
+      {/* Interactive product detail — keyed by product.id so the client
+          component remounts when navigating between products, resetting
+          selectedVariant and gallery state automatically. */}
+      <ProductDetail key={product.id} product={product} />
     </div>
   );
 }
