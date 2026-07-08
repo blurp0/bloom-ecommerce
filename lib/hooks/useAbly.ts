@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { getAblyClient } from "@/lib/ably/client";
 
 type AblyStatus = "connecting" | "connected" | "disconnected" | "failed";
@@ -20,15 +20,19 @@ type AblyStatus = "connecting" | "connected" | "disconnected" | "failed";
 export function useAbly() {
   const client = getAblyClient();
 
-  const status = useSyncExternalStore(
-    // subscribe: called by React to attach/detach the external store listener
-    (onStoreChange) => {
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
       client.connection.on(onStoreChange);
       return () => {
         // Only remove this specific listener; do NOT close the shared client
         client.connection.off(onStoreChange);
       };
     },
+    [client]
+  );
+
+  const status = useSyncExternalStore(
+    subscribe,
     // getSnapshot: called on every render (and after each store notification)
     // to derive the current value from the external store
     () => mapState(client.connection.state),
