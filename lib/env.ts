@@ -5,7 +5,6 @@ const envSchema = z.object({
   DIRECT_DATABASE_URL: z.string().url("DIRECT_DATABASE_URL must be a valid URL").optional(),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1, "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is required"),
   CLERK_SECRET_KEY: z.string().min(1, "CLERK_SECRET_KEY is required"),
-  NEXT_PUBLIC_ABLY_API_KEY: z.string().min(1, "NEXT_PUBLIC_ABLY_API_KEY is required"),
   ABLY_API_KEY: z.string().min(1, "ABLY_API_KEY is required"),
   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().min(1, "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is required"),
   CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY is required"),
