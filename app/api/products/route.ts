@@ -55,11 +55,37 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Search: token-split exact match first, trigram similarity fallback
+    let trigramFallbackIds: string[] | null = null;
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-      ];
+      const tokens = search.trim().split(/\s+/).filter(Boolean);
+      where.AND = tokens.map((token) => ({
+        OR: [
+          { name: { contains: token, mode: "insensitive" } },
+          { description: { contains: token, mode: "insensitive" } },
+        ],
+      }));
+
+      // Check if token search yields results; if not, fall back to trigram
+      const tokenCount = await prisma.product.count({ where });
+      if (tokenCount === 0) {
+        // Trigram similarity: match products where name or description is
+        // similar to the full query (threshold 0.1 — permissive for short names)
+        const similar = await prisma.$queryRaw<{ id: string }[]>`
+          SELECT id FROM "Product"
+          WHERE "isActive" = true
+            AND (
+              similarity(name, ${search}) > 0.1
+              OR similarity(description, ${search}) > 0.1
+            )
+          ORDER BY GREATEST(similarity(name, ${search}), similarity(description, ${search})) DESC
+          LIMIT ${limit}
+        `;
+        trigramFallbackIds = similar.map((r) => r.id);
+        // Replace where clause with ID list
+        delete where.AND;
+        where.id = { in: trigramFallbackIds };
+      }
     }
 
     // 3. Determine sort order
