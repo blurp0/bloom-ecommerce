@@ -156,22 +156,31 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
    */
   const handlePriceBlur = useCallback(
     (field: "minPrice" | "maxPrice") => {
-      const value = field === "minPrice" ? minPrice : maxPrice;
-      if (value && isNaN(Number(value))) return;
-      const min = Number(minPrice || 0);
-      const max = Number(maxPrice || 0);
-      if (minPrice && maxPrice && min > max) {
+      const raw = field === "minPrice" ? minPrice : maxPrice;
+      if (raw && isNaN(Number(raw))) return;
+      // Clamp negative values to 0
+      const clamped = raw ? String(Math.max(0, Number(raw))) : "";
+      if (field === "minPrice") {
+        if (clamped !== minPrice) setMinPrice(clamped);
+      } else {
+        if (clamped !== maxPrice) setMaxPrice(clamped);
+      }
+      const effectiveMin = field === "minPrice" ? clamped : minPrice;
+      const effectiveMax = field === "maxPrice" ? clamped : maxPrice;
+      const min = Number(effectiveMin || 0);
+      const max = Number(effectiveMax || 0);
+      if (effectiveMin && effectiveMax && min > max) {
         // Clamp: set the changed field to the other field's value
         if (field === "minPrice") {
-          setMinPrice(maxPrice);
-          updateUrl({ minPrice: maxPrice || undefined });
+          setMinPrice(effectiveMax);
+          updateUrl({ minPrice: effectiveMax || undefined });
         } else {
-          setMaxPrice(minPrice);
-          updateUrl({ maxPrice: minPrice || undefined });
+          setMaxPrice(effectiveMin);
+          updateUrl({ maxPrice: effectiveMin || undefined });
         }
         return;
       }
-      updateUrl({ [field]: value || undefined });
+      updateUrl({ [field]: clamped || undefined });
     },
     [minPrice, maxPrice, updateUrl]
   );
