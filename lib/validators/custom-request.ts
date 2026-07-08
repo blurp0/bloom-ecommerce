@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { futureIsoDateTime } from "./shared";
 
 export const CreateCustomRequestSchema = z.strictObject({
   flowers: z.string().min(1, "Flowers description is required"),
@@ -7,15 +8,17 @@ export const CreateCustomRequestSchema = z.strictObject({
   occasion: z.string().optional(),
   budget: z.string().optional(),
   instructions: z.string().max(1000, "Instructions cannot exceed 1000 characters").optional(),
-  referenceImages: z.array(z.string().url("Each reference image must be a valid URL")).max(5, "Cannot exceed 5 reference images"),
+  referenceImages: z
+    .array(z.string().url("Each reference image must be a valid URL"))
+    .max(5, "Cannot exceed 5 reference images")
+    .optional()
+    .default([]),
 });
 
 export const CreateProposalSchema = z.strictObject({
   designConcept: z.string().min(10, "Design concept must be at least 10 characters"),
   price: z.number().positive("Price must be a positive number"),
-  estimatedDelivery: z.string().datetime({ message: "Invalid ISO date string" }).refine((val) => {
-    return new Date(val) > new Date();
-  }, { message: "Estimated delivery must be in the future" }),
+  estimatedDelivery: futureIsoDateTime("Estimated delivery"),
 });
 
 export type CreateCustomRequestInput = z.infer<typeof CreateCustomRequestSchema>;

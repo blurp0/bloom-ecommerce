@@ -1,6 +1,7 @@
 "use client";
 
 import { useAbly } from "@/lib/hooks/useAbly";
+import { notFound } from "next/navigation";
 
 /**
  * /dev/ably-test
@@ -10,11 +11,19 @@ import { useAbly } from "@/lib/hooks/useAbly";
  *  - Shows connection status in the browser.
  *  - After sign-in, status should progress from "connecting" → "connected".
  *
+ * This route is only available in non-production environments.
+ * In production it returns 404 so internal tooling is never exposed.
+ *
  * This page requires the user to be signed in via Clerk.
  * If not signed in the /api/ably/token route returns 401 and the
  * status will eventually show "failed" or "disconnected".
  */
 export default function AblyTestPage() {
+  // Gate: this page must not be reachable in production
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   const { status } = useAbly();
 
   const statusColors: Record<string, string> = {
@@ -90,7 +99,7 @@ export default function AblyTestPage() {
           {status === "disconnected" &&
             "⚠️ Disconnected. Sign in with Clerk and reload the page."}
           {status === "failed" &&
-            "❌ Connection failed. Check ABLY_API_KEY in .env and Clerk session."}
+            "❌ Connection failed. Check your server environment configuration and Clerk session."}
         </p>
       </div>
 
@@ -103,7 +112,7 @@ export default function AblyTestPage() {
         }}
       >
         <strong>Check When Done:</strong> After signing in, the status above
-        should read <em>&quot;connected&quot;</em>. The ABLY_API_KEY must not
+        should read <em>&quot;connected&quot;</em>. The Ably API key must not
         appear in any browser network response body.
       </p>
     </main>

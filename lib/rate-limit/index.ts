@@ -16,6 +16,24 @@ interface RateLimitEntry {
 
 const store = new Map<string, RateLimitEntry>();
 
+// Periodic cleanup: evict expired entries every 5 minutes so the Map
+// cannot grow indefinitely when many unique keys accumulate over time.
+// The interval is unref'd so it does not prevent the process from exiting.
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+const cleanupTimer = setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of store) {
+    if (now >= entry.resetAt) {
+      store.delete(key);
+    }
+  }
+}, CLEANUP_INTERVAL_MS);
+
+// Allow Node.js to exit cleanly even if this timer is still pending
+if (cleanupTimer.unref) {
+  cleanupTimer.unref();
+}
+
 export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
@@ -25,9 +43,14 @@ export interface RateLimitResult {
 /**
  * Check whether `key` is within the allowed rate.
  *
+ * Uses a fixed window strategy: each key gets a window of `windowMs`
+ * milliseconds starting from the first request. The counter resets
+ * when the window expires. A new window is created on the next request
+ * after expiry.
+ *
  * @param key      Unique key for this rate-limit bucket, e.g. `"endpoint:ip"`.
  * @param limit    Maximum number of requests allowed within `windowMs`.
- * @param windowMs Length of the sliding window in milliseconds.
+ * @param windowMs Length of the fixed window in milliseconds.
  */
 export function rateLimit(
   key: string,

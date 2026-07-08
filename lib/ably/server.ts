@@ -1,3 +1,4 @@
+import "server-only";
 import { Rest } from "ably";
 import { env } from "@/lib/env";
 

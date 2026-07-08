@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { getAblyClient } from "@/lib/ably/client";
 
 type AblyStatus = "connecting" | "connected" | "disconnected" | "failed";
@@ -9,6 +9,10 @@ type AblyStatus = "connecting" | "connected" | "disconnected" | "failed";
  * useAbly — client-side hook that returns the shared Ably client and its
  * current connection status.
  *
+ * Uses useSyncExternalStore to subscribe to Ably's connection state directly,
+ * avoiding any render-to-mount race that the previous useEffect+useState
+ * approach had.
+ *
  * - Does NOT close the shared client on unmount (it's a module-level singleton).
  * - Does clean up the connection state listener on unmount.
  * - Must only be used in Client Components (`"use client"`).
@@ -16,27 +20,21 @@ type AblyStatus = "connecting" | "connected" | "disconnected" | "failed";
 export function useAbly() {
   const client = getAblyClient();
 
-  const [status, setStatus] = useState<AblyStatus>(() => {
-    // Map the current Ably connection state to our status type
-    const state = client.connection.state;
-    return mapState(state);
-  });
-
-  useEffect(() => {
-    function handleStateChange(stateChange: { current: string }) {
-      setStatus(mapState(stateChange.current));
-    }
-
-    client.connection.on(handleStateChange);
-
-    // Sync initial state in case it changed between render and effect mount
-    setStatus(mapState(client.connection.state));
-
-    return () => {
-      // Only remove this specific listener; do NOT close the shared client
-      client.connection.off(handleStateChange);
-    };
-  }, [client]);
+  const status = useSyncExternalStore(
+    // subscribe: called by React to attach/detach the external store listener
+    (onStoreChange) => {
+      client.connection.on(onStoreChange);
+      return () => {
+        // Only remove this specific listener; do NOT close the shared client
+        client.connection.off(onStoreChange);
+      };
+    },
+    // getSnapshot: called on every render (and after each store notification)
+    // to derive the current value from the external store
+    () => mapState(client.connection.state),
+    // getServerSnapshot: SSR fallback — connection is always "connecting" server-side
+    () => "connecting" as AblyStatus
+  );
 
   return { client, status };
 }

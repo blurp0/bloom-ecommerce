@@ -1,6 +1,5 @@
 import { config } from "dotenv";
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 config();
@@ -435,8 +434,6 @@ async function main() {
     console.log("   Cleared existing data.");
 
     // ── Categories ───────────────────────────────────────
-    // Idempotent inserts (unique on Category.slug)
-    await prisma.category.deleteMany({});
 
     await prisma.category.createMany({
         data: CATEGORIES.map((cat) => ({
@@ -464,10 +461,7 @@ async function main() {
     console.log(`   Created ${CATEGORIES.length} categories.`);
 
     // ── Users ────────────────────────────────────────────
-
-    // ── Users ────────────────────────────────────────────
     // Idempotent inserts (unique on User.clerkId)
-    await prisma.user.deleteMany({});
 
     await prisma.user.createMany({
         data: [
