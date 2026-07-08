@@ -2,8 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { UploadParamsSchema } from "@/lib/validators/upload";
 import { generateUploadSignature } from "@/lib/cloudinary/upload";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
+  // 0. Rate limit — 10 requests per 60 s per IP
+  const ip = getClientIp(request);
+  const rl = rateLimit(`uploads/image:${ip}`, 10, 60_000);
+  if (!rl.allowed) {
+    const retryAfterSeconds = Math.ceil((rl.resetAt - Date.now()) / 1000);
+    return NextResponse.json(
+      { error: "Too many requests" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfterSeconds) },
+      }
+    );
+  }
+
   // 1. Authenticate the Clerk session
   const session = await auth();
   if (!session || !session.userId) {
