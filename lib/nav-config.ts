@@ -8,7 +8,7 @@ export const navLinks: NavLink[] = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Shop" },
     { href: "/occasions", label: "Occasions" },
-    { href: "/customization/custom-request", label: "Custom" },
+    { href: "/customization", label: "Custom" },
 ];
 
 export const bottomTabs: TabItem[] = [

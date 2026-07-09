@@ -99,7 +99,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     ? selectedVariant.price
     : product.basePrice;
 
-  const ctaHref = `/customization?productId=${product.id}`;
+  const ctaHref = `/customization/${product.id}`;
 
   return (
     <>

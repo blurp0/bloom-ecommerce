@@ -315,6 +315,35 @@
   }
 }
 
+/* ── Fly-to-Cart Animation ─────────────────────────────────────────────────── */
+/*
+ * Signature motion moment: when "Add to Cart" is clicked in the customization
+ * studio, a clone of the product image animates from its position toward the
+ * header cart icon. Uses CSS keyframe translate + scale + opacity.
+ *
+ * Suppressed by .reduce-motion and prefers-reduced-motion (see above).
+ */
+@keyframes fly-to-cart {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(var(--fly-x, 300px), var(--fly-y, -200px)) scale(0.3);
+    opacity: 0;
+  }
+}
+
+.fly-to-cart-clone {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+  animation: fly-to-cart 600ms ease-in-out forwards;
+}
+
 /* ── Clay Shadow Utilities ─────────────────────────────────────────────────── */
 /*
  * These utility classes express the claymorphism shadow scale from ui-ux-context.md.
