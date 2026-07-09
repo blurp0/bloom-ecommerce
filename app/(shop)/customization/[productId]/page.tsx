@@ -10,6 +10,7 @@ import type { StudioProductData } from "@/features/customization/components/Cust
 
 interface CustomizationPageParams {
   params: Promise<{ productId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 const customizationInclude = {
@@ -60,6 +61,13 @@ function toStudioData(product: ProductWithRelations): StudioProductData {
       name: a.name,
       price: Number(a.price),
       image: a.image,
+      slug: /message\s*card|greeting\s*card/i.test(a.name)
+        ? "message-card"
+        : undefined,
+      type: /message\s*card|greeting\s*card/i.test(a.name)
+        ? "message-card"
+        : undefined,
+      isMessageCard: /message\s*card|greeting\s*card/i.test(a.name),
     })),
     categoryName: product.category?.name,
     categorySlug: product.category?.slug,
@@ -92,11 +100,18 @@ export async function generateMetadata({
  */
 export default async function CustomizationPage({
   params,
+  searchParams,
 }: CustomizationPageParams) {
   const { productId } = await params;
   const raw = await fetchProduct(productId);
 
   if (!raw) notFound();
+
+  const resolvedSearchParams = await searchParams;
+  const initialVariantId =
+    typeof resolvedSearchParams?.variantId === "string"
+      ? resolvedSearchParams.variantId
+      : null;
 
   const product = toStudioData(raw);
 
@@ -162,7 +177,7 @@ export default async function CustomizationPage({
       </div>
 
       {/* Customization Studio */}
-      <CustomizationStudio product={product} />
+      <CustomizationStudio product={product} initialVariantId={initialVariantId} />
     </div>
   );
 }

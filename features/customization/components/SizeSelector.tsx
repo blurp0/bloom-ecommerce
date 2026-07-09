@@ -114,7 +114,7 @@ export default function SizeSelector({ variants, basePrice }: SizeSelectorProps)
                     "inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full w-fit",
                     delta > 0
                       ? "bg-[var(--state-success)]/10 text-[var(--state-success)]"
-                      : "bg-[var(--state-warning)]/10 text-[var(--state-warning)]",
+                      : "bg-[var(--bg-elevated)] text-[var(--text-muted)]",
                   ].join(" ")}
                 >
                   {delta > 0 ? "+" : ""}

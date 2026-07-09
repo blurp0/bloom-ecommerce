@@ -70,7 +70,11 @@ const initialState: CustomizationState = {
 export const useCustomizationStore = create<CustomizationStore>((set) => ({
   ...initialState,
 
-  setProduct: (productId: string) => set({ productId }),
+  setProduct: (productId: string) =>
+    set((state) => {
+      if (state.productId === productId) return state;
+      return { ...initialState, productId };
+    }),
 
   setVariant: (variantId: string | null) => set({ selectedVariantId: variantId }),
 

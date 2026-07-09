@@ -102,7 +102,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     ? product.basePrice + selectedVariant.price
     : product.basePrice;
 
-  const ctaHref = `/customization/${product.id}`;
+  const ctaHref = `/customization/${product.id}${selectedVariant ? `?variantId=${selectedVariant.id}` : ""}`;
 
   return (
     <>

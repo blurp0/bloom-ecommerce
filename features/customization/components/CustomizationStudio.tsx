@@ -20,6 +20,9 @@ interface AddOnData {
   name: string;
   price: number;
   image?: string | null;
+  slug?: string | null;
+  type?: string | null;
+  isMessageCard?: boolean | null;
 }
 
 interface ProductImageData {
@@ -41,6 +44,7 @@ export interface StudioProductData {
 
 interface CustomizationStudioProps {
   product: StudioProductData;
+  initialVariantId?: string | null;
 }
 
 const STEPS = [
@@ -57,13 +61,23 @@ const STEPS = [
  * Single-column on mobile with sticky bottom summary bar.
  * Step wizard with progress indicator, back/next navigation.
  */
-export default function CustomizationStudio({ product }: CustomizationStudioProps) {
-  const { setProduct, selectedVariantId, setVariant } = useCustomizationStore();
-  const [currentStep, setCurrentStep] = useState(1);
+export default function CustomizationStudio({
+  product,
+  initialVariantId,
+}: CustomizationStudioProps) {
+  const setProduct = useCustomizationStore((s) => s.setProduct);
+  const selectedVariantId = useCustomizationStore((s) => s.selectedVariantId);
+  const setVariant = useCustomizationStore((s) => s.setVariant);
   const selectedAddOnIds = useCustomizationStore((s) => s.selectedAddOnIds);
+  const reset = useCustomizationStore((s) => s.reset);
+  const [currentStep, setCurrentStep] = useState(1);
 
-  const messageAddOn = product.addOns.find((addOn) =>
-    /message\s*card|greeting\s*card/i.test(addOn.name)
+  const messageAddOn = product.addOns.find(
+    (addOn) =>
+      addOn.isMessageCard === true ||
+      addOn.type === "message-card" ||
+      addOn.slug === "message-card" ||
+      addOn.slug === "greeting-card"
   );
 
   const shouldShowMessageStep = !!(
@@ -73,25 +87,28 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
   const hasVariants = product.variants.length > 0;
   const hasVariantSelected = !hasVariants || selectedVariantId !== null;
 
-  const isLastStep = currentStep === 4;
+  const displayStep = shouldShowMessageStep ? currentStep : currentStep === 3 ? 4 : currentStep;
+  const isLastStep = displayStep === 4;
 
-  // Initialize store with product ID when product changes
+  // Initialize store with product ID when product changes and reset the local step
   useEffect(() => {
+    setCurrentStep(1);
+    reset();
     setProduct(product.id);
-  }, [product.id, setProduct]);
+  }, [product.id, reset, setProduct]);
 
-  // Auto-select first variant once, only when none is selected
+  // Auto-select the preselected or first available variant once, only when none is selected
   useEffect(() => {
-    if (hasVariants && !selectedVariantId && product.variants.length > 0) {
-      setVariant(product.variants[0].id);
-    }
-  }, [hasVariants, selectedVariantId, setVariant, product.variants]);
+    if (!hasVariants || selectedVariantId) return;
 
-  useEffect(() => {
-    if (currentStep === 3 && !shouldShowMessageStep) {
-      setCurrentStep(4);
-    }
-  }, [currentStep, shouldShowMessageStep]);
+    const resolvedInitialVariantId =
+      initialVariantId && product.variants.some((variant) => variant.id === initialVariantId)
+        ? initialVariantId
+        : product.variants[0]?.id ?? null;
+
+    setVariant(resolvedInitialVariantId);
+  }, [hasVariants, initialVariantId, selectedVariantId, setVariant, product.variants]);
+
 
   const canGoNext = () => {
     if (currentStep === 1) return hasVariantSelected;
@@ -135,8 +152,8 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
       <nav aria-label="Customization steps" className="w-full">
         <ol className="flex items-center gap-0">
           {STEPS.map((step, index) => {
-            const isCompleted = currentStep > step.number;
-            const isCurrent = currentStep === step.number;
+            const isCompleted = displayStep > step.number;
+            const isCurrent = displayStep === step.number;
             const isLast = index === STEPS.length - 1;
 
             return (
@@ -199,7 +216,7 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
         {/* Left panel: scrollable options */}
         <div className="flex-1 flex flex-col gap-8 min-w-0 lg:max-w-3xl lg:mx-auto w-full">
           {/* Step 1: Size & Color */}
-          {currentStep === 1 && (
+          {displayStep === 1 && (
             <section className="flex flex-col gap-4">
               <h2 className="font-heading text-xl text-[var(--text-primary)]">
                 Choose Size
@@ -212,7 +229,7 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
           )}
 
           {/* Step 2: Add-Ons */}
-          {currentStep === 2 && (
+          {displayStep === 2 && (
             <section className="flex flex-col gap-4">
               <h2 className="font-heading text-xl text-[var(--text-primary)]">
                 Add Extras
@@ -222,7 +239,7 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
           )}
 
           {/* Step 3: Message Card */}
-          {currentStep === 3 && (
+          {displayStep === 3 && (
             <section className="flex flex-col gap-4">
               <h2 className="font-heading text-xl text-[var(--text-primary)]">
                 {shouldShowMessageStep ? "Add a Personal Message" : "Optional Message Card"}
@@ -238,7 +255,7 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
           )}
 
           {/* Step 4: Order Summary */}
-          {currentStep === 4 && (
+          {displayStep === 4 && (
             <section className="flex flex-col gap-4">
               <h2 className="font-heading text-xl text-[var(--text-primary)]">
                 Order Summary
@@ -267,14 +284,14 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
             <button
               type="button"
               onClick={handleBack}
-              disabled={currentStep === 1}
+              disabled={displayStep === 1}
               className={[
                 "flex items-center gap-1.5 px-4 py-2 rounded-[12px]",
                 "text-sm font-medium",
                 "transition-all duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
                 "cursor-pointer",
-                currentStep === 1
+                displayStep === 1
                   ? "opacity-30 cursor-not-allowed text-[var(--text-muted)]"
                   : "text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]",
               ].join(" ")}
@@ -284,7 +301,7 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
               <span>Back</span>
             </button>
 
-            {currentStep < STEPS.length ? (
+            {displayStep < STEPS.length ? (
               <button
                 type="button"
                 onClick={handleNext}
