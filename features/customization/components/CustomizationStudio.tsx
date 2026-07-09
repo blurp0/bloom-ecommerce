@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
 import SizeSelector from "./SizeSelector";
@@ -92,7 +92,7 @@ export default function CustomizationStudio({
   const displayStep = shouldShowMessageStep ? currentStep : currentStep === 3 ? 4 : currentStep;
   const isLastStep = displayStep === 4;
 
-  const fallbackReturnStep = useMemo(() => (shouldShowMessageStep ? 2 : 2), [shouldShowMessageStep]);
+  const fallbackReturnStep = 2;
 
   useEffect(() => {
     setProduct(product.id);
@@ -128,11 +128,6 @@ export default function CustomizationStudio({
         }
 
         const next = s + 1;
-
-        if (next === 3 && !shouldShowMessageStep) {
-          setReturnStep(2);
-          return 4;
-        }
 
         if (next === 4) {
           setReturnStep(s);
