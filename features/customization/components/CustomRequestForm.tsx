@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { CreateCustomRequestSchema } from "@/lib/validators/custom-request";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,9 +46,11 @@ const BUDGET_OPTIONS = [
 ] as const;
 
 type UploadState = {
-  status: "idle" | "uploading" | "failed" | "uploaded";
+  status: "empty" | "ready" | "uploading" | "failed" | "uploaded";
   error?: string;
-  url?: string;
+  file?: File;
+  previewUrl?: string; // object URL
+  url?: string; // cloudinary URL after upload
 };
 
 function getImageError(file: File): string | null {
@@ -78,8 +80,24 @@ async function uploadToCloudinary(file: File): Promise<string> {
   return json.url;
 }
 
+function revokeObjectUrl(url?: string) {
+  if (!url) return;
+  if (!url.startsWith("blob:")) return;
+  try {
+    URL.revokeObjectURL(url);
+  } catch {
+    // ignore
+  }
+}
+
+// compat alias used by submit reset
+function clearPreviewUrl(url?: string) {
+  revokeObjectUrl(url);
+}
+
 export function CustomRequestForm() {
   const schema = useMemo(() => CreateCustomRequestSchema, []);
+
   const [values, setValues] = useState<{
     flowers: string;
     colors: string;
@@ -87,7 +105,7 @@ export function CustomRequestForm() {
     occasion?: string;
     budget?: string;
     instructions?: string;
-    referenceImages: string[];
+    referenceImages: string[]; // only populated on submit after uploading
   }>({
     flowers: "",
     colors: "",
@@ -99,9 +117,9 @@ export function CustomRequestForm() {
   });
 
   const [uploadStates, setUploadStates] = useState<UploadState[]>([
-    { status: "idle" },
-    { status: "idle" },
-    { status: "idle" },
+    { status: "empty" },
+    { status: "empty" },
+    { status: "empty" },
   ]);
 
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>({});
@@ -110,18 +128,19 @@ export function CustomRequestForm() {
 
   const isAnyUploading = uploadStates.some((s) => s.status === "uploading");
 
-  function setField<K extends FieldKey>(key: K, value: (typeof values)[Extract<K, keyof typeof values>]) {
+  function setField<K extends FieldKey>(
+    key: K,
+    value: (typeof values)[Extract<K, keyof typeof values>]
+  ) {
     setValues((prev) => ({ ...prev, [key]: value } as any));
   }
 
   function validateOnBlur(key: FieldKey) {
     const candidate = {
       ...values,
-      // schema expects instructions optional; if empty string, pass undefined
       instructions: values.instructions?.trim() ? values.instructions : undefined,
       occasion: values.occasion ? values.occasion : undefined,
       budget: values.budget ? values.budget : undefined,
-      // ensure referenceImages always array
       referenceImages: values.referenceImages ?? [],
     };
 
@@ -135,11 +154,7 @@ export function CustomRequestForm() {
       return;
     }
 
-    const issue = result.error.issues.find((i) => {
-      const path = i.path[0];
-      return String(path) === key;
-    });
-
+    const issue = result.error.issues.find((i) => String(i.path[0]) === key);
     if (issue) {
       setFieldErrors((prev) => ({ ...prev, [key]: issue.message }));
     } else {
@@ -151,14 +166,27 @@ export function CustomRequestForm() {
     }
   }
 
-  async function handleImagesSelected(files: FileList | null) {
+  function clearImageSlot(slotIndex: number) {
+    setUploadStates((prev) => {
+      const next = [...prev];
+      revokeObjectUrl(next[slotIndex]?.previewUrl);
+      next[slotIndex] = { status: "empty" };
+      return next;
+    });
+
+    // Since we defer cloudinary uploads until submit, referenceImages should be empty.
+    setValues((prev) => ({ ...prev, referenceImages: [] }));
+    setFieldErrors((prev) => ({ ...prev, referenceImages: undefined }));
+  }
+
+  function handleImagesSelected(files: FileList | null) {
     setSubmitError(null);
 
     if (!files || files.length === 0) return;
 
     const incoming = Array.from(files).slice(0, 3);
 
-    // Validate file types and sizes first (fast fail per spec)
+    // Validate file types and sizes first (fast fail)
     const validationErrors: string[] = [];
     for (const f of incoming) {
       const err = getImageError(f);
@@ -169,78 +197,95 @@ export function CustomRequestForm() {
       return;
     }
 
-    // Reset uploads and urls
-    setUploadStates([{ status: "idle" }, { status: "idle" }, { status: "idle" }]);
+    const emptySlots = uploadStates
+      .map((s, idx) => ({ s, idx }))
+      .filter(({ s }) => s.status === "empty" || s.status === "failed")
+      .slice(0, incoming.length)
+      .map(({ idx }) => idx);
+
+    if (emptySlots.length === 0) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        referenceImages: "All 3 image slots are already filled.",
+      }));
+      return;
+    }
+
+    // Only store files + previews (no cloudinary calls here).
+    setUploadStates((prev) => {
+      const next = [...prev];
+      for (let j = 0; j < emptySlots.length; j++) {
+        const slotIndex = emptySlots[j];
+        const file = incoming[j];
+
+        revokeObjectUrl(next[slotIndex]?.previewUrl);
+
+        next[slotIndex] = {
+          status: "ready",
+          file,
+          previewUrl: URL.createObjectURL(file),
+          error: undefined,
+          url: undefined,
+        };
+      }
+      return next;
+    });
+
     setValues((prev) => ({ ...prev, referenceImages: [] }));
     setFieldErrors((prev) => ({ ...prev, referenceImages: undefined }));
-
-    const nextUrls: string[] = [];
-    for (let i = 0; i < incoming.length; i++) {
-      const f = incoming[i];
-
-      setUploadStates((prev) => {
-        const copy = [...prev];
-        copy[i] = { status: "uploading" };
-        return copy;
-      });
-
-      try {
-        const url = await uploadToCloudinary(f);
-        nextUrls.push(url);
-        setUploadStates((prev) => {
-          const copy = [...prev];
-          copy[i] = { status: "uploaded", url };
-          return copy;
-        });
-        setValues((prev) => ({ ...prev, referenceImages: nextUrls }));
-      } catch (e: any) {
-        const msg = e?.message || "Reference image upload failed";
-        setUploadStates((prev) => {
-          const copy = [...prev];
-          copy[i] = { status: "failed", error: msg };
-          return copy;
-        });
-        setFieldErrors((prev) => ({ ...prev, referenceImages: msg }));
-        return;
-      }
-    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
 
-    // If any upload failed or still uploading, block submit
     if (isAnyUploading) return;
-    const failed = uploadStates.some((s) => s.status === "failed");
-    if (failed) {
+
+    const hasFailed = uploadStates.some((s) => s.status === "failed");
+    if (hasFailed) {
       setSubmitError("Please fix image upload errors before submitting.");
       return;
     }
 
-    const candidate = {
-      flowers: values.flowers,
-      colors: values.colors,
-      size: values.size,
-      occasion: values.occasion ? values.occasion : undefined,
-      budget: values.budget ? values.budget : undefined,
-      instructions: values.instructions?.trim() ? values.instructions : undefined,
-      referenceImages: values.referenceImages ?? [],
-    };
-
-    const result = schema.safeParse(candidate);
-    if (!result.success) {
-      const mapped: Partial<Record<FieldKey, string>> = {};
-      for (const issue of result.error.issues) {
-        const key = String(issue.path[0]) as FieldKey;
-        if (!mapped[key]) mapped[key] = issue.message;
-      }
-      setFieldErrors(mapped);
-      return;
-    }
+    const filesToUpload = uploadStates
+      .map((s) => (s.status === "ready" && s.file ? s.file : null))
+      .filter((f): f is File => Boolean(f));
 
     setIsSubmitting(true);
     try {
+      setUploadStates((prev) =>
+        prev.map((s) => (s.status === "ready" ? { ...s, status: "uploading" } : s))
+      );
+
+      const referenceImages: string[] = [];
+      const files = filesToUpload;
+
+      for (let i = 0; i < files.length; i++) {
+        const url = await uploadToCloudinary(files[i]);
+        referenceImages.push(url);
+      }
+
+      const candidate = {
+        flowers: values.flowers,
+        colors: values.colors,
+        size: values.size,
+        occasion: values.occasion ? values.occasion : undefined,
+        budget: values.budget ? values.budget : undefined,
+        instructions: values.instructions?.trim() ? values.instructions : undefined,
+        referenceImages,
+      };
+
+      const result = schema.safeParse(candidate);
+      if (!result.success) {
+        const mapped: Partial<Record<FieldKey, string>> = {};
+        for (const issue of result.error.issues) {
+          const key = String(issue.path[0]) as FieldKey;
+          if (!mapped[key]) mapped[key] = issue.message;
+        }
+        setFieldErrors(mapped);
+        return;
+      }
+
       const res = await fetch("/api/custom-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -254,7 +299,6 @@ export function CustomRequestForm() {
         return;
       }
 
-      // Reset after success
       setValues({
         flowers: "",
         colors: "",
@@ -264,7 +308,10 @@ export function CustomRequestForm() {
         instructions: "",
         referenceImages: [],
       });
-      setUploadStates([{ status: "idle" }, { status: "idle" }, { status: "idle" }]);
+      setUploadStates((prev) => {
+        prev.forEach((s) => revokeObjectUrl(s.previewUrl));
+        return [{ status: "empty" }, { status: "empty" }, { status: "empty" }];
+      });
       setFieldErrors({});
     } finally {
       setIsSubmitting(false);
@@ -292,7 +339,9 @@ export function CustomRequestForm() {
             onBlur={() => validateOnBlur("flowers")}
             placeholder="e.g., roses, lilies, peonies..."
           />
-          {fieldErrors.flowers && <p className="text-sm text-destructive">{fieldErrors.flowers}</p>}
+          {fieldErrors.flowers && (
+            <p className="text-sm text-destructive">{fieldErrors.flowers}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -304,19 +353,20 @@ export function CustomRequestForm() {
             onBlur={() => validateOnBlur("colors")}
             placeholder="e.g., blush pink, ivory, sage..."
           />
-          {fieldErrors.colors && <p className="text-sm text-destructive">{fieldErrors.colors}</p>}
+          {fieldErrors.colors && (
+            <p className="text-sm text-destructive">{fieldErrors.colors}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label>Size *</Label>
           <Select
             value={values.size}
-              onValueChange={(v) => {
-                if (!v) return;
-                setField("size", v as string);
-                setTimeout(() => validateOnBlur("size"), 0);
-              }}
-            onOpenChange={() => {}}
+            onValueChange={(v) => {
+              if (!v) return;
+              setField("size", v as string);
+              setTimeout(() => validateOnBlur("size"), 0);
+            }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select size" />
@@ -330,7 +380,6 @@ export function CustomRequestForm() {
             </SelectContent>
           </Select>
           {fieldErrors.size && <p className="text-sm text-destructive">{fieldErrors.size}</p>}
-          {/* Spec: on-blur validation; Select doesn't have blur; validate on value change by calling validateOnBlur */}
           <div className="hidden" />
         </div>
 
@@ -356,7 +405,9 @@ export function CustomRequestForm() {
                 ))}
               </SelectContent>
             </Select>
-            {fieldErrors.occasion && <p className="text-sm text-destructive">{fieldErrors.occasion}</p>}
+            {fieldErrors.occasion && (
+              <p className="text-sm text-destructive">{fieldErrors.occasion}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -380,7 +431,9 @@ export function CustomRequestForm() {
                 ))}
               </SelectContent>
             </Select>
-            {fieldErrors.budget && <p className="text-sm text-destructive">{fieldErrors.budget}</p>}
+            {fieldErrors.budget && (
+              <p className="text-sm text-destructive">{fieldErrors.budget}</p>
+            )}
           </div>
         </div>
 
@@ -394,17 +447,59 @@ export function CustomRequestForm() {
             onChange={(e) => handleImagesSelected(e.target.files)}
             disabled={isAnyUploading || isSubmitting}
           />
-          {referenceImagesError && <p className="text-sm text-destructive">{referenceImagesError}</p>}
+          {referenceImagesError && (
+            <p className="text-sm text-destructive">{referenceImagesError}</p>
+          )}
 
           <div className="mt-2 grid grid-cols-3 gap-2">
-            {uploadStates.map((s, idx) => (
-              <div key={idx} className="rounded-md border p-2 text-xs">
-                {s.status === "idle" && <span className="text-muted-foreground">Empty</span>}
-                {s.status === "uploading" && <span>Uploading...</span>}
-                {s.status === "uploaded" && <span className="text-success">Uploaded</span>}
-                {s.status === "failed" && <span className="text-destructive">Failed</span>}
-              </div>
-            ))}
+            {uploadStates.map((s, idx) => {
+              const showPreview = s.status !== "empty" && (s.previewUrl || s.url);
+              const imgSrc = s.previewUrl ?? s.url;
+              return (
+                <div key={idx} className="rounded-md border p-2 text-xs">
+                  {s.status === "empty" && <span className="text-muted-foreground">Empty</span>}
+                  {s.status === "uploading" && <span>Uploading...</span>}
+
+                  {(s.status === "ready" || s.status === "uploaded" || showPreview) && (
+                    <div className="space-y-1">
+                      <span className="text-success">Uploaded</span>
+                      {imgSrc && (
+                        <div className="relative h-64 w-full overflow-hidden rounded bg-muted">
+                          <img
+                            src={imgSrc}
+                            alt={`Uploaded reference ${idx + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => clearImageSlot(idx)}
+                            className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                            aria-label={`Remove image ${idx + 1}`}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {s.status === "failed" && (
+                    <div className="space-y-1">
+                      <span className="text-destructive">
+                        Failed{s.error ? `: ${s.error}` : ""}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => clearImageSlot(idx)}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -418,7 +513,9 @@ export function CustomRequestForm() {
             placeholder="Any notes for your bouquet..."
             rows={4}
           />
-          {fieldErrors.instructions && <p className="text-sm text-destructive">{fieldErrors.instructions}</p>}
+          {fieldErrors.instructions && (
+            <p className="text-sm text-destructive">{fieldErrors.instructions}</p>
+          )}
         </div>
 
         {submitError && <p className="text-sm font-medium text-destructive">{submitError}</p>}
