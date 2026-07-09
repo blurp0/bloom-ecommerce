@@ -83,8 +83,47 @@ export default function CustomizationSummary({
   const selectedAddOnObjects = addOns.filter((a) => selectedAddOnIds.includes(a.id));
   const thumbnail = images[0];
 
-  const handleAddToCart = useCallback(() => {
+  const handleAddToCart = useCallback(async () => {
     if (isAddToCartDisabled) return;
+
+    setIsAnimating(true);
+
+    try {
+      // Build the payload for POST /api/cart
+      const payload: Record<string, unknown> = {
+        productId: _productId,
+        quantity,
+        variantId: selectedVariantId ?? undefined,
+      };
+
+      const customization: Record<string, unknown> = {};
+      if (selectedVariantId) {
+        customization.size = selectedVariant?.name ?? undefined;
+      }
+      if (selectedAddOnIds.length > 0) {
+        customization.addOns = selectedAddOnIds;
+      }
+      if (messageCardText) {
+        customization.messageCard = messageCardText;
+      }
+      if (Object.keys(customization).length > 0) {
+        payload.customization = customization;
+      }
+
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        console.error("Add to cart failed:", errBody?.error ?? res.statusText);
+        // Still reset and show animation on error to avoid broken UI state
+      }
+    } catch (err) {
+      console.error("Add to cart error:", err);
+    }
 
     const html = document.documentElement;
     const prefersReducedMotion =
@@ -92,22 +131,18 @@ export default function CustomizationSummary({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (prefersReducedMotion) {
-      setIsAnimating(true);
       setTimeout(() => {
         reset();
         setIsAnimating(false);
       }, 300);
-      return;
+    } else {
+      // After animation completes (600ms), reset
+      setTimeout(() => {
+        reset();
+        setIsAnimating(false);
+      }, 600);
     }
-
-    setIsAnimating(true);
-
-    // After animation completes (600ms), reset
-    setTimeout(() => {
-      reset();
-      setIsAnimating(false);
-    }, 600);
-  }, [isAddToCartDisabled, reset]);
+  }, [isAddToCartDisabled, reset, _productId, quantity, selectedVariantId, selectedVariant, selectedAddOnIds, messageCardText]);
 
   const addOnLabels = selectedAddOnObjects.map((a) => a.name);
   const messagePreview = messageCardText
