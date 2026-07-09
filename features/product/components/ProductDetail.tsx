@@ -95,11 +95,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     product.variants[0] ?? null
   );
 
+  // Treat `variant.price` as a price adjustment relative to the product base price.
+  // This matches the customization studio's pricing model where the studio
+  // combines basePrice with the variant adjustment.
   const displayPrice = selectedVariant
-    ? selectedVariant.price
+    ? product.basePrice + selectedVariant.price
     : product.basePrice;
 
-  const ctaHref = `/customization?productId=${product.id}`;
+  const ctaHref = `/customization/${product.id}${selectedVariant ? `?variantId=${selectedVariant.id}&variantName=${encodeURIComponent(selectedVariant.name)}` : ""}`;
 
   return (
     <>
