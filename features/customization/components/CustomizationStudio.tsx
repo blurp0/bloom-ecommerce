@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
 import SizeSelector from "./SizeSelector";
@@ -45,6 +45,7 @@ export interface StudioProductData {
 interface CustomizationStudioProps {
   product: StudioProductData;
   initialVariantId?: string | null;
+  initialVariantName?: string | null;
 }
 
 const STEPS = [
@@ -64,13 +65,14 @@ const STEPS = [
 export default function CustomizationStudio({
   product,
   initialVariantId,
+  initialVariantName,
 }: CustomizationStudioProps) {
   const setProduct = useCustomizationStore((s) => s.setProduct);
   const selectedVariantId = useCustomizationStore((s) => s.selectedVariantId);
   const setVariant = useCustomizationStore((s) => s.setVariant);
   const selectedAddOnIds = useCustomizationStore((s) => s.selectedAddOnIds);
-  const reset = useCustomizationStore((s) => s.reset);
   const [currentStep, setCurrentStep] = useState(1);
+  const [returnStep, setReturnStep] = useState<number | null>(null);
 
   const messageAddOn = product.addOns.find(
     (addOn) =>
@@ -90,21 +92,22 @@ export default function CustomizationStudio({
   const displayStep = shouldShowMessageStep ? currentStep : currentStep === 3 ? 4 : currentStep;
   const isLastStep = displayStep === 4;
 
-  // Initialize store with product ID when product changes and reset the local step
+  const fallbackReturnStep = useMemo(() => (shouldShowMessageStep ? 2 : 2), [shouldShowMessageStep]);
+
   useEffect(() => {
-    setCurrentStep(1);
-    reset();
     setProduct(product.id);
-  }, [product.id, reset, setProduct]);
+  }, [product.id, setProduct]);
 
   // Auto-select the preselected or first available variant once, only when none is selected
   useEffect(() => {
     if (!hasVariants || selectedVariantId) return;
 
     const resolvedInitialVariantId =
-      initialVariantId && product.variants.some((variant) => variant.id === initialVariantId)
+      (initialVariantId && product.variants.some((variant) => variant.id === initialVariantId)
         ? initialVariantId
-        : product.variants[0]?.id ?? null;
+        : initialVariantName && product.variants.some((variant) => variant.name === initialVariantName)
+          ? product.variants.find((variant) => variant.name === initialVariantName)?.id ?? null
+          : product.variants[0]?.id ?? null);
 
     setVariant(resolvedInitialVariantId);
   }, [hasVariants, initialVariantId, selectedVariantId, setVariant, product.variants]);
@@ -119,14 +122,21 @@ export default function CustomizationStudio({
   const handleNext = () => {
     setCurrentStep((s) => {
       if (s < STEPS.length) {
-        // If currently at Step 2 and user has no add-ons, skip Message Card (Step 3) to go to Order Summary (Step 4)
-        if (s === 2 && !shouldShowMessageStep) return 4;
+        if (s === 2 && !shouldShowMessageStep) {
+          setReturnStep(2);
+          return 4;
+        }
 
-        // Otherwise normal increment
         const next = s + 1;
 
-        // If we somehow are on Step 3 but shouldShowMessageStep is false, skip to Step 4
-        if (next === 3 && !shouldShowMessageStep) return 4;
+        if (next === 3 && !shouldShowMessageStep) {
+          setReturnStep(2);
+          return 4;
+        }
+
+        if (next === 4) {
+          setReturnStep(s);
+        }
 
         return Math.min(next, STEPS.length);
       }
@@ -137,8 +147,9 @@ export default function CustomizationStudio({
   const handleBack = () => {
     setCurrentStep((s) => {
       if (s > 1) {
-        // If currently at Order Summary (Step 4) and we're skipping Message Card, back should go to Step 2
-        if (s === 4 && !shouldShowMessageStep) return 2;
+        if (s === 4) {
+          return returnStep ?? fallbackReturnStep;
+        }
 
         return s - 1;
       }

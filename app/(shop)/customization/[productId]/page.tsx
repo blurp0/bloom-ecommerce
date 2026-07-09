@@ -112,6 +112,10 @@ export default async function CustomizationPage({
     typeof resolvedSearchParams?.variantId === "string"
       ? resolvedSearchParams.variantId
       : null;
+  const initialVariantName =
+    typeof resolvedSearchParams?.variantName === "string"
+      ? resolvedSearchParams.variantName
+      : null;
 
   const product = toStudioData(raw);
 
@@ -177,7 +181,12 @@ export default async function CustomizationPage({
       </div>
 
       {/* Customization Studio */}
-      <CustomizationStudio product={product} initialVariantId={initialVariantId} />
+      <CustomizationStudio
+        key={product.id}
+        product={product}
+        initialVariantId={initialVariantId ?? null}
+        initialVariantName={initialVariantName}
+      />
     </div>
   );
 }
