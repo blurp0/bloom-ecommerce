@@ -8,8 +8,6 @@ interface VariantData {
   id: string;
   name: string;
   price: number;
-  /** Optional color attribute for swatch display */
-  color?: string;
 }
 
 interface SizeSelectorProps {
@@ -74,7 +72,8 @@ export default function SizeSelector({ variants, basePrice }: SizeSelectorProps)
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {variants.map((variant) => {
           const isSelected = selectedVariantId === variant.id;
-          const delta = variant.price - basePrice;
+          // `variants[*].price` is treated as a price adjustment relative to base.
+          const delta = variant.price;
 
           return (
             <button
@@ -103,23 +102,9 @@ export default function SizeSelector({ variants, basePrice }: SizeSelectorProps)
                 {variant.name}
               </span>
 
-              {/* Color swatch hint if available */}
-              {variant.color && (
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-4 h-4 rounded-full border border-[var(--border-default)]"
-                    style={{ backgroundColor: variant.color }}
-                    aria-hidden="true"
-                  />
-                  <span className="text-xs text-[var(--text-muted)]">
-                    {variant.color}
-                  </span>
-                </div>
-              )}
-
               {/* Price */}
               <span className="text-lg font-bold text-[var(--accent-secondary)]">
-                {formatPrice(variant.price)}
+                {formatPrice(basePrice + variant.price)}
               </span>
 
               {/* Price delta badge */}

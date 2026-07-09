@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState, useCallback } from "react";
 import { Minus, Plus, ShoppingCart, ImageIcon } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
-import { formatPrice, computePrice } from "@/features/customization/utils/pricing";
+import { formatPrice, computePrice, computeLineTotal } from "@/features/customization/utils/pricing";
 
 interface VariantData {
   id: string;
@@ -65,14 +66,16 @@ export default function CustomizationSummary({
     ? variants.find((v) => v.id === selectedVariantId)
     : undefined;
 
+  // `variants[*].price` is treated as a variant price *adjustment* relative to base.
+  // (PDP and studio must agree on this meaning.)
   const unitPrice = computePrice(
     basePrice,
-    selectedVariant ? selectedVariant.price - basePrice : null,
+    selectedVariant ? selectedVariant.price : null,
     selectedAddOnIds
       .map((id) => addOns.find((a) => a.id === id)?.price ?? 0)
       .filter((p) => p > 0)
   );
-  const lineTotal = computePrice(unitPrice, null, Array(quantity - 1).fill(unitPrice));
+  const lineTotal = computeLineTotal(unitPrice, quantity);
 
   const hasVariantSelected = !hasVariants || selectedVariantId !== null;
   const isAddToCartDisabled = !hasVariantSelected;
@@ -130,9 +133,11 @@ export default function CustomizationSummary({
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0 w-14 h-14 rounded-[12px] bg-[var(--bg-elevated)] overflow-hidden flex items-center justify-center">
             {thumbnail ? (
-              <img
+              <Image
                 src={thumbnail.url}
                 alt={thumbnail.alt ?? productName}
+                width={56}
+                height={56}
                 className="w-full h-full object-cover"
               />
             ) : (

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma/client";
+import { Prisma } from "@prisma/client";
 import type { CustomRequestStatus, ProposalStatus } from "@prisma/client";
 
 export async function resolveProposal(
@@ -69,7 +70,22 @@ export async function resolveProposal(
     }
 
     return NextResponse.json({ data: { status: nextStatus } }, { status: 200 });
-  } catch {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  } catch (err) {
+    // Prisma "record not found" / lost-update during guarded update can surface as P2025.
+    // Map that concurrency case to the same 409 used for the explicit state-check path.
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      return NextResponse.json(
+        { error: "Request is not in a proposable state" },
+        { status: 409 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

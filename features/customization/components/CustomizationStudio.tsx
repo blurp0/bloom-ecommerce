@@ -44,9 +44,10 @@ interface CustomizationStudioProps {
 }
 
 const STEPS = [
-  { number: 1, label: "Size & Color" },
-  { number: 2, label: "Add-Ons" },
-  { number: 3, label: "Message Card" },
+  { number: 1, label: "Select the Size of the Bouquet" },
+  { number: 2, label: "Decide which add ons to include" },
+  { number: 3, label: "Write the Message Card" },
+  { number: 4, label: "Review the Order" },
 ] as const;
 
 /**
@@ -59,9 +60,20 @@ const STEPS = [
 export default function CustomizationStudio({ product }: CustomizationStudioProps) {
   const { setProduct, selectedVariantId, setVariant } = useCustomizationStore();
   const [currentStep, setCurrentStep] = useState(1);
+  const selectedAddOnIds = useCustomizationStore((s) => s.selectedAddOnIds);
+
+  const messageAddOn = product.addOns.find((addOn) =>
+    /message\s*card|greeting\s*card/i.test(addOn.name)
+  );
+
+  const shouldShowMessageStep = !!(
+    messageAddOn && selectedAddOnIds.includes(messageAddOn.id)
+  );
 
   const hasVariants = product.variants.length > 0;
   const hasVariantSelected = !hasVariants || selectedVariantId !== null;
+
+  const isLastStep = currentStep === 4;
 
   // Initialize store with product ID when product changes
   useEffect(() => {
@@ -75,21 +87,46 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
     }
   }, [hasVariants, selectedVariantId, setVariant, product.variants]);
 
+  useEffect(() => {
+    if (currentStep === 3 && !shouldShowMessageStep) {
+      setCurrentStep(4);
+    }
+  }, [currentStep, shouldShowMessageStep]);
+
   const canGoNext = () => {
     if (currentStep === 1) return hasVariantSelected;
-    return true; // Steps 2 and 3 are optional
+    // Step 2 always allowed; Step 3 is conditional via shouldShowMessageStep
+    return true;
   };
 
   const handleNext = () => {
-    if (currentStep < STEPS.length) {
-      setCurrentStep((s) => s + 1);
-    }
+    setCurrentStep((s) => {
+      if (s < STEPS.length) {
+        // If currently at Step 2 and user has no add-ons, skip Message Card (Step 3) to go to Order Summary (Step 4)
+        if (s === 2 && !shouldShowMessageStep) return 4;
+
+        // Otherwise normal increment
+        const next = s + 1;
+
+        // If we somehow are on Step 3 but shouldShowMessageStep is false, skip to Step 4
+        if (next === 3 && !shouldShowMessageStep) return 4;
+
+        return Math.min(next, STEPS.length);
+      }
+      return s;
+    });
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep((s) => s - 1);
-    }
+    setCurrentStep((s) => {
+      if (s > 1) {
+        // If currently at Order Summary (Step 4) and we're skipping Message Card, back should go to Step 2
+        if (s === 4 && !shouldShowMessageStep) return 2;
+
+        return s - 1;
+      }
+      return s;
+    });
   };
 
   return (
@@ -158,14 +195,14 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
       </nav>
 
       {/* Main layout: left options + right summary (desktop) */}
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+      <div className="flex flex-col gap-8 lg:gap-12">
         {/* Left panel: scrollable options */}
-        <div className="flex-1 flex flex-col gap-8 min-w-0">
+        <div className="flex-1 flex flex-col gap-8 min-w-0 lg:max-w-3xl lg:mx-auto w-full">
           {/* Step 1: Size & Color */}
           {currentStep === 1 && (
             <section className="flex flex-col gap-4">
               <h2 className="font-heading text-xl text-[var(--text-primary)]">
-                Choose Size & Color
+                Choose Size
               </h2>
               <SizeSelector
                 variants={product.variants}
@@ -188,9 +225,40 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
           {currentStep === 3 && (
             <section className="flex flex-col gap-4">
               <h2 className="font-heading text-xl text-[var(--text-primary)]">
-                Add a Personal Message
+                {shouldShowMessageStep ? "Add a Personal Message" : "Optional Message Card"}
               </h2>
-              <MessageCardInput />
+              {shouldShowMessageStep ? (
+                <MessageCardInput />
+              ) : (
+                <div className="rounded-[16px] border border-[var(--border-default)] bg-[var(--bg-elevated)] p-4 text-sm text-[var(--text-muted)]">
+                  Add the greeting card add-on to include a personal note, or continue to review your bouquet.
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Step 4: Order Summary */}
+          {currentStep === 4 && (
+            <section className="flex flex-col gap-4">
+              <h2 className="font-heading text-xl text-[var(--text-primary)]">
+                Order Summary
+              </h2>
+              <div className="text-sm text-[var(--text-muted)]">
+                Review your selections below.
+              </div>
+              <div className="flex justify-center pt-2">
+                <div className="w-full max-w-md">
+                  <CustomizationSummary
+                    productId={product.id}
+                    productName={product.name}
+                    basePrice={product.basePrice}
+                    variants={product.variants}
+                    addOns={product.addOns}
+                    images={product.images}
+                    hasVariants={hasVariants}
+                  />
+                </div>
+              </div>
             </section>
           )}
 
@@ -243,31 +311,6 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
           </div>
         </div>
 
-        {/* Right panel: sticky summary (desktop only, hidden on mobile) */}
-        <div className="hidden lg:block flex-shrink-0">
-          <CustomizationSummary
-            productId={product.id}
-            productName={product.name}
-            basePrice={product.basePrice}
-            variants={product.variants}
-            addOns={product.addOns}
-            images={product.images}
-            hasVariants={hasVariants}
-          />
-        </div>
-      </div>
-
-      {/* Mobile summary bar (visible only on mobile) */}
-      <div className="lg:hidden">
-        <CustomizationSummary
-          productId={product.id}
-          productName={product.name}
-          basePrice={product.basePrice}
-          variants={product.variants}
-          addOns={product.addOns}
-          images={product.images}
-          hasVariants={hasVariants}
-        />
       </div>
     </div>
   );
