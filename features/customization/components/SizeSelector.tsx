@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
+import { formatPrice } from "@/features/customization/utils/pricing";
 
 interface VariantData {
   id: string;
@@ -16,15 +17,6 @@ interface SizeSelectorProps {
   basePrice: number;
 }
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-}
-
 /**
  * SizeSelector — renders variant cards with name, price delta badge,
  * and a selected ring. Updates the store via `setVariant` on click.
@@ -33,7 +25,8 @@ function formatPrice(price: number): string {
  * indicating the base price.
  */
 export default function SizeSelector({ variants, basePrice }: SizeSelectorProps) {
-  const { selectedVariantId, setVariant } = useCustomizationStore();
+  const selectedVariantId = useCustomizationStore((s) => s.selectedVariantId);
+  const setVariant = useCustomizationStore((s) => s.setVariant);
 
   // No variants available — show default option
   if (variants.length === 0) {

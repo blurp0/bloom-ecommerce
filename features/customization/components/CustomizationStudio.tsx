@@ -63,15 +63,17 @@ export default function CustomizationStudio({ product }: CustomizationStudioProp
   const hasVariants = product.variants.length > 0;
   const hasVariantSelected = !hasVariants || selectedVariantId !== null;
 
-  // Initialize store with product ID on mount
+  // Initialize store with product ID when product changes
   useEffect(() => {
     setProduct(product.id);
+  }, [product.id, setProduct]);
 
-    // Auto-select first variant if none selected and variants exist
+  // Auto-select first variant once, only when none is selected
+  useEffect(() => {
     if (hasVariants && !selectedVariantId && product.variants.length > 0) {
       setVariant(product.variants[0].id);
     }
-  }, [product.id, hasVariants, selectedVariantId, setProduct, setVariant, product.variants]);
+  }, [hasVariants, selectedVariantId, setVariant, product.variants]);
 
   const canGoNext = () => {
     if (currentStep === 1) return hasVariantSelected;

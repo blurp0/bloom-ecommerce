@@ -44,11 +44,15 @@ function buildQueryString(params: ProductsParams): string {
  * Usage:
  *   const { data, isFetching, isLoading, error } = useProducts({ category: "crochet-bouquets", sort: "price_asc" });
  */
-export function useProducts(params: ProductsParams = {}) {
+export function useProducts(
+  params: ProductsParams = {},
+  options: { enabled?: boolean } = {}
+) {
   const queryString = buildQueryString(params);
 
   return useQuery<ProductsResponse>({
     queryKey: ["products", queryString],
+    enabled: options.enabled !== false,
     queryFn: async ({ signal }) => {
       const url = `/api/products?${queryString}`;
       // Wire the AbortSignal so stale requests are cancelled when the

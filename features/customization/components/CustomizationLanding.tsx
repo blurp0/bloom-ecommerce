@@ -5,15 +5,7 @@ import Image from "next/image";
 import { Star } from "lucide-react";
 import { useProducts } from "@/features/product/hooks/useProducts";
 import { SkeletonCardGrid } from "@/components/shared/Skeletons";
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-}
+import { formatPrice } from "@/features/customization/utils/pricing";
 
 /**
  * CustomizationLanding — fetches suggested products (featured, then all)
@@ -24,22 +16,38 @@ function formatPrice(price: number): string {
  * pre-loaded.
  */
 export default function CustomizationLanding() {
-  // Try featured products first; fall back to all products
-  const { data, isLoading } = useProducts({
-    featured: "true",
-    limit: "8",
-  });
+  const {
+    data: featuredData,
+    isLoading: featuredLoading,
+    isError: featuredError,
+  } = useProducts({ featured: "true", limit: "8" });
 
-  const { data: fallbackData } = useProducts({
-    limit: "8",
-  });
+  const featuredProducts = featuredData?.products ?? [];
+  const hasFeatured = featuredProducts.length > 0;
 
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- we want to show fallback if featured is empty
-  const products = (data?.products?.length ? data.products : fallbackData?.products) ?? [];
+  const {
+    data: fallbackData,
+    isLoading: fallbackLoading,
+    isError: fallbackError,
+  } = useProducts({ limit: "8" }, { enabled: !featuredLoading && !hasFeatured });
+
+  const isLoading = featuredLoading || (!hasFeatured && fallbackLoading);
 
   if (isLoading) {
     return <SkeletonCardGrid count={8} />;
   }
+
+  if (featuredError || fallbackError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <p className="text-base text-[var(--state-error)]">
+          Failed to load products. Please try again later.
+        </p>
+      </div>
+    );
+  }
+
+  const products = hasFeatured ? featuredProducts : (fallbackData?.products ?? []);
 
   if (products.length === 0) {
     return (

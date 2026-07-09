@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { Check, ImageIcon } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
+import { formatPrice } from "@/features/customization/utils/pricing";
 
 interface AddOnData {
   id: string;
@@ -14,22 +16,14 @@ interface AddOnToggleCardsProps {
   addOns: AddOnData[];
 }
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-}
-
 /**
  * AddOnToggleCards — grid of toggle cards for add-ons.
  * Each card shows image, name, price, and a checked state ring.
  * Toggles selection in the customization store on click.
  */
 export default function AddOnToggleCards({ addOns }: AddOnToggleCardsProps) {
-  const { selectedAddOnIds, toggleAddOn } = useCustomizationStore();
+  const selectedAddOnIds = useCustomizationStore((s) => s.selectedAddOnIds);
+  const toggleAddOn = useCustomizationStore((s) => s.toggleAddOn);
 
   if (addOns.length === 0) {
     return (
@@ -65,11 +59,12 @@ export default function AddOnToggleCards({ addOns }: AddOnToggleCardsProps) {
             {/* Image thumbnail */}
             <div className="flex-shrink-0 w-16 h-16 rounded-[12px] bg-[var(--bg-elevated)] overflow-hidden flex items-center justify-center">
               {addOn.image ? (
-                <img
+                <Image
                   src={addOn.image}
                   alt={addOn.name}
+                  width={64}
+                  height={64}
                   className="w-full h-full object-cover"
-                  loading="lazy"
                 />
               ) : (
                 <ImageIcon className="h-6 w-6 text-[var(--text-muted)]" aria-hidden="true" />

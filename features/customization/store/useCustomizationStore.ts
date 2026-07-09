@@ -2,6 +2,9 @@
 
 import { create } from "zustand";
 
+export const MESSAGE_CARD_MAX_CHARS = 200;
+const QUANTITY_MAX = 999;
+
 /**
  * Types for customization store actions and state.
  */
@@ -82,10 +85,10 @@ export const useCustomizationStore = create<CustomizationStore>((set) => ({
     }),
 
   setMessageCardText: (text: string) =>
-    set({ messageCardText: text.length > 200 ? text.slice(0, 200) : text }),
+    set({ messageCardText: text.length > MESSAGE_CARD_MAX_CHARS ? text.slice(0, MESSAGE_CARD_MAX_CHARS) : text }),
 
   setQuantity: (n: number) => {
-    if (n < 1) return;
+    if (!Number.isInteger(n) || n < 1 || n > QUANTITY_MAX) return;
     set({ quantity: n });
   },
 

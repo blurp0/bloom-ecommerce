@@ -135,9 +135,10 @@ export function CustomRequestForm() {
     setValues((prev) => ({ ...prev, [key]: value } as any));
   }
 
-  function validateOnBlur(key: FieldKey) {
+  function validateOnBlur(key: FieldKey, overrideValue?: string) {
     const candidate = {
       ...values,
+      ...(overrideValue !== undefined ? { [key]: overrideValue } : {}),
       instructions: values.instructions?.trim() ? values.instructions : undefined,
       occasion: values.occasion ? values.occasion : undefined,
       budget: values.budget ? values.budget : undefined,
@@ -261,9 +262,26 @@ export function CustomRequestForm() {
       const files = filesToUpload;
 
       for (let i = 0; i < files.length; i++) {
-        const url = await uploadToCloudinary(files[i]);
+        let url: string;
+        try {
+          url = await uploadToCloudinary(files[i]);
+        } catch (uploadErr) {
+          const msg = uploadErr instanceof Error ? uploadErr.message : "Image upload failed";
+          setUploadStates((prev) =>
+            prev.map((s) =>
+              s.status === "uploading" ? { ...s, status: "failed", error: msg } : s
+            )
+          );
+          setSubmitError(msg);
+          return;
+        }
         referenceImages.push(url);
       }
+
+      // Mark all uploading slots as uploaded before validation
+      setUploadStates((prev) =>
+        prev.map((s) => (s.status === "uploading" ? { ...s, status: "uploaded" } : s))
+      );
 
       const candidate = {
         flowers: values.flowers,
@@ -309,7 +327,7 @@ export function CustomRequestForm() {
         referenceImages: [],
       });
       setUploadStates((prev) => {
-        prev.forEach((s) => revokeObjectUrl(s.previewUrl));
+        prev.forEach((s) => clearPreviewUrl(s.previewUrl));
         return [{ status: "empty" }, { status: "empty" }, { status: "empty" }];
       });
       setFieldErrors({});
@@ -365,7 +383,7 @@ export function CustomRequestForm() {
             onValueChange={(v) => {
               if (!v) return;
               setField("size", v as string);
-              setTimeout(() => validateOnBlur("size"), 0);
+              validateOnBlur("size", v);
             }}
           >
             <SelectTrigger>
@@ -391,7 +409,7 @@ export function CustomRequestForm() {
               onValueChange={(v) => {
                 if (!v) return;
                 setField("occasion", v as string);
-                setTimeout(() => validateOnBlur("occasion"), 0);
+                validateOnBlur("occasion", v);
               }}
             >
               <SelectTrigger>
@@ -417,7 +435,7 @@ export function CustomRequestForm() {
               onValueChange={(v) => {
                 if (!v) return;
                 setField("budget", v as string);
-                setTimeout(() => validateOnBlur("budget"), 0);
+                validateOnBlur("budget", v);
               }}
             >
               <SelectTrigger>

@@ -1,4 +1,16 @@
 /**
+ * Format a price in Philippine Peso (PHP).
+ */
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price);
+}
+
+/**
  * Compute the unit price for a customized product.
  *
  * @param basePrice - The product's base price

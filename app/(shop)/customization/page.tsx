@@ -1,9 +1,7 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles, ArrowRight } from "lucide-react";
 import CustomizationLanding from "@/features/customization/components/CustomizationLanding";
-import { SkeletonCardGrid } from "@/components/shared/Skeletons";
 
 export const metadata: Metadata = {
   title: "Customize a Bouquet | Bloom & Bind",
@@ -74,9 +72,7 @@ export default function CustomizationLandingPage() {
       </div>
 
       {/* Suggested products grid */}
-      <Suspense fallback={<SkeletonCardGrid count={8} />}>
-        <CustomizationLanding />
-      </Suspense>
+      <CustomizationLanding />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -159,16 +160,9 @@ export function ProposalView(props: ProposalViewProps) {
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isWorking}
-                      onClick={() => {
-                        // Dialog closes automatically on cancel; no-op here
-                      }}
-                    >
+                    <DialogClose render={<Button type="button" variant="outline" disabled={isWorking} />}>
                       Cancel
-                    </Button>
+                    </DialogClose>
                     <Button type="button" disabled={isWorking} onClick={handleApprove}>
                       {isWorking ? "Approving..." : "Confirm Approve"}
                     </Button>
@@ -190,16 +184,9 @@ export function ProposalView(props: ProposalViewProps) {
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isWorking}
-                      onClick={() => {
-                        // Dialog closes automatically on cancel; no-op here
-                      }}
-                    >
+                    <DialogClose render={<Button type="button" variant="outline" disabled={isWorking} />}>
                       Cancel
-                    </Button>
+                    </DialogClose>
                     <Button type="button" disabled={isWorking} onClick={handleReject}>
                       {isWorking ? "Rejecting..." : "Confirm Reject"}
                     </Button>

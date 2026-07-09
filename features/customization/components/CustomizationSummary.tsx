@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback } from "react";
 import { Minus, Plus, ShoppingCart, ImageIcon } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
+import { formatPrice, computePrice } from "@/features/customization/utils/pricing";
 
 interface VariantData {
   id: string;
@@ -31,44 +32,6 @@ interface CustomizationSummaryProps {
   hasVariants: boolean;
 }
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-}
-
-/**
- * Compute the unit price from the current store selections.
- */
-function computePreviewPrice(
-  basePrice: number,
-  selectedVariantId: string | null,
-  selectedAddOnIds: string[],
-  variants: VariantData[],
-  addOns: AddOnData[]
-): number {
-  let total = basePrice;
-
-  if (selectedVariantId) {
-    const variant = variants.find((v) => v.id === selectedVariantId);
-    if (variant) {
-      total += variant.price - basePrice;
-    }
-  }
-
-  for (const addOnId of selectedAddOnIds) {
-    const addOn = addOns.find((a) => a.id === addOnId);
-    if (addOn) {
-      total += addOn.price;
-    }
-  }
-
-  return Math.round(total * 100) / 100;
-}
-
 /**
  * CustomizationSummary — sticky panel (desktop right / mobile bottom bar).
  *
@@ -76,8 +39,8 @@ function computePreviewPrice(
  * truncated message preview, running price, quantity stepper, and
  * Add to Cart button.
  *
- * "Add to Cart" triggers a fly-to-cart animation: a clone of the product
- * image animates toward the header cart icon.
+ * "Add to Cart" shows an "Adding..." text swap while animating (600ms),
+ * then resets the store.
  */
 export default function CustomizationSummary({
   productId: _productId,
@@ -88,45 +51,44 @@ export default function CustomizationSummary({
   images,
   hasVariants,
 }: CustomizationSummaryProps) {
-  const {
-    selectedVariantId,
-    selectedAddOnIds,
-    messageCardText,
-    quantity,
-    setQuantity,
-    reset,
-  } = useCustomizationStore();
+  const selectedVariantId = useCustomizationStore((s) => s.selectedVariantId);
+  const selectedAddOnIds = useCustomizationStore((s) => s.selectedAddOnIds);
+  const messageCardText = useCustomizationStore((s) => s.messageCardText);
+  const quantity = useCustomizationStore((s) => s.quantity);
+  const setQuantity = useCustomizationStore((s) => s.setQuantity);
+  const reset = useCustomizationStore((s) => s.reset);
 
   const [isAnimating, setIsAnimating] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const unitPrice = computePreviewPrice(
+  const selectedVariant = selectedVariantId
+    ? variants.find((v) => v.id === selectedVariantId)
+    : undefined;
+
+  const unitPrice = computePrice(
     basePrice,
-    selectedVariantId,
-    selectedAddOnIds,
-    variants,
-    addOns
+    selectedVariant ? selectedVariant.price - basePrice : null,
+    selectedAddOnIds
+      .map((id) => addOns.find((a) => a.id === id)?.price ?? 0)
+      .filter((p) => p > 0)
   );
-  const lineTotal = Math.round(unitPrice * quantity * 100) / 100;
+  const lineTotal = computePrice(unitPrice, null, Array(quantity - 1).fill(unitPrice));
 
   const hasVariantSelected = !hasVariants || selectedVariantId !== null;
   const isAddToCartDisabled = !hasVariantSelected;
 
-  const selectedVariant = variants.find((v) => v.id === selectedVariantId);
   const selectedAddOnObjects = addOns.filter((a) => selectedAddOnIds.includes(a.id));
   const thumbnail = images[0];
 
   const handleAddToCart = useCallback(() => {
     if (isAddToCartDisabled) return;
 
-    // Check for .reduce-motion on <html>
     const html = document.documentElement;
     const prefersReducedMotion =
       html.classList.contains("reduce-motion") ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (prefersReducedMotion) {
-      // No animation — just trigger action and reset
       setIsAnimating(true);
       setTimeout(() => {
         reset();
@@ -135,17 +97,15 @@ export default function CustomizationSummary({
       return;
     }
 
-    // Trigger fly-to-cart animation
     setIsAnimating(true);
 
     // After animation completes (600ms), reset
     setTimeout(() => {
       reset();
       setIsAnimating(false);
-    }, 700);
+    }, 600);
   }, [isAddToCartDisabled, reset]);
 
-  // Build selected add-ons display text
   const addOnLabels = selectedAddOnObjects.map((a) => a.name);
   const messagePreview = messageCardText
     ? messageCardText.length > 60

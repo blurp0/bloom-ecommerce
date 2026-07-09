@@ -113,13 +113,14 @@ export async function POST(request: NextRequest) {
     // Keep folder consistent with signature generation
     generateUploadSignature(folder);
 
-    const uploadRes = await new Promise<{ secure_url: string; [k: string]: unknown }>(
+    const uploadRes = await new Promise<{ secure_url: string; public_id: string; format: string }>(
       (resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder },
           (error, result) => {
             if (error) return reject(error);
-            resolve(result as any);
+            if (!result) return reject(new Error("Cloudinary returned no result"));
+            resolve(result);
           }
         );
         uploadStream.end(buffer);

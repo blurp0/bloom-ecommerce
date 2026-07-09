@@ -2,8 +2,9 @@
 
 import { MessageSquare } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
+import { MESSAGE_CARD_MAX_CHARS } from "@/features/customization/store/useCustomizationStore";
 
-const MAX_CHARS = 200;
+const MAX_CHARS = MESSAGE_CARD_MAX_CHARS;
 
 /**
  * MessageCardInput — textarea with live character counter and

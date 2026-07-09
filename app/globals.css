@@ -341,6 +341,7 @@
   position: fixed;
   z-index: 100;
   pointer-events: none;
+  will-change: transform, opacity;
   animation: fly-to-cart 600ms ease-in-out forwards;
 }
 
