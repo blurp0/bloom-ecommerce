@@ -315,6 +315,28 @@
   }
 }
 
+/* ── Timeline Fill Animation ────────────────────────────────────────────────── */
+/*
+ * Signature motion moment #2: on the order confirmation page, the active
+ * status step's progress bar animates from 0 to 100% width over 600ms.
+ * Uses transform: scaleX for compositor-friendly animation.
+ *
+ * Suppressed by .reduce-motion and prefers-reduced-motion (see above).
+ */
+@keyframes timeline-fill {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.timeline-fill {
+  animation: timeline-fill 600ms ease-out forwards;
+  will-change: transform;
+}
+
 /* ── Fly-to-Cart Animation ─────────────────────────────────────────────────── */
 /*
  * Signature motion moment: when "Add to Cart" is clicked in the customization

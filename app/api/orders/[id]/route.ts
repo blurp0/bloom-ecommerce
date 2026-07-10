@@ -3,6 +3,17 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma/client";
 
 /**
+ * Resolve Clerk ID to internal User.id.
+ */
+async function resolveUserId(clerkId: string): Promise<string> {
+  const rows = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id FROM "User" WHERE "clerkId" = ${clerkId} LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("User not found");
+  return rows[0].id;
+}
+
+/**
  * GET /api/orders/[id]
  *
  * Returns full order detail for the authenticated user.
@@ -17,10 +28,17 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  let internalUserId: string;
+  try {
+    internalUserId = await resolveUserId(userId);
+  } catch {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
   try {
     const { id } = await params;
     const orderRaw = await prisma.order.findFirst({
-      where: { id, userId },
+      where: { id, userId: internalUserId },
       include: {
         items: {
           include: {

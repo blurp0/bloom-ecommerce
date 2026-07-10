@@ -30,7 +30,22 @@ function generateOrderNumber(): string {
   return result;
 }
 
-export async function createOrder(userId: string, data: CreateOrderInput): Promise<CreateOrderResult> {
+/**
+ * Resolve the internal User.id from a Clerk user ID.
+ * Throws if the user doesn't exist in the database.
+ */
+async function resolveUserId(clerkId: string): Promise<string> {
+  const rows = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id FROM "User" WHERE "clerkId" = ${clerkId} LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("User not found");
+  return rows[0].id;
+}
+
+export async function createOrder(clerkId: string, data: CreateOrderInput): Promise<CreateOrderResult> {
+  // Resolve Clerk ID to internal User.id
+  const userId = await resolveUserId(clerkId);
+
   // Verify address belongs to user
   const address = await prisma.address.findFirst({
     where: { id: data.addressId, userId },

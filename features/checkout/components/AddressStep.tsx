@@ -32,7 +32,7 @@ export default function AddressStep({ onNext, onBack }: AddressStepProps) {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
     address.addressId ?? null
   );
-  const [showNewForm, setShowNewForm] = useState(!address.addressId);
+  const [showNewForm, setShowNewForm] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const {
@@ -57,6 +57,7 @@ export default function AddressStep({ onNext, onBack }: AddressStepProps) {
   /** Select a saved address card. */
   const handleSelectSaved = (addr: AddressResponse) => {
     setSelectedAddressId(addr.id);
+    setShowNewForm(false);
     setAddress({
       addressId: addr.id,
       fullName: addr.recipientName,
@@ -75,23 +76,25 @@ export default function AddressStep({ onNext, onBack }: AddressStepProps) {
     setShowNewForm(true);
   };
 
-  const onSubmit = async (data: AddressData) => {
-    // If the user selected a saved address, just update Zustand and proceed
-    if (selectedAddressId) {
-      setAddress({
-        addressId: selectedAddressId,
-        fullName: data.recipientName,
-        phone: data.phone,
-        street: data.street,
-        barangay: data.barangay,
-        city: data.city,
-        province: data.province,
-        zipCode: data.zipCode,
-      });
-      onNext();
-      return;
-    }
+  /** Handle Next when a saved address is selected (no form submission needed). */
+  const handleNextWithSaved = () => {
+    if (!selectedAddressId || !savedAddresses) return;
+    const addr = savedAddresses.find((a) => a.id === selectedAddressId);
+    if (!addr) return;
+    setAddress({
+      addressId: addr.id,
+      fullName: addr.recipientName,
+      phone: addr.phone,
+      street: addr.street,
+      barangay: addr.barangay,
+      city: addr.city,
+      province: addr.province,
+      zipCode: addr.zipCode,
+    });
+    onNext();
+  };
 
+  const onSubmit = async (data: AddressData) => {
     // Save the new address via API
     try {
       const created = await createAddressMutation.mutateAsync({
@@ -104,7 +107,6 @@ export default function AddressStep({ onNext, onBack }: AddressStepProps) {
         zipCode: data.zipCode,
       });
 
-      // Update Zustand with the saved address
       setAddress({
         addressId: created.id,
         fullName: data.recipientName,
@@ -123,9 +125,15 @@ export default function AddressStep({ onNext, onBack }: AddressStepProps) {
   };
 
   const isBusy = isSubmitting || createAddressMutation.isPending;
+  const isNewFormVisible = showNewForm || (!addressesLoading && !savedAddresses?.length);
+  const canProceed = isNewFormVisible || !!selectedAddressId;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-6">
+    <form
+      onSubmit={isNewFormVisible ? handleSubmit(onSubmit) : (e) => { e.preventDefault(); handleNextWithSaved(); }}
+      noValidate
+      className="flex flex-col gap-6"
+    >
       <div>
         <h2 className="font-heading text-[32px] leading-[38px] font-normal text-[var(--text-primary)]">
           Delivery Address
@@ -176,17 +184,19 @@ export default function AddressStep({ onNext, onBack }: AddressStepProps) {
             ))}
           </div>
 
-          {selectedAddressId && (
-            <p className="mt-2 text-xs text-[var(--text-muted)]">
-              Or{" "}
-              <button
-                type="button"
-                onClick={handleUseNewAddress}
-                className="text-[var(--accent-secondary)] underline cursor-pointer hover:text-[var(--accent-secondary-hover)]"
-              >
-                use a different address
-              </button>
-            </p>
+          {!showNewForm && (
+            <button
+              type="button"
+              onClick={handleUseNewAddress}
+              className={[
+                "mt-2 w-full rounded-[12px] border-2 border-dashed p-3 text-sm",
+                "border-[var(--border-default)] text-[var(--text-muted)]",
+                "hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)]",
+                "transition-all duration-200 cursor-pointer",
+              ].join(" ")}
+            >
+              + Add a new address
+            </button>
           )}
         </div>
       )}
@@ -198,8 +208,8 @@ export default function AddressStep({ onNext, onBack }: AddressStepProps) {
         </div>
       )}
 
-      {/* New address form (shown if no saved addresses, or user clicked "use a different address") */}
-      {(showNewForm || !savedAddresses || savedAddresses.length === 0) && (
+      {/* New address form — shown when user clicks "Add" or no saved addresses exist */}
+      {!addressesLoading && isNewFormVisible && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Recipient Name */}
           <div className="md:col-span-2">
@@ -439,7 +449,7 @@ export default function AddressStep({ onNext, onBack }: AddressStepProps) {
         </button>
         <button
           type="submit"
-          disabled={isBusy}
+          disabled={isBusy || !canProceed}
           className={[
             "clay-button clay-hover-lift",
             "rounded-[12px] px-8 py-2.5 text-sm font-semibold",
