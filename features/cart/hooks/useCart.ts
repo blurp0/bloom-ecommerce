@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
 
 /**
  * Cart item shape returned by the API.
@@ -51,13 +52,16 @@ async function fetchCart(): Promise<CartResult> {
 /**
  * Hook that returns the current user's cart.
  * staleTime: 0 ensures we always refetch on mount (cart changes frequently).
+ * Only fetches when the user is authenticated to avoid 401 errors for guests.
  */
 export function useCart() {
+  const { isSignedIn } = useAuth();
   return useQuery({
     queryKey: CART_QUERY_KEY,
     queryFn: fetchCart,
     staleTime: 0,
     retry: 1,
+    enabled: !!isSignedIn,
   });
 }
 

@@ -66,6 +66,7 @@ export default function CartLineItem({
   showCheckbox = false,
 }: CartLineItemProps) {
   const [expanded, setExpanded] = useState(expandedByDefault);
+  const [localQuantity, setLocalQuantity] = useState(item.quantity);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const detailsId = `customization-details-${item.id}`;
 
@@ -78,6 +79,7 @@ export default function CartLineItem({
 
   const handleQuantity = useCallback(
     (newQty: number) => {
+      setLocalQuantity(newQty);
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       debounceTimer.current = setTimeout(() => {
         onQuantityChange(item.id, newQty);
@@ -150,7 +152,7 @@ export default function CartLineItem({
           {/* Quantity + line total row */}
           <div className="flex items-center justify-between mt-2">
             <QuantityStepper
-              value={item.quantity}
+              value={localQuantity}
               size="sm"
               onChange={handleQuantity}
             />

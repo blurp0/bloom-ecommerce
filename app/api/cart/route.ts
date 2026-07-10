@@ -95,8 +95,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: item }, { status: 201 });
   } catch (error) {
-    if (error instanceof Error && error.message.includes("Product not found or inactive")) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (error instanceof Error) {
+      const knownClientErrors = [
+        "Product not found or inactive",
+        "Custom request not found, not approved, or not yours",
+      ];
+      if (knownClientErrors.some((msg) => error.message.includes(msg))) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
     }
     console.error("cart POST error:", error instanceof Error ? error.message : error, error instanceof Error ? error.stack : "");
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });

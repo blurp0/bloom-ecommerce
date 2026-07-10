@@ -17,6 +17,7 @@ export default function CartDrawer() {
 
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const focusInsideRef = useRef(false);
 
   const items = cart?.items ?? [];
   const itemCount = cart?.itemCount ?? 0;
@@ -37,6 +38,12 @@ export default function CartDrawer() {
   };
   const cancelClose = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
+  };
+  const handleFocus = () => { cancelClose(); setOpen(true); focusInsideRef.current = true; };
+  const handleBlur = () => {
+    focusInsideRef.current = false;
+    // Defer so the next focusin (if within the panel) can cancel the close
+    scheduleClose();
   };
 
   const handleToggleSelectAll = () => {
@@ -85,6 +92,8 @@ export default function CartDrawer() {
         aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} item${itemCount !== 1 ? "s" : ""}` : ""}`}
         aria-haspopup="true"
         aria-expanded={open}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
       >
         <ShoppingCart className="h-5 w-5" aria-hidden="true" />
         {itemCount > 0 && (
@@ -97,10 +106,12 @@ export default function CartDrawer() {
       {/* Floating dropdown panel */}
       {open && (
         <div
-          role="dialog"
+          role="region"
           aria-label="Cart preview"
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           className={[
             "absolute right-0 top-[calc(100%+8px)] z-50",
             "w-80 sm:w-96",
@@ -138,7 +149,7 @@ export default function CartDrawer() {
               <Checkbox
                 id="drawer-select-all"
                 checked={allSelected}
-                data-state={someSelected && !allSelected ? "indeterminate" : undefined}
+                indeterminate={someSelected && !allSelected}
                 onCheckedChange={handleToggleSelectAll}
                 aria-label="Select all items"
                 className="cursor-pointer"

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Minus, Plus, ShoppingCart, ImageIcon } from "lucide-react";
@@ -65,9 +65,10 @@ export default function CustomizationSummary({
   const [isAnimating, setIsAnimating] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const selectedVariant = selectedVariantId
-    ? variants.find((v) => v.id === selectedVariantId)
-    : undefined;
+  const selectedVariant = useMemo(
+    () => (selectedVariantId ? variants.find((v) => v.id === selectedVariantId) : undefined),
+    [selectedVariantId, variants]
+  );
 
   // `variants[*].price` is treated as a variant price *adjustment* relative to base.
   // (PDP and studio must agree on this meaning.)
@@ -103,8 +104,8 @@ export default function CustomizationSummary({
       if (selectedVariantId) {
         customization.size = selectedVariant?.name ?? undefined;
       }
-      if (selectedAddOnIds.length > 0) {
-        customization.addOns = selectedAddOnIds;
+      if (selectedAddOnObjects.length > 0) {
+        customization.addOns = selectedAddOnObjects.map((a) => a.name);
       }
       if (messageCardText) {
         customization.messageCard = messageCardText;
@@ -128,8 +129,6 @@ export default function CustomizationSummary({
       }
 
       toast.success("Added to cart");
-
-      // Redirect to cart page after successful add
       router.push("/cart");
     } catch (err) {
       console.error("Add to cart error:", err);
@@ -144,19 +143,11 @@ export default function CustomizationSummary({
       html.classList.contains("reduce-motion") ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (prefersReducedMotion) {
-      setTimeout(() => {
-        reset();
-        setIsAnimating(false);
-      }, 300);
-    } else {
-      // After animation completes (600ms), reset
-      setTimeout(() => {
-        reset();
-        setIsAnimating(false);
-      }, 600);
-    }
-  }, [isAddToCartDisabled, reset, router, _productId, quantity, selectedVariantId, selectedVariant, selectedAddOnIds, messageCardText]);
+    setTimeout(() => {
+      reset();
+      setIsAnimating(false);
+    }, prefersReducedMotion ? 300 : 600);
+  }, [isAddToCartDisabled, reset, router, _productId, quantity, selectedVariantId, selectedVariant, selectedAddOnObjects, messageCardText]);
 
   const addOnLabels = selectedAddOnObjects.map((a) => a.name);
   const messagePreview = messageCardText

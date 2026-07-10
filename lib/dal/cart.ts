@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/prisma/client";
 import type { Prisma } from "@prisma/client";
 
+function toItemTotal(price: { toNumber: () => number } | number, quantity: number): number {
+  const p = typeof price === "number" ? price : price.toNumber();
+  return Math.round((p * quantity + Number.EPSILON) * 100) / 100;
+}
+
 /**
  * Cart item shape returned by the DAL.
  */
@@ -64,7 +69,7 @@ export async function getCart(userId: string): Promise<CartResult> {
     quantity: item.quantity,
     unitPrice: Number(item.price),
     customization: item.customizations as Record<string, unknown>,
-    itemTotal: Number(item.price) * item.quantity,
+    itemTotal: toItemTotal(item.price, item.quantity),
   }));
 
   const subtotal = items.reduce((sum, i) => sum + i.itemTotal, 0);
@@ -119,8 +124,8 @@ export async function addCartItem(
   let unitPrice = Number(product.basePrice);
 
   if (data.variantId) {
-    const variant = await prisma.productVariant.findUnique({
-      where: { id: data.variantId },
+    const variant = await prisma.productVariant.findFirst({
+      where: { id: data.variantId, productId: data.productId },
       select: { price: true },
     });
     if (variant) {
@@ -167,28 +172,27 @@ export async function addCartItem(
     select: { id: true },
   });
 
-  // Check for existing matching item: same product + variant + customizations.
-  // Customizations are compared by JSON equality so the same product with
-  // different add-ons or size creates separate cart items.
-  const existingItem = await prisma.cartItem.findFirst({
-    where: {
-      cartId: cart.id,
-      productId: data.productId,
-      variantId: data.variantId ?? null,
-      customizations: { equals: customizations as Prisma.InputJsonValue },
+  const cartItemSelect = {
+    id: true,
+    productId: true,
+    quantity: true,
+    price: true,
+    customizations: true,
+    product: {
+      select: {
+        name: true,
+        images: {
+          take: 1,
+          orderBy: { order: "asc" as const },
+          select: { url: true },
+        },
+      },
     },
-    select: { id: true, quantity: true, price: true },
-  });
+  } satisfies Prisma.CartItemSelect;
 
-  // Helper to return a populated CartItemResult from a query result
-  function mapToResult(item: {
-    id: string;
-    productId: string;
-    quantity: number;
-    price: { toNumber: () => number };
-    customizations: Record<string, unknown>;
-    product: { name: string; images: { url: string }[] };
-  }): CartItemResult {
+  type CartItemPayload = Prisma.CartItemGetPayload<{ select: typeof cartItemSelect }>;
+
+  function mapToResult(item: CartItemPayload): CartItemResult {
     return {
       id: item.id,
       productId: item.productId,
@@ -197,71 +201,45 @@ export async function addCartItem(
       quantity: item.quantity,
       unitPrice: Number(item.price),
       customization: item.customizations as Record<string, unknown>,
-      itemTotal: Number(item.price) * item.quantity,
+      itemTotal: toItemTotal(item.price, item.quantity),
     };
   }
 
-  if (existingItem) {
-    // Increment quantity
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updated = (await prisma.cartItem.update({
-      where: { id: existingItem.id },
-      data: { quantity: existingItem.quantity + data.quantity },
-      select: {
-        id: true,
-        productId: true,
-        quantity: true,
-        price: true,
-        customizations: true,
-        product: {
-          select: {
-            name: true,
-            images: {
-              take: 1,
-              orderBy: { order: "asc" },
-              select: { url: true },
-            },
-          },
-        },
+  // Use a transaction to atomically find-or-increment to prevent duplicate items
+  // from concurrent requests.
+  const result: CartItemPayload = await prisma.$transaction(async (tx) => {
+    const existingItem = await tx.cartItem.findFirst({
+      where: {
+        cartId: cart.id,
+        productId: data.productId,
+        variantId: data.variantId ?? null,
+        customizations: { equals: customizations as Prisma.InputJsonValue },
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    })) as any as Parameters<typeof mapToResult>[0];
+      select: { id: true, quantity: true },
+    });
 
-    return mapToResult(updated);
-  }
+    if (existingItem) {
+      return tx.cartItem.update({
+        where: { id: existingItem.id },
+        data: { quantity: existingItem.quantity + data.quantity },
+        select: cartItemSelect,
+      }) as unknown as Promise<CartItemPayload>;
+    }
 
-  // Create new cart item — use the enriched customizations (with add-on names)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const created = (await prisma.cartItem.create({
-    data: {
-      cartId: cart.id,
-      productId: data.productId,
-      variantId: data.variantId ?? null,
-      quantity: data.quantity,
-      price: unitPrice,
-      customizations: customizations,
-    },
-    select: {
-      id: true,
-      productId: true,
-      quantity: true,
-      price: true,
-      customizations: true,
-      product: {
-        select: {
-          name: true,
-          images: {
-            take: 1,
-            orderBy: { order: "asc" },
-            select: { url: true },
-          },
-        },
+    return tx.cartItem.create({
+      data: {
+        cartId: cart.id,
+        productId: data.productId,
+        variantId: data.variantId ?? null,
+        quantity: data.quantity,
+        price: unitPrice,
+        customizations: customizations,
       },
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  })) as any as Parameters<typeof mapToResult>[0];
+      select: cartItemSelect,
+    }) as unknown as Promise<CartItemPayload>;
+  }) as CartItemPayload;
 
-  return mapToResult(created);
+  return mapToResult(result);
 }
 
 /**
@@ -307,7 +285,7 @@ export async function updateCartItem(
       quantity: updated.quantity,
       unitPrice: Number(updated.price),
       customization: updated.customizations as Record<string, unknown>,
-      itemTotal: Number(updated.price) * updated.quantity,
+      itemTotal: toItemTotal(updated.price, updated.quantity),
     };
   } catch {
     return null;
