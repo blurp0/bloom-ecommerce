@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useRef, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Minus, Plus, ShoppingCart, ImageIcon } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
 import { formatPrice, computePrice, computeLineTotal } from "@/features/customization/utils/pricing";
@@ -59,6 +61,7 @@ export default function CustomizationSummary({
   const setQuantity = useCustomizationStore((s) => s.setQuantity);
   const reset = useCustomizationStore((s) => s.reset);
 
+  const router = useRouter();
   const [isAnimating, setIsAnimating] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -119,12 +122,23 @@ export default function CustomizationSummary({
       if (!res.ok) {
         const errBody = await res.json().catch(() => null);
         console.error("Add to cart failed:", errBody?.error ?? res.statusText);
-        // Still reset and show animation on error to avoid broken UI state
+        toast.error("Couldn't add to cart — please try again");
+        setIsAnimating(false);
+        return; // Don't reset or animate on error
       }
+
+      toast.success("Added to cart");
+
+      // Redirect to cart page after successful add
+      router.push("/cart");
     } catch (err) {
       console.error("Add to cart error:", err);
+      toast.error("Couldn't add to cart — please try again");
+      setIsAnimating(false);
+      return; // Don't reset or animate on error
     }
 
+    // Reset store after animation completes
     const html = document.documentElement;
     const prefersReducedMotion =
       html.classList.contains("reduce-motion") ||
@@ -142,7 +156,7 @@ export default function CustomizationSummary({
         setIsAnimating(false);
       }, 600);
     }
-  }, [isAddToCartDisabled, reset, _productId, quantity, selectedVariantId, selectedVariant, selectedAddOnIds, messageCardText]);
+  }, [isAddToCartDisabled, reset, router, _productId, quantity, selectedVariantId, selectedVariant, selectedAddOnIds, messageCardText]);
 
   const addOnLabels = selectedAddOnObjects.map((a) => a.name);
   const messagePreview = messageCardText

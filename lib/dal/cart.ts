@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma/client";
+import type { Prisma } from "@prisma/client";
 
 /**
  * Cart item shape returned by the DAL.
@@ -128,15 +129,31 @@ export async function addCartItem(
   }
 
   const customizations = data.customizations ?? {};
-  const addOnIds: string[] = (customizations as { addOns?: string[] }).addOns ?? [];
+  const addOnInput = (customizations as { addOns?: unknown }).addOns;
+  const addOnIds: string[] = Array.isArray(addOnInput)
+    ? addOnInput.filter((a): a is string => typeof a === "string")
+    : [];
+
+  // Fetch add-on names alongside prices so the customization data stored in
+  // the cart item includes human-readable labels, not just IDs.
+  let addOnNames: { id: string; name: string }[] = [];
   if (addOnIds.length > 0) {
     const addOns = await prisma.addOn.findMany({
       where: { id: { in: addOnIds } },
-      select: { price: true },
+      select: { id: true, name: true, price: true },
     });
     for (const addOn of addOns) {
       unitPrice += Number(addOn.price);
     }
+    addOnNames = addOns.map((a) => ({ id: a.id, name: a.name }));
+  }
+
+  // Replace raw add-on IDs with { id, name } objects in customizations
+  // so the frontend can display names without another API call.
+  if (addOnNames.length > 0) {
+    (customizations as Record<string, unknown>).addOns = addOnNames;
+  } else {
+    delete (customizations as Record<string, unknown>).addOns;
   }
 
   // Round to 2 decimal places
@@ -150,13 +167,15 @@ export async function addCartItem(
     select: { id: true },
   });
 
-  // Check for existing matching item (same product + variant, ignoring customizations
-  // for simplicity since JSON equality in Prisma can be unreliable)
+  // Check for existing matching item: same product + variant + customizations.
+  // Customizations are compared by JSON equality so the same product with
+  // different add-ons or size creates separate cart items.
   const existingItem = await prisma.cartItem.findFirst({
     where: {
       cartId: cart.id,
       productId: data.productId,
       variantId: data.variantId ?? null,
+      customizations: { equals: customizations as Prisma.InputJsonValue },
     },
     select: { id: true, quantity: true, price: true },
   });
@@ -211,7 +230,7 @@ export async function addCartItem(
     return mapToResult(updated);
   }
 
-  // Create new cart item
+  // Create new cart item — use the enriched customizations (with add-on names)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const created = (await prisma.cartItem.create({
     data: {
@@ -220,7 +239,7 @@ export async function addCartItem(
       variantId: data.variantId ?? null,
       quantity: data.quantity,
       price: unitPrice,
-      customizations: data.customizations ?? {},
+      customizations: customizations,
     },
     select: {
       id: true,
