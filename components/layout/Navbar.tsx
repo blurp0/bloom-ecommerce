@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Search, ShoppingCart } from "lucide-react";
+import { Search } from "lucide-react";
 import { useRef, useState } from "react";
+import CartDrawer from "@/features/cart/components/CartDrawer";
 import { navLinks } from "@/lib/nav-config";
 import NavAccountButton from "./NavAccountButton";
 
@@ -100,17 +101,8 @@ export default function Navbar() {
                         <Search className="h-5 w-5" aria-hidden="true" />
                     </Link>
 
-                    {/* Cart with badge placeholder */}
-                    <Link
-                        href="/cart"
-                        className="relative inline-flex items-center justify-center h-[44px] w-[44px] rounded-lg text-text-muted hover:text-accent-secondary hover:bg-bg-elevated transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-secondary focus-visible:ring-offset-0"
-                        aria-label="Cart"
-                    >
-                        <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-                        <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-secondary px-1 text-[10px] font-bold text-white">
-                            0
-                        </span>
-                    </Link>
+                    {/* Cart drawer */}
+                    <CartDrawer />
 
                     {/* Account */}
                     <NavAccountButton />

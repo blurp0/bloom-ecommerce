@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BottomTabBar from "@/components/layout/BottomTabBar";
 import { QueryProvider } from "@/lib/hooks/QueryProvider";
+import { Toaster } from "@/components/ui/sonner";
 import { syncUser } from "@/lib/user/sync";
 
 export default async function ShopLayout({
@@ -26,6 +27,7 @@ export default async function ShopLayout({
                 </div>
                 <BottomTabBar />
             </div>
+            <Toaster />
         </QueryProvider>
     );
 }

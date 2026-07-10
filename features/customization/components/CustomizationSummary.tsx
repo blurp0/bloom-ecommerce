@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Minus, Plus, ShoppingCart, ImageIcon } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
 import { formatPrice, computePrice, computeLineTotal } from "@/features/customization/utils/pricing";
@@ -59,12 +61,14 @@ export default function CustomizationSummary({
   const setQuantity = useCustomizationStore((s) => s.setQuantity);
   const reset = useCustomizationStore((s) => s.reset);
 
+  const router = useRouter();
   const [isAnimating, setIsAnimating] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const selectedVariant = selectedVariantId
-    ? variants.find((v) => v.id === selectedVariantId)
-    : undefined;
+  const selectedVariant = useMemo(
+    () => (selectedVariantId ? variants.find((v) => v.id === selectedVariantId) : undefined),
+    [selectedVariantId, variants]
+  );
 
   // `variants[*].price` is treated as a variant price *adjustment* relative to base.
   // (PDP and studio must agree on this meaning.)
@@ -83,31 +87,67 @@ export default function CustomizationSummary({
   const selectedAddOnObjects = addOns.filter((a) => selectedAddOnIds.includes(a.id));
   const thumbnail = images[0];
 
-  const handleAddToCart = useCallback(() => {
+  const handleAddToCart = useCallback(async () => {
     if (isAddToCartDisabled) return;
 
+    setIsAnimating(true);
+
+    try {
+      // Build the payload for POST /api/cart
+      const payload: Record<string, unknown> = {
+        productId: _productId,
+        quantity,
+        variantId: selectedVariantId ?? undefined,
+      };
+
+      const customization: Record<string, unknown> = {};
+      if (selectedVariantId) {
+        customization.size = selectedVariant?.name ?? undefined;
+      }
+      if (selectedAddOnObjects.length > 0) {
+        customization.addOns = selectedAddOnObjects.map((a) => a.name);
+      }
+      if (messageCardText) {
+        customization.messageCard = messageCardText;
+      }
+      if (Object.keys(customization).length > 0) {
+        payload.customization = customization;
+      }
+
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        console.error("Add to cart failed:", errBody?.error ?? res.statusText);
+        toast.error("Couldn't add to cart — please try again");
+        setIsAnimating(false);
+        return; // Don't reset or animate on error
+      }
+
+      toast.success("Added to cart");
+      router.push("/cart");
+    } catch (err) {
+      console.error("Add to cart error:", err);
+      toast.error("Couldn't add to cart — please try again");
+      setIsAnimating(false);
+      return; // Don't reset or animate on error
+    }
+
+    // Reset store after animation completes
     const html = document.documentElement;
     const prefersReducedMotion =
       html.classList.contains("reduce-motion") ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (prefersReducedMotion) {
-      setIsAnimating(true);
-      setTimeout(() => {
-        reset();
-        setIsAnimating(false);
-      }, 300);
-      return;
-    }
-
-    setIsAnimating(true);
-
-    // After animation completes (600ms), reset
     setTimeout(() => {
       reset();
       setIsAnimating(false);
-    }, 600);
-  }, [isAddToCartDisabled, reset]);
+    }, prefersReducedMotion ? 300 : 600);
+  }, [isAddToCartDisabled, reset, router, _productId, quantity, selectedVariantId, selectedVariant, selectedAddOnObjects, messageCardText]);
 
   const addOnLabels = selectedAddOnObjects.map((a) => a.name);
   const messagePreview = messageCardText
