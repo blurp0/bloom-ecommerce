@@ -13,6 +13,10 @@ export interface CheckoutAddress {
   city: string;
   province: string;
   zipCode: string;
+  /** Optional saved address ID — null for new addresses */
+  addressId?: string | null;
+  /** Optional label for new addresses (e.g. "Home", "Office") */
+  label?: string;
 }
 
 /**

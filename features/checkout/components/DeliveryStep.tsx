@@ -1,20 +1,33 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { DeliverySchema, type DeliveryData } from "@/lib/validators/checkout";
 import { useCheckoutStore } from "../store/checkout-store";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 interface DeliveryStepProps {
   onNext: () => void;
   onBack: () => void;
 }
 
+const TIME_SLOTS = [
+  { value: "MORNING" as const, label: "Morning (8AM – 12PM)" },
+  { value: "AFTERNOON" as const, label: "Afternoon (12PM – 5PM)" },
+  { value: "EVENING" as const, label: "Evening (5PM – 8PM)" },
+];
+
 /**
- * Step 2: Delivery Schedule.
+ * Step 2: Delivery Preference.
  *
- * Collects preferred delivery date and time slot.
- * Stub — content filled in spec 034.
+ * Buyer submits a preferred date and time slot. These are requests only —
+ * the seller reviews and confirms (or proposes an alternative) via the
+ * order chat after the order is placed.
  */
 export default function DeliveryStep({ onNext, onBack }: DeliveryStepProps) {
   const deliveryDate = useCheckoutStore((s) => s.deliveryDate);
@@ -22,10 +35,16 @@ export default function DeliveryStep({ onNext, onBack }: DeliveryStepProps) {
   const setDeliveryDate = useCheckoutStore((s) => s.setDeliveryDate);
   const setTimeSlot = useCheckoutStore((s) => s.setTimeSlot);
 
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    deliveryDate ? new Date(deliveryDate + "T00:00:00") : undefined
+  );
+
   const {
-    register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setValue,
+    trigger,
   } = useForm<DeliveryData>({
     resolver: zodResolver(DeliverySchema),
     mode: "onBlur",
@@ -36,49 +55,97 @@ export default function DeliveryStep({ onNext, onBack }: DeliveryStepProps) {
     },
   });
 
+  /** Minimum date: tomorrow (at least 1 day from today). */
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() + 1);
+  minDate.setHours(0, 0, 0, 0);
+
+  /** Disable dates that are today or in the past. */
+  const isDayDisabled = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date <= today;
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    setSelectedDate(date);
+    const isoDate = format(date, "yyyy-MM-dd");
+    setValue("deliveryDate", isoDate, { shouldValidate: true });
+    setDeliveryDate(isoDate);
+    setCalendarOpen(false);
+    trigger("deliveryDate");
+  };
+
+  const handleTimeSlotChange = (slot: string) => {
+    const value = slot as "MORNING" | "AFTERNOON" | "EVENING";
+    setValue("timeSlot", value, { shouldValidate: true });
+    setTimeSlot(value);
+    trigger("timeSlot");
+  };
+
   const onSubmit = (data: DeliveryData) => {
     setDeliveryDate(data.deliveryDate);
     setTimeSlot(data.timeSlot);
     onNext();
   };
 
-  const today = new Date().toISOString().split("T")[0];
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-6">
       <div>
         <h2 className="font-heading text-[32px] leading-[38px] font-normal text-[var(--text-primary)]">
-          Delivery Schedule
+          Delivery Preference
         </h2>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
-          When would you like your bouquet delivered?
+          Let us know your preferred date and time. We&apos;ll confirm availability with you after your order is placed.
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 max-w-md">
-        {/* Delivery Date */}
+      {/* Availability notice */}
+      <div className="rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-elevated)] px-4 py-3 flex gap-3">
+        <span className="text-base leading-none mt-0.5">📅</span>
+        <p className="text-sm text-[var(--text-muted)]">
+          Your preferred schedule is a <span className="font-medium text-[var(--text-primary)]">request, not a guaranteed slot</span>. Our team will reach out via order chat to confirm or suggest an alternative.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-6 max-w-md">
+        {/* Delivery Date — Calendar Popover */}
         <div>
-          <label
-            htmlFor="delivery-date"
-            className="block text-sm font-medium text-[var(--text-primary)] mb-1"
-          >
-            Preferred Delivery Date
+          <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+            Preferred Date
           </label>
-          <input
-            id="delivery-date"
-            type="date"
-            min={today}
-            autoComplete="off"
-            {...register("deliveryDate")}
-            className={[
-              "w-full rounded-[12px] border px-4 py-2.5 text-base text-[var(--text-primary)]",
-              "bg-[var(--bg-surface)]",
-              "border-[var(--border-interactive)]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
-              "transition-colors duration-200",
-              errors.deliveryDate && "border-[var(--state-error)]",
-            ].join(" ")}
-          />
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger
+              className={[
+                "w-full justify-start text-left font-normal",
+                "rounded-[12px] border px-4 py-2.5 h-auto",
+                "bg-[var(--bg-surface)]",
+                "border-[var(--border-interactive)]",
+                "hover:bg-[var(--bg-elevated)]",
+                "flex items-center gap-2 cursor-pointer",
+                "text-[var(--text-primary)]",
+                "transition-colors duration-200",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
+                !selectedDate && "text-[var(--text-muted)]",
+              ].join(" ")}
+            >
+              <CalendarIcon className="h-4 w-4 shrink-0" />
+              <span>
+                {selectedDate
+                  ? format(selectedDate, "PPP")
+                  : "Pick a preferred date"}
+              </span>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                disabled={isDayDisabled}
+              />
+            </PopoverContent>
+          </Popover>
           {errors.deliveryDate && (
             <p className="mt-1 text-xs text-[var(--state-error)]" role="alert">
               {errors.deliveryDate.message}
@@ -89,14 +156,10 @@ export default function DeliveryStep({ onNext, onBack }: DeliveryStepProps) {
         {/* Time Slot */}
         <fieldset>
           <legend className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Preferred Time Slot
+            Preferred Time Window
           </legend>
           <div className="flex flex-col gap-2">
-            {[
-              { value: "MORNING", label: "Morning (8AM – 12PM)" },
-              { value: "AFTERNOON", label: "Afternoon (12PM – 5PM)" },
-              { value: "EVENING", label: "Evening (5PM – 8PM)" },
-            ].map((slot) => (
+            {TIME_SLOTS.map((slot) => (
               <label
                 key={slot.value}
                 className={[
@@ -110,7 +173,8 @@ export default function DeliveryStep({ onNext, onBack }: DeliveryStepProps) {
                 <input
                   type="radio"
                   value={slot.value}
-                  {...register("timeSlot")}
+                  checked={timeSlot === slot.value}
+                  onChange={() => handleTimeSlotChange(slot.value)}
                   className="h-4 w-4 text-[var(--accent-primary)] focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
                 />
                 <span className="text-sm text-[var(--text-primary)]">

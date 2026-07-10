@@ -4,9 +4,9 @@ import { z } from "zod/v4";
  * Philippine address schema for checkout delivery.
  */
 export const AddressSchema = z.strictObject({
-  fullName: z
-    .string({ message: "Full name is required" })
-    .min(1, "Full name is required"),
+  recipientName: z
+    .string({ message: "Recipient name is required" })
+    .min(1, "Recipient name is required"),
   phone: z
     .string({ message: "Phone number is required" })
     .min(1, "Phone number is required")
