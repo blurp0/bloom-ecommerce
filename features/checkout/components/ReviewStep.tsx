@@ -55,19 +55,17 @@ export default function ReviewStep({ onBack }: ReviewStepProps) {
 
     // Find the address ID - we need to use a real address ID.
     // If the user has saved addresses and selected one, addressId will be set.
-    // Otherwise we need to find it from the address data.
     const addressId = address.addressId;
     if (!addressId) {
-      // If no address ID was stored (e.g. manually entered without saving),
-      // we can't proceed — though in practice AddressStep always saves before advancing.
+      // If no address ID was stored, we can't proceed.
       return;
     }
 
-    setSubmitting(true);
-
-    // Get selected item IDs from cart
+    // Get selected item IDs from cart and verify there are items to order
     const selectedItemIds = cart.items.map((item) => item.id);
     if (selectedItemIds.length === 0) return;
+
+    setSubmitting(true);
 
     createOrder.mutate(
       {
@@ -222,9 +220,19 @@ export default function ReviewStep({ onBack }: ReviewStepProps) {
                         {[
                           (item.customization as Record<string, unknown>).size as string,
                           (item.customization as Record<string, unknown>).color as string,
-                          (item.customization as Record<string, unknown>).addOns
-                            ? `+${(item.customization as Record<string, unknown>).addOns}`
-                            : null,
+                          (() => {
+                            const raw = (item.customization as Record<string, unknown>).addOns;
+                            if (!raw) return null;
+                            if (Array.isArray(raw)) {
+                              const names = raw
+                                .map((a) => (a && typeof a === "object" ? (a as Record<string, unknown>).name : null))
+                                .filter(Boolean) as string[];
+                              return names.length > 0
+                                ? `+${names.join(", ")}`
+                                : `+${raw.length} add-on${raw.length !== 1 ? "s" : ""}`;
+                            }
+                            return null;
+                          })(),
                         ]
                           .filter(Boolean)
                           .join(" · ") || "Customized"}
@@ -287,7 +295,7 @@ export default function ReviewStep({ onBack }: ReviewStepProps) {
         <button
           type="button"
           onClick={handlePlaceOrder}
-          disabled={isSubmitting || !deliveryDate || !timeSlot || !paymentMethod || cartLoading || (cart?.items.length ?? 0) === 0}
+          disabled={isSubmitting || !deliveryDate || !timeSlot || !paymentMethod || !address.addressId || cartLoading || (cart?.items.length ?? 0) === 0}
           className={[
             "clay-button",
             "rounded-[12px] px-8 py-2.5 text-sm font-semibold",
@@ -295,7 +303,7 @@ export default function ReviewStep({ onBack }: ReviewStepProps) {
             "hover:bg-[var(--accent-primary-hover)] active:scale-95",
             "transition-all duration-200 ease-out cursor-pointer",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
-            isSubmitting || !deliveryDate || !timeSlot || !paymentMethod || cartLoading || (cart?.items.length ?? 0) === 0
+            isSubmitting || !deliveryDate || !timeSlot || !paymentMethod || !address.addressId || cartLoading || (cart?.items.length ?? 0) === 0
               ? "opacity-50 cursor-not-allowed"
               : "",
           ]

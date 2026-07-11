@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, ShoppingBag, Truck, Package, Clock, MapPin, CreditCard, Calendar } from "lucide-react";
+import { Check, ShoppingBag, Truck, Package, Clock, MapPin, CreditCard, Calendar, AlertCircle, MessageSquare } from "lucide-react";
 
 /**
  * Order data shape passed from the server page.
@@ -52,6 +52,7 @@ const STATUS_ORDER: Record<string, number> = {
   PREPARING: 2,
   OUT_FOR_DELIVERY: 3,
   DELIVERED: 4,
+  CANCELLED: -1,
 };
 
 const STATUS_LABELS: Array<{ status: string; label: string }> = [
@@ -60,6 +61,7 @@ const STATUS_LABELS: Array<{ status: string; label: string }> = [
   { status: "PREPARING", label: "Preparing" },
   { status: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
   { status: "DELIVERED", label: "Delivered" },
+  { status: "CANCELLED", label: "Cancelled" },
 ];
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
@@ -68,6 +70,7 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
   PREPARING: <Package className="h-5 w-5" />,
   OUT_FOR_DELIVERY: <Truck className="h-5 w-5" />,
   DELIVERED: <ShoppingBag className="h-5 w-5" />,
+  CANCELLED: <AlertCircle className="h-5 w-5" />,
 };
 
 const timeSlotLabel = (slot: string): string => {
@@ -114,14 +117,15 @@ export default function OrderConfirmation({ order }: OrderConfirmationProps) {
     return () => cancelAnimationFrame(timer);
   }, []);
 
+  const isCancelled = order.status === "CANCELLED";
   const currentStatusIndex = STATUS_ORDER[order.status] ?? 0;
 
   const timelineSteps: TimelineStep[] = STATUS_LABELS.map((step, index) => ({
     status: step.status,
     label: step.label,
     icon: STATUS_ICONS[step.status] ?? <Check className="h-5 w-5" />,
-    isActive: index === currentStatusIndex,
-    isCompleted: index < currentStatusIndex,
+    isActive: isCancelled ? step.status === "CANCELLED" : index === currentStatusIndex,
+    isCompleted: isCancelled ? false : index < currentStatusIndex,
   }));
 
   // Parse delivery address from JSON string
@@ -271,6 +275,21 @@ export default function OrderConfirmation({ order }: OrderConfirmationProps) {
             </p>
           </div>
         </section>
+
+        {/* Delivery Instructions */}
+        {order.notes && (
+          <section className="mb-3 flex items-start gap-3">
+            <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-[var(--text-muted)]" />
+            <div>
+              <h3 className="text-sm font-medium text-[var(--text-muted)]">
+                Delivery Instructions
+              </h3>
+              <p className="text-sm text-[var(--text-primary)]">
+                {order.notes}
+              </p>
+            </div>
+          </section>
+        )}
 
         <div className="h-px bg-[var(--border-default)] my-4" />
 

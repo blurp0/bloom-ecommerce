@@ -81,7 +81,7 @@ export default function StepIndicator({ currentStep, onStepClick }: StepIndicato
                 <div
                   className={[
                     "flex-1 h-px mx-2",
-                    step <= currentStep
+                    step < currentStep
                       ? "bg-[var(--accent-primary)]"
                       : "bg-[var(--border-default)]",
                   ].join(" ")}

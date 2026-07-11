@@ -1,17 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma/client";
+import type { Prisma } from "@prisma/client";
 
 /**
- * Resolve Clerk ID to internal User.id.
+ * Resolve Clerk ID to internal User.id using findUnique.
  */
 async function resolveUserId(clerkId: string): Promise<string> {
-  const rows = await prisma.$queryRaw<{ id: string }[]>`
-    SELECT id FROM "User" WHERE "clerkId" = ${clerkId} LIMIT 1
-  `;
-  if (!rows[0]) throw new Error("User not found");
-  return rows[0].id;
+  const user = await prisma.user.findUnique({
+    where: { clerkId },
+    select: { id: true },
+  });
+  if (!user) throw new Error("User not found");
+  return user.id;
 }
+
+/** Inferred type for the queried order with its nested includes. */
+type OrderWithItems = Prisma.OrderGetPayload<{
+  include: {
+    items: {
+      include: {
+        product: {
+          select: {
+            name: true;
+            images: {
+              take: 1;
+              orderBy: { order: "asc" };
+              select: { url: true };
+            };
+          };
+        };
+        variant: {
+          select: { name: true };
+        };
+      };
+    };
+  };
+}>;
 
 /**
  * GET /api/orders/[id]
@@ -37,7 +62,7 @@ export async function GET(
 
   try {
     const { id } = await params;
-    const orderRaw = await prisma.order.findFirst({
+    const order = await prisma.order.findFirst({
       where: { id, userId: internalUserId },
       include: {
         items: {
@@ -58,37 +83,13 @@ export async function GET(
           },
         },
       },
-    });
+    }) as OrderWithItems | null;
 
-    if (!orderRaw) {
+    if (!order) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const order = orderRaw as unknown as {
-      id: string;
-      orderNumber: string;
-      status: string;
-      total: unknown;
-      deliveryAddress: string;
-      deliveryDate: Date;
-      deliverySlot: string;
-      paymentMethod: string;
-      notes: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-      items: Array<{
-        id: string;
-        productId: string;
-        variantId: string | null;
-        quantity: number;
-        customizations: unknown;
-        price: unknown;
-        product: { name: string; images: { url: string }[] };
-        variant: { name: string } | null;
-      }>;
-    };
-
-    const itemCount = order.items.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0);
+    const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
     const STATUS_ORDER: Record<string, number> = {
       PENDING: 0,

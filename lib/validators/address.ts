@@ -75,18 +75,36 @@ export const UpdateAddressSchema = z.strictObject({
   label: z
     .string({ message: "Label must be text" })
     .max(40, "Label must be 40 characters or less")
+    .nullable()
     .optional(),
-  recipientName: z.string().optional(),
+  recipientName: z
+    .string({ message: "Recipient name is required" })
+    .min(1, "Recipient name is required")
+    .optional(),
   phone: z
-    .string()
+    .string({ message: "Phone number is required" })
+    .min(1, "Phone number is required")
     .regex(/^(09|\+639)\d{9}$/, "Enter a valid PH phone number (e.g. 09171234567)")
     .optional(),
-  street: z.string().optional(),
-  barangay: z.string().optional(),
-  city: z.string().optional(),
-  province: z.string().optional(),
+  street: z
+    .string({ message: "Street address is required" })
+    .min(1, "Street address is required")
+    .optional(),
+  barangay: z
+    .string({ message: "Barangay is required" })
+    .min(1, "Barangay is required")
+    .optional(),
+  city: z
+    .string({ message: "City is required" })
+    .min(1, "City is required")
+    .optional(),
+  province: z
+    .string({ message: "Province is required" })
+    .min(1, "Province is required")
+    .optional(),
   zipCode: z
-    .string()
+    .string({ message: "ZIP code is required" })
+    .min(1, "ZIP code is required")
     .regex(/^\d{4}$/, "ZIP code must be 4 digits")
     .optional(),
 });

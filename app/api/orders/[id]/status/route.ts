@@ -69,8 +69,15 @@ export async function PUT(
     );
   }
 
-  // 5. Update in DB
-  const updated = await updateOrderStatusDAL(orderId, newStatus);
+  // 5. Update in DB (constrained by currentStatus to prevent stale transitions)
+  const updated = await updateOrderStatusDAL(orderId, currentStatus, newStatus);
+
+  if (!updated) {
+    return NextResponse.json(
+      { error: "Order status changed since last read — please refresh and retry" },
+      { status: 409 },
+    );
+  }
 
   // 6. Publish Ably event (after DB write succeeds)
   try {

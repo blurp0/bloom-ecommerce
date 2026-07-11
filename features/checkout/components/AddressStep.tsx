@@ -376,7 +376,7 @@ export default function AddressStep({ onNext, onBack }: AddressStepProps) {
               {...register("province")}
               className={[
                 "w-full rounded-[12px] border px-4 py-2.5 text-base text-[var(--text-primary)]",
-                "bg-[var(--bg-surface)] placeholder:[var(--text-muted)]",
+                "bg-[var(--bg-surface)] placeholder:text-[var(--text-muted)]",
                 "border-[var(--border-interactive)]",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
                 "transition-colors duration-200",

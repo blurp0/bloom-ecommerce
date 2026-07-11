@@ -51,7 +51,7 @@ export default function PaymentStep({ onNext, onBack }: PaymentStepProps) {
           Payment Method
         </h2>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
-          Choose how you'd like to pay. No payment is processed on this site.
+          Choose how you&apos;d like to pay. No payment is processed on this site.
         </p>
       </div>
 

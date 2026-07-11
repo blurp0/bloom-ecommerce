@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { futureIsoDateTime } from "@/lib/validators/shared";
 
 export const CreateOrderSchema = z.strictObject({
   addressId: z.string().min(1, "Address ID is required"),
-  deliveryDate: z.string().min(1, "Delivery date is required"),
+  deliveryDate: futureIsoDateTime("Delivery date"),
   timeSlot: z.enum(["MORNING", "AFTERNOON", "EVENING"]),
   paymentMethod: z.enum(["COD", "EWALLET", "MANUAL"]),
   selectedItemIds: z.array(z.string().min(1)).min(1, "At least one item must be selected"),

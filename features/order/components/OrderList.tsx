@@ -112,24 +112,33 @@ function OrderRow({ order }: OrderRowProps) {
       let skippedCount = 0;
 
       const addResults = await Promise.allSettled(
-        items.map((item) =>
-          fetch("/api/cart", {
+        items.map((item) => {
+          const c = (item.customizations as Record<string, unknown>) ?? {};
+          const payload: Record<string, unknown> = {
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+            customization: {},
+          };
+
+          const cust = payload.customization as Record<string, unknown>;
+
+          if (c.size) cust.size = c.size;
+          if (c.color) cust.color = c.color;
+          if (c.addOns) cust.addOns = c.addOns ?? [];
+          if (c.messageCard) cust.messageCard = c.messageCard;
+
+          // If customization ended up empty, remove it to send a clean payload
+          if (Object.keys(cust).length === 0) {
+            delete payload.customization;
+          }
+
+          return fetch("/api/cart", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              productId: item.productId,
-              variantId: item.variantId,
-              quantity: item.quantity,
-              customization: {
-                size: (item.customizations as Record<string, unknown>)?.size ?? null,
-                color: (item.customizations as Record<string, unknown>)?.color ?? null,
-                addOns: (item.customizations as Record<string, unknown>)?.addOns ?? [],
-                messageCard:
-                  (item.customizations as Record<string, unknown>)?.messageCard ?? null,
-              },
-            }),
-          })
-        )
+            body: JSON.stringify(payload),
+          });
+        })
       );
 
       for (const result of addResults) {
@@ -160,8 +169,7 @@ function OrderRow({ order }: OrderRowProps) {
   });
 
   return (
-    <Link
-      href={`/orders/${order.id}`}
+    <div
       className={[
         "group flex flex-col gap-3 rounded-[16px] border border-[var(--border-default)]",
         "bg-[var(--bg-surface)] p-4 md:p-5 shadow-clay-sm",
@@ -169,7 +177,10 @@ function OrderRow({ order }: OrderRowProps) {
         "transition-all duration-200 ease-out",
       ].join(" ")}
     >
-      <div className="flex items-start justify-between gap-4">
+      <Link
+        href={`/orders/${order.id}`}
+        className="flex items-start justify-between gap-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-md"
+      >
         {/* Left: order info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -183,7 +194,7 @@ function OrderRow({ order }: OrderRowProps) {
           </p>
         </div>
 
-        {/* Right: total + reorder */}
+        {/* Right: total */}
         <div className="flex flex-col items-end gap-2 shrink-0">
           <span className="text-base font-bold text-[var(--text-primary)]">
             ₱{order.orderTotal.toLocaleString("en-PH", {
@@ -191,29 +202,35 @@ function OrderRow({ order }: OrderRowProps) {
               maximumFractionDigits: 2,
             })}
           </span>
-          <button
-            type="button"
-            onClick={handleReorder}
-            className={[
-              "inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold",
-              "text-[var(--accent-secondary)] hover:text-[var(--accent-secondary-hover)]",
-              "bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)]/20",
-              "transition-all duration-200 ease-out",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
-            ].join(" ")}
-          >
-            <RefreshCw className="h-3 w-3" />
-            Reorder
-          </button>
         </div>
-      </div>
+      </Link>
 
-      {/* View detail indicator */}
-      <div className="flex items-center gap-1 self-end text-xs font-medium text-[var(--text-muted)] group-hover:text-[var(--accent-secondary)] transition-colors duration-200">
-        View Details
-        <ArrowRight className="h-3 w-3" />
+      {/* Reorder button + View detail indicator as siblings */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={handleReorder}
+          className={[
+            "inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold",
+            "text-[var(--accent-secondary)] hover:text-[var(--accent-secondary-hover)]",
+            "bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)]/20",
+            "transition-all duration-200 ease-out",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
+          ].join(" ")}
+        >
+          <RefreshCw className="h-3 w-3" />
+          Reorder
+        </button>
+
+        <Link
+          href={`/orders/${order.id}`}
+          className="flex items-center gap-1 text-xs font-medium text-[var(--text-muted)] group-hover:text-[var(--accent-secondary)] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-sm"
+        >
+          View Details
+          <ArrowRight className="h-3 w-3" />
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }
 

@@ -19,6 +19,11 @@ export function useOrderStatus(
 ): { status: string } {
   const [status, setStatus] = useState<string>(initialStatus);
 
+  // Sync local state whenever the initialStatus prop changes
+  useEffect(() => {
+    setStatus(initialStatus);
+  }, [initialStatus]);
+
   const handleEvent: messageCallback<InboundMessage> = useCallback(
     (message) => {
       if (message.name === "status-updated") {

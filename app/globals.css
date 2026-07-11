@@ -334,6 +334,7 @@
 
 .timeline-fill {
   animation: timeline-fill 600ms ease-out forwards;
+  transform-origin: left center;
   will-change: transform;
 }
 

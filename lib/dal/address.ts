@@ -52,26 +52,22 @@ export async function updateAddress(
   addressId: string,
   data: UpdateAddressData
 ): Promise<AddressResponse | null> {
-  try {
-    const userId = await resolveUserId(clerkId);
-    const rows = await prisma.$queryRaw<AddressResponse[]>`
-      UPDATE "Address"
-      SET
-        label            = COALESCE(${data.label ?? null}, label),
-        "recipientName"  = COALESCE(${data.recipientName ?? null}, "recipientName"),
-        phone            = COALESCE(${data.phone ?? null}, phone),
-        street           = COALESCE(${data.street ?? null}, street),
-        barangay         = COALESCE(${data.barangay ?? null}, barangay),
-        city             = COALESCE(${data.city ?? null}, city),
-        province         = COALESCE(${data.province ?? null}, province),
-        "zipCode"        = COALESCE(${data.zipCode ?? null}, "zipCode")
-      WHERE id = ${addressId} AND "userId" = ${userId}
-      RETURNING id, label, "recipientName", phone, street, barangay, city, province, "zipCode", "isDefault"
-    `;
-    return rows[0] ?? null;
-  } catch {
-    return null;
-  }
+  const userId = await resolveUserId(clerkId);
+  const rows = await prisma.$queryRaw<AddressResponse[]>`
+    UPDATE "Address"
+    SET
+      label            = COALESCE(${data.label ?? null}, label),
+      "recipientName"  = COALESCE(${data.recipientName ?? null}, "recipientName"),
+      phone            = COALESCE(${data.phone ?? null}, phone),
+      street           = COALESCE(${data.street ?? null}, street),
+      barangay         = COALESCE(${data.barangay ?? null}, barangay),
+      city             = COALESCE(${data.city ?? null}, city),
+      province         = COALESCE(${data.province ?? null}, province),
+      "zipCode"        = COALESCE(${data.zipCode ?? null}, "zipCode")
+    WHERE id = ${addressId} AND "userId" = ${userId}
+    RETURNING id, label, "recipientName", phone, street, barangay, city, province, "zipCode", "isDefault"
+  `;
+  return rows[0] ?? null;
 }
 
 /**
@@ -82,15 +78,11 @@ export async function deleteAddress(
   clerkId: string,
   addressId: string
 ): Promise<boolean> {
-  try {
-    const userId = await resolveUserId(clerkId);
-    const rows = await prisma.$queryRaw<{ id: string }[]>`
-      DELETE FROM "Address"
-      WHERE id = ${addressId} AND "userId" = ${userId}
-      RETURNING id
-    `;
-    return rows.length > 0;
-  } catch {
-    return false;
-  }
+  const userId = await resolveUserId(clerkId);
+  const rows = await prisma.$queryRaw<{ id: string }[]>`
+    DELETE FROM "Address"
+    WHERE id = ${addressId} AND "userId" = ${userId}
+    RETURNING id
+  `;
+  return rows.length > 0;
 }

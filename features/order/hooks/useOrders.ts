@@ -60,12 +60,13 @@ interface OrdersResponse {
 /**
  * Fetch the authenticated user's orders list.
  * Stale time 30s — list doesn't need to be perfectly fresh.
+ * Accepts an optional page parameter for pagination.
  */
-export function useOrders() {
+export function useOrders(page: number = 1) {
   return useQuery<OrdersResponse>({
-    queryKey: ["orders"],
+    queryKey: ["orders", page],
     queryFn: async () => {
-      const res = await fetch("/api/orders");
+      const res = await fetch(`/api/orders?page=${page}`);
       if (!res.ok) {
         throw new Error("Failed to fetch orders");
       }
@@ -90,5 +91,6 @@ export function useOrder(id: string) {
       return res.json();
     },
     staleTime: 0,
+    enabled: id !== "" && id != null,
   });
 }

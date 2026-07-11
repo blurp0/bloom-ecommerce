@@ -47,15 +47,37 @@ export async function createOrder(clerkId: string, data: CreateOrderInput): Prom
   // Resolve Clerk ID to internal User.id
   const userId = await resolveUserId(clerkId);
 
-  // Verify address belongs to user
-  const address = await prisma.address.findFirst({
+  // Verify address belongs to user and fetch full details for snapshot
+  const addressRecord = await prisma.address.findFirst({
     where: { id: data.addressId, userId },
-    select: { id: true },
+    select: {
+      id: true,
+      recipientName: true,
+      phone: true,
+      street: true,
+      barangay: true,
+      city: true,
+      province: true,
+      zipCode: true,
+      label: true,
+    },
   });
 
-  if (!address) {
+  if (!addressRecord) {
     throw new Error("Address not found or does not belong to user");
   }
+
+  // Serialize a JSON snapshot of the address so the order retains shipping
+  // details even if the address is later changed or deleted.
+  const deliveryAddressSnapshot = JSON.stringify({
+    recipientName: addressRecord.recipientName,
+    phone: addressRecord.phone,
+    street: addressRecord.street,
+    barangay: addressRecord.barangay,
+    city: addressRecord.city,
+    province: addressRecord.province,
+    zipCode: addressRecord.zipCode,
+  });
 
   const result = await prisma.$transaction(async (tx) => {
     // Fetch user's cart with items
@@ -113,8 +135,9 @@ export async function createOrder(clerkId: string, data: CreateOrderInput): Prom
         }
 
         // Re-fetch add-on prices from customization JSON
-        const customizations = item.customizations as { addOns?: Array<{ id: string }> };
-        const addOnIds: string[] = customizations.addOns?.map((a) => a.id) ?? [];
+        const customizations = item.customizations as Record<string, unknown> | null;
+        const addOns = (customizations?.addOns as Array<{ id: string }> | undefined) ?? [];
+        const addOnIds: string[] = addOns.map((a) => a.id);
 
         if (addOnIds.length > 0) {
           const addOns = await tx.addOn.findMany({
@@ -159,7 +182,7 @@ export async function createOrder(clerkId: string, data: CreateOrderInput): Prom
         subtotal: orderSubtotal,
         deliveryFee,
         total: orderTotal,
-        deliveryAddress: data.addressId,
+        deliveryAddress: deliveryAddressSnapshot,
         deliveryDate: new Date(data.deliveryDate),
         deliverySlot: data.timeSlot,
         paymentMethod: data.paymentMethod,
@@ -206,19 +229,28 @@ export async function createOrder(clerkId: string, data: CreateOrderInput): Prom
 }
 
 /**
- * Update the status of an order.
+ * Update the status of an order, constrained by the current status to
+ * prevent concurrent requests from applying stale transitions.
  * Authorization (seller-only) must be enforced by the caller.
- * Returns the updated order with its id, orderNumber, and status.
+ * Returns null when zero rows are affected (concurrent conflict).
  */
 export async function updateOrderStatus(
   orderId: string,
+  currentStatus: OrderStatus,
   newStatus: OrderStatus,
-): Promise<{ id: string; orderNumber: string; status: OrderStatus }> {
-  const order = await prisma.order.update({
-    where: { id: orderId },
-    data: { status: newStatus },
-    select: { id: true, orderNumber: true, status: true },
-  });
+): Promise<{ id: string; orderNumber: string; status: OrderStatus } | null> {
+  try {
+    const order = await prisma.order.update({
+      where: { id: orderId, status: currentStatus },
+      data: { status: newStatus },
+      select: { id: true, orderNumber: true, status: true },
+    });
 
-  return order;
+    return order;
+  } catch {
+    // Prisma throws P2025 (Record to update not found) when the
+    // where clause doesn't match — that means the status changed
+    // between our read and write.
+    return null;
+  }
 }
