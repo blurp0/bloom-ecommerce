@@ -1,11 +1,11 @@
 /*
-  Non-transactional migration: drops Product trigram indexes.
-  DROP INDEX CONCURRENTLY must run outside a transaction block
-  and is safe for production (does not lock the table).
+  Drops Product trigram indexes that are no longer used.
+  Prisma runs this inside a transaction, so DROP INDEX CONCURRENTLY
+  is not applicable — plain DROP INDEX IF EXISTS is correct here.
 */
 
--- DropIndex (non-transactional)
-DROP INDEX CONCURRENTLY IF EXISTS "Product_description_trgm_idx";
+-- DropIndex
+DROP INDEX IF EXISTS "Product_description_trgm_idx";
 
--- DropIndex (non-transactional)
-DROP INDEX CONCURRENTLY IF EXISTS "Product_name_trgm_idx";
+-- DropIndex
+DROP INDEX IF EXISTS "Product_name_trgm_idx";
