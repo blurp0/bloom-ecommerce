@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
-import { ShoppingBag, RefreshCw } from "lucide-react";
+import { ShoppingBag, RefreshCw, ClipboardList } from "lucide-react";
 import { useCart, useUpdateCartItem, useRemoveCartItem } from "@/features/cart/hooks/useCart";
 import CartLineItem from "@/features/cart/components/CartLineItem";
 import CartSummary from "@/features/cart/components/CartSummary";
@@ -105,17 +105,26 @@ export default function CartPageClient() {
   return (
     <div className="flex flex-col gap-6">
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+      <nav aria-label="Breadcrumb" className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+          <Link
+            href="/"
+            className="hover:text-[var(--accent-secondary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-sm"
+          >
+            Home
+          </Link>
+          <span aria-hidden="true">/</span>
+          <span className="text-[var(--text-primary)] font-medium" aria-current="page">
+            Cart
+          </span>
+        </div>
         <Link
-          href="/"
-          className="hover:text-[var(--accent-secondary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-sm"
+          href="/orders"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--accent-secondary)] hover:text-[var(--accent-secondary-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-sm"
         >
-          Home
+          <ClipboardList className="h-4 w-4" aria-hidden="true" />
+          My Orders
         </Link>
-        <span aria-hidden="true">/</span>
-        <span className="text-[var(--text-primary)] font-medium" aria-current="page">
-          Cart
-        </span>
       </nav>
 
       {/* Page heading */}
