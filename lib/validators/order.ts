@@ -9,7 +9,7 @@ export const CreateOrderSchema = z.strictObject({
 });
 
 export const UpdateOrderStatusSchema = z.strictObject({
-  status: z.enum(["PENDING", "CONFIRMED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"]),
+  status: z.enum(["CONFIRMED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"]),
 });
 
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;

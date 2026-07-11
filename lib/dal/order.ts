@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma/client";
-import { type CreateOrderInput } from "@/lib/validators/order";
+import { type CreateOrderInput, type UpdateOrderStatusInput } from "@/lib/validators/order";
+import type { OrderStatus } from "@prisma/client";
 
 export interface CreateOrderResult {
   id: string;
@@ -202,4 +203,22 @@ export async function createOrder(clerkId: string, data: CreateOrderInput): Prom
   });
 
   return result;
+}
+
+/**
+ * Update the status of an order.
+ * Authorization (seller-only) must be enforced by the caller.
+ * Returns the updated order with its id, orderNumber, and status.
+ */
+export async function updateOrderStatus(
+  orderId: string,
+  newStatus: OrderStatus,
+): Promise<{ id: string; orderNumber: string; status: OrderStatus }> {
+  const order = await prisma.order.update({
+    where: { id: orderId },
+    data: { status: newStatus },
+    select: { id: true, orderNumber: true, status: true },
+  });
+
+  return order;
 }
