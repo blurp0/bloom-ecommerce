@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BottomTabBar from "@/components/layout/BottomTabBar";
+import FloatingMessageButton from "@/components/layout/FloatingMessageButton";
+import FloatingMessageModal from "@/components/layout/FloatingMessageModal";
 import { QueryProvider } from "@/lib/hooks/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { syncUser } from "@/lib/user/sync";
@@ -26,6 +28,8 @@ export default async function ShopLayout({
                     <Footer />
                 </div>
                 <BottomTabBar />
+                <FloatingMessageButton />
+                <FloatingMessageModal />
             </div>
             <Toaster />
         </QueryProvider>
