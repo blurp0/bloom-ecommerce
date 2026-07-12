@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ExternalLink, MessageSquare } from "lucide-react";
@@ -131,15 +131,22 @@ export default function ChatHub() {
     validOrderId,
   );
 
-  // Sync selectedOrderId with validated deep-link on data load — only apply once
+  // Track if user has manually selected a conversation to prevent effect overwrite
+  const userSelectedRef = useRef(false);
+
+  // Sync selectedOrderId with validated deep-link on data load
+  // Reruns when conversations load to validate/clear initialOrderId
+  // Guards against overwriting manual user selections
   useEffect(() => {
+    if (userSelectedRef.current) return; // Don't overwrite user's manual selection
+
     if (initialOrderId && conversations.some((c) => c.orderId === initialOrderId)) {
       setSelectedOrderId(initialOrderId);
     } else if (initialOrderId && conversations.length > 0 && !conversations.some((c) => c.orderId === initialOrderId)) {
       // Deep-linked orderId not in conversations — clear
       setSelectedOrderId(null);
     }
-  }, [initialOrderId]); // Only track initialOrderId, not conversations
+  }, [initialOrderId, conversations]);
 
   const selectedConv = conversations.find(
     (c) => c.orderId === selectedOrderId,
@@ -147,12 +154,14 @@ export default function ChatHub() {
 
   const handleSelect = useCallback(
     (orderId: string) => {
+      userSelectedRef.current = true;
       setSelectedOrderId(orderId);
     },
     [],
   );
 
   const handleBack = useCallback(() => {
+    userSelectedRef.current = false;
     setSelectedOrderId(null);
   }, []);
 

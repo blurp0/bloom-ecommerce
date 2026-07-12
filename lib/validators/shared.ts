@@ -24,7 +24,11 @@ export function futureIsoDate(fieldLabel = "Date") {
         day: "2-digit",
       });
       const now = new Date();
-      const phNow = formatter.format(now);
+      const parts = formatter.formatToParts(now);
+      const year = parts.find((p) => p.type === "year")?.value ?? "";
+      const month = parts.find((p) => p.type === "month")?.value ?? "";
+      const day = parts.find((p) => p.type === "day")?.value ?? "";
+      const phNow = `${year}-${month}-${day}`;
       return val > phNow;
     }, {
       message: `${fieldLabel} must be in the future`,
