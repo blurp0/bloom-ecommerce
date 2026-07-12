@@ -107,7 +107,7 @@ function StatusBadge({ status }: { status: string }) {
         colors,
       ].join(" ")}
     >
-      {status.replace("_", " ")}
+      {status.replace(/_/g, " ")}
     </span>
   );
 }

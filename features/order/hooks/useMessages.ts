@@ -133,7 +133,7 @@ export function useMessages(orderId: string): UseMessagesReturn {
 
   return {
     messages: allMessages,
-    isLoading: query.isLoading,
+    isLoading: query.isLoading && page === 1, // Only loading on initial page fetch
     error: query.error as Error | null,
     page,
     hasMore: query.data?.data.pagination.hasMore ?? false,

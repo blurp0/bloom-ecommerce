@@ -223,7 +223,7 @@ export default function MessageInput({
       {/* Rate limit notice */}
       {isRateLimited && rateLimitTimer > 0 && (
         <p className="px-1 text-[11px] text-[var(--state-error)]">
-          You're sending too fast — wait {rateLimitTimer}s
+          You&apos;re sending too fast — wait {rateLimitTimer}s
         </p>
       )}
 

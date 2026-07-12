@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma/client";
 import type { Role } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 // ── Types ─────────────────────────────────────────────
 
@@ -57,7 +58,8 @@ function toMessageResult(row: {
  *
  * Ownership: user must own the order or have SELLER role (throws 403).
  * Order must exist (throws 404).
- * Messages ordered oldest-first (createdAt ASC).
+ * Messages ordered newest-first (createdAt DESC), paginated backward
+ * so the initial page contains the latest messages.
  */
 export async function getMessages(
   clerkId: string,
@@ -97,7 +99,7 @@ export async function getMessages(
 
   const rows = await prisma.message.findMany({
     where: { orderId },
-    orderBy: { createdAt: "asc" },
+    orderBy: { createdAt: "desc" },
     skip,
     take: limit,
     include: {
@@ -213,9 +215,7 @@ export async function getConversations(
 
   const isSeller = user.role === "SELLER";
 
-  const whereClause = isSeller ? "" : `WHERE o."userId" = '${userId}'`;
-
-  const rows = await prisma.$queryRawUnsafe<
+  const rows = await prisma.$queryRaw<
     {
       orderId: string;
       orderNumber: string;
@@ -225,7 +225,7 @@ export async function getConversations(
       lastMessageCreatedAt: Date | null;
       messageCount: bigint;
     }[]
-  >(`
+  >`
     SELECT
       o."id" AS "orderId",
       o."orderNumber" AS "orderNumber",
@@ -244,25 +244,25 @@ export async function getConversations(
       LIMIT 1
     ) lm ON true
     LEFT JOIN "User" lm_sender ON lm_sender."id" = lm."senderId"
-    ${whereClause}
+    ${isSeller ? Prisma.empty : Prisma.sql`WHERE o."userId" = ${userId}`}
     GROUP BY o."id", o."orderNumber", o."status", lm."content", lm_sender."role", lm."createdAt"
     ORDER BY lm."createdAt" DESC NULLS LAST
-  `);
+  `;
 
   // Fetch item names for all conversation orders in one query (no N+1)
   const orderIds = rows.map((r) => r.orderId);
-  let itemLabels: Record<string, string> = {};
+  const itemLabels: Record<string, string> = {};
 
   if (orderIds.length > 0) {
-    const items = await prisma.$queryRawUnsafe<
+    const items = await prisma.$queryRaw<
       { orderId: string; productName: string }[]
-    >(`
+    >`
       SELECT oi."orderId", p."name" AS "productName"
       FROM "OrderItem" oi
       JOIN "Product" p ON p."id" = oi."productId"
-      WHERE oi."orderId" IN (${orderIds.map((id) => `'${id}'`).join(",")})
+      WHERE oi."orderId" IN (${Prisma.join(orderIds)})
       ORDER BY oi."orderId"
-    `);
+    `;
 
     const byOrder: Record<string, string[]> = {};
     for (const item of items) {

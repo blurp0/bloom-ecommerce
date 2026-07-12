@@ -34,13 +34,15 @@ function relativeTime(dateStr: string): string {
 }
 
 function senderInitial(name: string): string {
-  return (name.charAt(0) ?? "?").toUpperCase();
+  return name.length === 0 ? "?" : (name.charAt(0) ?? "?").toUpperCase();
 }
 
 // ── Skeleton ───────────────────────────────────────────
 
 function MessageSkeleton() {
-  // Alternating left/right rows matching message shape — 5 rows
+  // Alternating left/right rows matching message shape — 5 rows with deterministic widths
+  const widths = [65, 55, 40, 70, 45]; // Fixed widths for each skeleton row
+
   return (
     <div className="flex flex-col gap-4 p-4" aria-busy="true">
       {Array.from({ length: 5 }).map((_, i) => {
@@ -58,15 +60,15 @@ function MessageSkeleton() {
               <Skeleton className="h-3 w-20 rounded" />
               <Skeleton
                 className="h-4 rounded"
-                style={{ width: `${60 + Math.random() * 30}%` }}
+                style={{ width: `${widths[0]}%` }}
               />
               <Skeleton
                 className="h-4 rounded"
-                style={{ width: `${40 + Math.random() * 25}%` }}
+                style={{ width: `${widths[1]}%` }}
               />
               <Skeleton
                 className="h-4 rounded"
-                style={{ width: `${25 + Math.random() * 20}%` }}
+                style={{ width: `${widths[2]}%` }}
               />
             </div>
           </div>

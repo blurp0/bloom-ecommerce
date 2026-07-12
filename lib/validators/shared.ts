@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Shared helper: validates that a string is a valid ISO date (YYYY-MM-DD)
- * *and* that the date is in the future.
+ * *and* that the date is in the future (Philippine business time).
  *
  * The client sends date-only strings (e.g. "2026-07-13"), not full ISO
  * datetimes. Use z.iso.date(), not z.iso.datetime(), to match what the
@@ -14,7 +14,19 @@ import { z } from "zod";
 export function futureIsoDate(fieldLabel = "Date") {
   return z.iso
     .date({ message: "Invalid date string (expected YYYY-MM-DD)" })
-    .refine((val) => new Date(val + "T00:00:00") > new Date(), {
+    .refine((val) => {
+      // Compare date-only values using Philippine business time (UTC+8)
+      const phTimeZone = "Asia/Manila";
+      const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: phTimeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      const now = new Date();
+      const phNow = formatter.format(now);
+      return val > phNow;
+    }, {
       message: `${fieldLabel} must be in the future`,
     });
 }

@@ -223,7 +223,8 @@ export default function FloatingMessageModal() {
   );
 
   // Synthetic conversation for orders with no messages yet (contact seller flow)
-  const hasFallbackConv = selectedOrderId && !selectedConv && fallbackOrder;
+  // Show fallback while needsFallbackOrder is loading, even if fallbackOrder is undefined
+  const hasFallbackConv = selectedOrderId && !selectedConv && (fallbackOrder || fallbackLoading);
 
   // Header label: from conversations list, or from fallback order data
   const headerLabel =
@@ -271,6 +272,11 @@ export default function FloatingMessageModal() {
         role="dialog"
         aria-modal="true"
         aria-label="Messages"
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            closeModal();
+          }
+        }}
       >
         {/* Header — single header, no duplication */}
         <div className="shrink-0">

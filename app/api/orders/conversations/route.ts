@@ -21,6 +21,10 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({ data: { conversations } });
   } catch (err) {
     console.error("GET /api/orders/conversations error:", err);
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === "404") {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

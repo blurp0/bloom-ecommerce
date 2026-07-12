@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Shield, User } from "lucide-react";
 import MessageThread from "@/features/order/components/MessageThread";
 import MessageInput from "@/features/order/components/MessageInput";
@@ -14,6 +15,10 @@ import MessageInput from "@/features/order/components/MessageInput";
  * Uses a toggle at top for switching perspective between Customer and Seller.
  */
 export default function MessageDemoPage() {
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   const params = useParams();
   const searchParams = useSearchParams();
   const orderId = params.orderId as string;

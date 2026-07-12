@@ -131,7 +131,7 @@ export default function ChatHub() {
     validOrderId,
   );
 
-  // Sync selectedOrderId with validated deep-link on data load
+  // Sync selectedOrderId with validated deep-link on data load — only apply once
   useEffect(() => {
     if (initialOrderId && conversations.some((c) => c.orderId === initialOrderId)) {
       setSelectedOrderId(initialOrderId);
@@ -139,7 +139,7 @@ export default function ChatHub() {
       // Deep-linked orderId not in conversations — clear
       setSelectedOrderId(null);
     }
-  }, [initialOrderId, conversations]);
+  }, [initialOrderId]); // Only track initialOrderId, not conversations
 
   const selectedConv = conversations.find(
     (c) => c.orderId === selectedOrderId,
