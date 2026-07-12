@@ -36,10 +36,9 @@ export function futureIsoDate(fieldLabel = "Date") {
 }
 
 /**
- * @deprecated Use futureIsoDate() instead. The client sends date-only
- * strings (YYYY-MM-DD), not full ISO datetimes. This function exists
- * only for backward compat with CreateProposalSchema (seller-side,
- * not yet built).
+ * @deprecated Use futureIsoDate() instead. This helper remains for backward
+ * compatibility with CreateProposalSchema (seller-side, actively used). Migration
+ * to futureIsoDate() must be tracked before removing this function.
  */
 export function futureIsoDateTime(fieldLabel = "Date") {
   return z.iso

@@ -161,7 +161,7 @@ export default function ChatHub() {
   );
 
   const handleBack = useCallback(() => {
-    userSelectedRef.current = false;
+    userSelectedRef.current = true; // Mark dismissal to prevent deep-link re-selection
     setSelectedOrderId(null);
   }, []);
 
