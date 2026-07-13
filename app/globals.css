@@ -338,6 +338,25 @@
   will-change: transform;
 }
 
+/* ── Slide-in-left Animation ─────────────────────────────────────────────────── */
+/*
+ * Mobile sidebar overlay push-in from left. Compositor-friendly (transform only).
+ * Duration 250ms ease-out. Suppressed by .reduce-motion and prefers-reduced-motion.
+ */
+@keyframes slide-in-left {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 250ms ease-out forwards;
+  will-change: transform;
+}
+
 /* ── Fly-to-Cart Animation ─────────────────────────────────────────────────── */
 /*
  * Signature motion moment: when "Add to Cart" is clicked in the customization
