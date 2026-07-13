@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import RatingBadge from "@/features/review/components/RatingBadge";
 
 export interface ProductCardProduct {
   id: string;
@@ -101,33 +101,13 @@ export default function ProductCard({ product }: ProductCardProps) {
         </p>
 
         {/* Review rating */}
-        {product.averageRating !== null && product.reviewCount > 0 && (
-          <div
-            className="mt-auto flex items-center gap-1.5"
-            aria-label={`Rated ${product.averageRating} out of 5 based on ${product.reviewCount} review${product.reviewCount === 1 ? "" : "s"}`}
-          >
-            <div className="flex items-center" aria-hidden="true">
-              {[1, 2, 3, 4, 5].map((star) => {
-                const filled = star <= Math.round(product.averageRating ?? 0);
-                return (
-                  <Star
-                    key={star}
-                    className={[
-                      "h-3.5 w-3.5",
-                      filled
-                        ? "fill-[var(--accent-primary)] text-[var(--accent-primary)]"
-                        : "fill-none text-[var(--border-default)]",
-                    ].join(" ")}
-                    aria-hidden="true"
-                  />
-                );
-              })}
-            </div>
-            <span className="text-caption text-text-muted">
-              ({product.reviewCount})
-            </span>
-          </div>
-        )}
+        <div className="mt-auto">
+          <RatingBadge
+            rating={product.averageRating ?? 0}
+            count={product.reviewCount}
+            size="small"
+          />
+        </div>
 
         {/* CTA */}
         <div className="mt-1">

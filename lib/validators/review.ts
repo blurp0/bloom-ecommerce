@@ -1,8 +1,17 @@
-import { z } from "zod";
+import { z } from 'zod';
 
+/**
+ * Schema for creating a review.
+ * Rating is required (1–5), text is optional (1–500 chars after trimming).
+ */
 export const CreateReviewSchema = z.strictObject({
-  rating: z.number().int("Rating must be an integer").min(1, "Rating must be at least 1").max(5, "Rating cannot exceed 5"),
-  comment: z.string().max(500, "Comment cannot exceed 500 characters").optional(),
+  rating: z.number().int().min(1).max(5, 'Rating must be between 1 and 5'),
+  text: z
+    .string()
+    .max(500, 'Review must be 500 characters or less')
+    .optional()
+    .transform(v => (v ? v.trim() : undefined))
+    .refine(v => !v || v.length > 0, 'Review cannot be only whitespace'),
 });
 
 export type CreateReviewInput = z.infer<typeof CreateReviewSchema>;

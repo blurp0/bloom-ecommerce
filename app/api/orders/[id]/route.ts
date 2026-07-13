@@ -82,14 +82,20 @@ export async function GET(
             },
           },
         },
+        reviews: {
+          where: { userId: internalUserId },
+          select: { id: true, comment: true },
+        },
       },
-    }) as OrderWithItems | null;
+    }) as (OrderWithItems & { reviews: { id: string; comment: string | null }[] }) | null;
 
     if (!order) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+    const hasOrderReview = order.reviews.length > 0;
+    const orderReviewText = order.reviews[0]?.comment ?? undefined;
 
     const STATUS_ORDER: Record<string, number> = {
       PENDING: 0,
@@ -127,8 +133,10 @@ export async function GET(
           customizations: item.customizations as Record<string, unknown>,
           unitPrice: price,
           itemTotal: Math.round((price * item.quantity + Number.EPSILON) * 100) / 100,
+          hasReview: hasOrderReview,
         };
       }),
+      orderReviewText,
       statusTimeline: [
         { status: "PENDING" as const, label: "Order Placed", date: order.createdAt.toISOString() },
         { status: "CONFIRMED" as const, label: "Confirmed", date: null },

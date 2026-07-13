@@ -4,19 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import ProductGallery, { GalleryImage } from "./ProductGallery";
+import RatingBadge from "@/features/review/components/RatingBadge";
+import ReviewList from "@/features/review/components/ReviewList";
+import { useReviews } from "@/features/review/hooks/useReviews";
 
 interface Variant {
   id: string;
   name: string;
   price: number;
-}
-
-interface Review {
-  id: string;
-  rating: number;
-  comment: string | null;
-  createdAt: string;
-  user: { name: string | null };
 }
 
 export interface ProductDetailData {
@@ -27,9 +22,6 @@ export interface ProductDetailData {
   category: { name: string; slug: string } | null;
   images: GalleryImage[];
   variants: Variant[];
-  averageRating: number | null;
-  reviewCount: number;
-  reviews: Review[];
 }
 
 type ProductDetailProps = {
@@ -45,42 +37,6 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
-function StarRating({ rating, count }: { rating: number | null; count: number }) {
-  if (count === 0 || rating === null) {
-    return (
-      <span className="text-sm text-[var(--text-muted)]">No Reviews Yet</span>
-    );
-  }
-  return (
-    <a
-      href="#reviews"
-      className="flex items-center gap-1.5 cursor-pointer group"
-      aria-label={`Rated ${rating} out of 5 based on ${count} review${count === 1 ? "" : "s"}. Jump to reviews.`}
-    >
-      <div className="flex items-center" aria-hidden="true">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={[
-              "h-4 w-4",
-              star <= Math.round(rating)
-                ? "fill-[var(--accent-primary)] text-[var(--accent-primary)]"
-                : "fill-none text-[var(--border-default)]",
-            ].join(" ")}
-            aria-hidden="true"
-          />
-        ))}
-      </div>
-      <span className="text-sm font-medium text-[var(--text-primary)]">
-        {rating}
-      </span>
-      <span className="text-sm text-[var(--text-muted)] group-hover:underline">
-        ({count} {count === 1 ? "Review" : "Reviews"})
-      </span>
-    </a>
-  );
-}
-
 /**
  * ProductDetail — interactive client component for the PDP.
  *
@@ -94,6 +50,15 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(
     product.variants[0] ?? null
   );
+
+  const {
+    reviews,
+    stats,
+    isLoading: reviewsLoading,
+    hasMore,
+    loadOlder,
+    isLoadOlderLoading,
+  } = useReviews(product.id);
 
   // Treat `variant.price` as a price adjustment relative to the product base price.
   // This matches the customization studio's pricing model where the studio
@@ -119,7 +84,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           </h1>
 
           {/* Rating */}
-          <StarRating rating={product.averageRating} count={product.reviewCount} />
+          <RatingBadge
+            rating={stats.averageRating}
+            count={stats.totalReviews}
+            size="default"
+            href="#reviews"
+          />
 
           {/* Price */}
           <p className="text-2xl font-semibold text-[var(--accent-secondary)]">
@@ -185,52 +155,13 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           Reviews
         </h2>
 
-        {product.reviews.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">
-            No reviews yet. Be the first to share your experience!
-          </p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {product.reviews.map((review) => (
-              <div
-                key={review.id}
-                className="clay-card rounded-[16px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-4 flex flex-col gap-2"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center" aria-hidden="true">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={[
-                          "h-3.5 w-3.5",
-                          star <= review.rating
-                            ? "fill-[var(--accent-primary)] text-[var(--accent-primary)]"
-                            : "fill-none text-[var(--border-default)]",
-                        ].join(" ")}
-                        aria-hidden="true"
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm font-medium text-[var(--text-primary)]">
-                    {review.user.name ?? "Customer"}
-                  </span>
-                  <span className="text-xs text-[var(--text-muted)] ml-auto">
-                    {new Date(review.createdAt).toLocaleDateString("en-PH", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </span>
-                </div>
-                {review.comment && (
-                  <p className="text-sm text-[var(--text-muted)]">
-                    {review.comment}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <ReviewList
+          reviews={reviews}
+          isLoading={reviewsLoading}
+          hasMore={hasMore}
+          onLoadOlder={loadOlder}
+          isLoadOlderLoading={isLoadOlderLoading}
+        />
       </section>
 
       {/* Mobile sticky CTA */}

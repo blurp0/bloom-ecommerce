@@ -18,6 +18,7 @@ import {
 import { useOrder, type OrderDetailData } from "@/features/order/hooks/useOrders";
 import { useOrderStatus } from "@/features/order/hooks/useOrderStatus";
 import { useChatModalStore } from "@/features/order/store/chat-modal-store";
+import ReviewSection from "@/features/review/components/ReviewSection";
 
 // ── Status Timeline Configuration ─────────────────────
 
@@ -399,6 +400,17 @@ function OrderDetailContent({ order }: OrderDetailContentProps) {
         <CancelledBanner />
       ) : (
         <StatusTimeline currentStatus={liveStatus} />
+      )}
+
+      {/* Review section — only for DELIVERED orders */}
+      {order.items.length > 0 && (
+        <ReviewSection
+          orderId={order.id}
+          orderStatus={liveStatus}
+          productId={order.items[0].productId}
+          hasExistingReview={order.items[0].hasReview ?? false}
+          existingReviewText={order.orderReviewText}
+        />
       )}
 
       {/* Action buttons */}
