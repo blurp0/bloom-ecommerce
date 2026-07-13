@@ -20,7 +20,7 @@ export default function CustomizationLanding() {
     data: featuredData,
     isLoading: featuredLoading,
     isError: featuredError,
-  } = useProducts({ featured: "true", limit: "8" });
+  } = useProducts({ featured: true, limit: 8 });
 
   const featuredProducts = featuredData?.products ?? [];
   const hasFeatured = featuredProducts.length > 0;
@@ -29,7 +29,7 @@ export default function CustomizationLanding() {
     data: fallbackData,
     isLoading: fallbackLoading,
     isError: fallbackError,
-  } = useProducts({ limit: "8" }, { enabled: !featuredLoading && !hasFeatured });
+  } = useProducts({ limit: 8 }, { enabled: !featuredLoading && !hasFeatured });
 
   const isLoading = featuredLoading || (!hasFeatured && fallbackLoading);
 

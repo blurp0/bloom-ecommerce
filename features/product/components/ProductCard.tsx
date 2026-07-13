@@ -1,35 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import RatingBadge from "@/features/review/components/RatingBadge";
-
-export interface ProductCardProduct {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  basePrice: number;
-  averageRating: number | null;
-  reviewCount: number;
-  images: Array<{
-    id: string;
-    url: string;
-    alt: string | null;
-    order: number;
-  }>;
-}
-
-/**
- * Formats a number as PHP currency string.
- * Uses Intl.NumberFormat for correct locale-aware formatting.
- */
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-}
+import type { ProductCardProduct } from "../types";
+import { formatPrice } from "../utils/formatting";
 
 type ProductCardProps = {
   product: ProductCardProduct;
@@ -43,13 +16,10 @@ type ProductCardProps = {
  * detail page for keyboard and touch accessibility.
  *
  * Design tokens:
- *   - `.clay-card` — claymorphism shadow / hover lift (globals.css)
+ *   - `clay-card` — claymorphism shadow / hover lift (globals.css)
  *   - `rounded-[16px]` — card-level border radius (per ui-ux-context.md)
  *   - `border-border-default` — decorative outline only
  *   - `focus-visible:ring-2 ring-[var(--accent-primary)]` — keyboard focus
- *
- * Mobile (below md): shadow capped at `sm`, hover lift suppressed —
- * handled by globals.css `.clay-card` media query.
  */
 export default function ProductCard({ product }: ProductCardProps) {
   const primaryImage = product.images[0];

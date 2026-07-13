@@ -26,7 +26,7 @@ const OCCASION_TILES = [
 
 export function HomeBento() {
   const router = useRouter()
-  const { data, isLoading } = useProducts({ featured: "true", limit: "2" })
+  const { data, isLoading } = useProducts({ featured: true, limit: 2 })
   const featuredProducts = data?.products ?? []
 
   return (

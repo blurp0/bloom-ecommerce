@@ -1,54 +1,20 @@
 "use client";
 
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import type { ProductCardProduct } from "../components/ProductCard";
-
-export type ProductsResponse = {
-  products: ProductCardProduct[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  } | null;
-};
-
-export type ProductsParams = Record<string, string | undefined>;
-
-/**
- * Builds a normalized, stable query string from params.
- *
- * Keys are sorted alphabetically before appending to URLSearchParams so
- * identical filters always produce the same string regardless of the order
- * they were inserted — preventing spurious cache misses.
- * Undefined/empty values are omitted.
- */
-function buildQueryString(params: ProductsParams): string {
-  const searchParams = new URLSearchParams();
-  // Sort keys for a stable, order-independent cache key.
-  for (const key of Object.keys(params).sort()) {
-    const value = params[key];
-    if (value !== undefined && value !== "") {
-      searchParams.set(key, value);
-    }
-  }
-  return searchParams.toString();
-}
+import type { ProductsResponse, ProductFilterParams } from "../types";
+import { buildProductQueryString } from "../utils/filtering";
 
 /**
  * useProducts — TanStack Query hook for fetching filtered product listings.
  *
- * Accepts a params object mirroring URL query params and refetches
- * automatically when params change (via the query key).
+ * Accepts a params object with filtering, sorting, and pagination options
+ * and refetches automatically when params change (via the query key).
  *
  * Usage:
- *   const { data, isFetching, isLoading, error } = useProducts({ category: "crochet-bouquets", sort: "price_asc" });
+ *   const { data, isFetching, isLoading, error } = useProducts({ category: "wedding", sort: "price_asc" });
  */
-export function useProducts(
-  params: ProductsParams = {},
-  options: { enabled?: boolean } = {}
-) {
-  const queryString = buildQueryString(params);
+export function useProducts(params: ProductFilterParams = {}, options: { enabled?: boolean } = {}) {
+  const queryString = buildProductQueryString(params);
 
   return useQuery<ProductsResponse>({
     queryKey: ["products", queryString],
