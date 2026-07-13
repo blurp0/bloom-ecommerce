@@ -12,15 +12,17 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useCallback } from "react";
+import { adminNavItems } from "../utils/formatting";
 
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
-  { href: "/admin/inventory", label: "Inventory", icon: Box },
-  { href: "/admin/messages", label: "Messages", icon: MessageCircle },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-];
+// Map icon names to actual components
+const iconMap = {
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Box,
+  MessageCircle,
+  BarChart3,
+} as const;
 
 interface AdminSidebarProps {
   open: boolean;
@@ -48,7 +50,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
   /* Close on route change */
   useEffect(() => {
     onClose();
-  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pathname, onClose]);
 
   const sidebarContent = (
     <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-border-default bg-bg-surface">
@@ -65,12 +67,12 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
       {/* Nav links */}
       <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Admin navigation">
         <ul className="flex flex-col gap-1">
-          {navItems.map((item) => {
+          {adminNavItems.map((item) => {
             const isActive =
               item.href === "/admin"
                 ? pathname === "/admin"
                 : pathname.startsWith(item.href);
-            const Icon = item.icon;
+            const Icon = iconMap[item.iconName];
 
             return (
               <li key={item.href}>

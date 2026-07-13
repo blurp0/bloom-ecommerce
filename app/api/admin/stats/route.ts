@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/clerk/roles";
+import { getDashboardStats } from "@/lib/dal/dashboard";
 
 export async function GET() {
   try {
@@ -10,5 +11,12 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({ stats: "ok" });
+  try {
+    const stats = await getDashboardStats();
+    return NextResponse.json({ data: stats });
+  } catch (error) {
+    console.error("Dashboard stats fetch failed:", error);
+    return NextResponse.json({ error: "Failed to fetch dashboard stats" }, { status: 500 });
+  }
 }
+

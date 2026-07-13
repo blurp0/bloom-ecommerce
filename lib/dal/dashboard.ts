@@ -1,14 +1,11 @@
+/**
+ * Dashboard Data Access Layer
+ * Server-side queries for admin dashboard statistics
+ */
+
 import { prisma } from "@/lib/prisma/client";
 import { OrderStatus } from "@prisma/client";
-
-export interface DashboardStats {
-  ordersToday: number;
-  ordersTrend: "up" | "down" | "stable";
-  revenueToday: number;
-  revenueTrend: "up" | "down" | "stable";
-  pendingOrders: number;
-  lowStockAlerts: number;
-}
+import type { AdminDashboardStats } from "@/features/admin/types";
 
 function getManilaDayRange(date: Date = new Date()): { startOfDay: Date; endOfDay: Date } {
   const manilaOffset = 8 * 60 * 60 * 1000;
@@ -33,7 +30,7 @@ export function getTrendDirection(value: number, previousValue: number): "up" | 
   return "stable";
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+export async function getDashboardStats(): Promise<AdminDashboardStats> {
   const today = getManilaDayRange();
   const yesterday = getManilaDayRange(new Date(Date.now() - 86_400_000));
 

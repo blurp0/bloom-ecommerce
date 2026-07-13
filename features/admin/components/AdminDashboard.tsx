@@ -6,26 +6,33 @@ import {
   Clock,
   AlertCircle,
   Package,
-  ShoppingCart,
   Box,
   MessageCircle,
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import type { DashboardStats } from "@/lib/dal/dashboard";
+import type { AdminDashboardStats } from "../types";
+import { formatPHP, formatTrendIndicator, adminQuickActions } from "../utils/formatting";
 
 interface AdminDashboardProps {
-  stats: DashboardStats;
+  stats: AdminDashboardStats;
 }
 
 function TrendIndicator({ direction }: { direction: "up" | "down" | "stable" }) {
-  if (direction === "up") return <span className="text-state-success" aria-label="Up">↑</span>;
-  if (direction === "down") return <span className="text-state-error" aria-label="Down">↓</span>;
-  return <span className="text-text-muted" aria-label="Stable">→</span>;
-}
+  const indicator = formatTrendIndicator(direction);
+  const ariaLabel = direction === "up" ? "Up" : direction === "down" ? "Down" : "Stable";
+  const colorClass =
+    direction === "up"
+      ? "text-state-success"
+      : direction === "down"
+        ? "text-state-error"
+        : "text-text-muted";
 
-function formatPHP(amount: number): string {
-  return `₱${amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return (
+    <span className={colorClass} aria-label={ariaLabel}>
+      {indicator}
+    </span>
+  );
 }
 
 interface KpiCardProps {
@@ -34,7 +41,6 @@ interface KpiCardProps {
   value: string;
   trend?: "up" | "down" | "stable";
   badge?: string;
-  badgeColor?: "red" | "default";
 }
 
 function KpiCard({ icon: Icon, label, value, trend, badge }: KpiCardProps) {
@@ -66,22 +72,13 @@ function KpiCard({ icon: Icon, label, value, trend, badge }: KpiCardProps) {
   );
 }
 
-const quickActions = [
-  { href: "/admin/orders", label: "View All Orders", icon: ShoppingBag },
-  { href: "/admin/products", label: "Manage Products", icon: Package },
-  { href: "/admin/inventory", label: "Check Inventory", icon: Box },
-  { href: "/admin/messages", label: "View Messages", icon: MessageCircle },
-];
-
-function QuickActionButton({
-  href,
-  label,
-  icon: Icon,
-}: {
+interface QuickActionButtonProps {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
-}) {
+}
+
+function QuickActionButton({ href, label, icon: Icon }: QuickActionButtonProps) {
   return (
     <Link
       href={href}
@@ -97,15 +94,22 @@ function QuickActionButton({
   );
 }
 
+// Map icon names to actual icon components
+const iconMap = {
+  ShoppingBag,
+  Package,
+  Box,
+  MessageCircle,
+  TrendingUp,
+} as const;
+
 export function AdminDashboard({ stats }: AdminDashboardProps) {
   return (
     <div>
       <h1 className="font-heading text-[32px] leading-[38px] font-normal text-text-primary">
         Dashboard
       </h1>
-      <p className="mt-1 text-sm text-text-muted">
-        Overview of your store at a glance.
-      </p>
+      <p className="mt-1 text-sm text-text-muted">Overview of your store at a glance.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Revenue Today — primary KPI, spans 2 cols on md+ */}
@@ -127,11 +131,7 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
         />
 
         {/* Pending Orders */}
-        <KpiCard
-          icon={Clock}
-          label="Pending Orders"
-          value={String(stats.pendingOrders)}
-        />
+        <KpiCard icon={Clock} label="Pending Orders" value={String(stats.pendingOrders)} />
 
         {/* Low Stock Alerts */}
         <KpiCard
@@ -158,9 +158,17 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
         <div className="flex flex-col gap-3 rounded-2xl bg-bg-surface p-5 shadow-clay-sm md:col-span-2 lg:col-span-3">
           <p className="text-sm font-medium text-text-muted">Quick Actions</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {quickActions.map((action) => (
-              <QuickActionButton key={action.href} {...action} />
-            ))}
+            {adminQuickActions.map((action) => {
+              const IconComponent = iconMap[action.iconName];
+              return (
+                <QuickActionButton
+                  key={action.href}
+                  href={action.href}
+                  label={action.label}
+                  icon={IconComponent}
+                />
+              );
+            })}
           </div>
         </div>
       </div>

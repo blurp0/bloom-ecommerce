@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useClerk } from "@clerk/nextjs";
 import { LogOut } from "lucide-react";
+import { useCallback } from "react";
 import AdminSidebar from "./AdminSidebar";
 import AdminNavToggle from "./AdminNavToggle";
+import { useAdminUIStore } from "../store/useAdminUIStore";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { sidebarOpen, setSidebarOpen } = useAdminUIStore();
   const { signOut } = useClerk();
 
-  const openSidebar = useCallback(() => setSidebarOpen(true), []);
-  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const openSidebar = useCallback(() => setSidebarOpen(true), [setSidebarOpen]);
+  const closeSidebar = useCallback(() => setSidebarOpen(false), [setSidebarOpen]);
 
   return (
     <div className="flex h-screen overflow-hidden">
