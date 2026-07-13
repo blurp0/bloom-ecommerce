@@ -35,6 +35,10 @@ type OrderWithItems = Prisma.OrderGetPayload<{
         };
       };
     };
+    reviews: {
+      where: { userId: string };
+      select: { id: true; comment: true };
+    };
   };
 }>;
 
@@ -87,7 +91,7 @@ export async function GET(
           select: { id: true, comment: true },
         },
       },
-    }) as (OrderWithItems & { reviews: { id: string; comment: string | null }[] }) | null;
+    }) as OrderWithItems | null;
 
     if (!order) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -120,6 +124,8 @@ export async function GET(
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
       itemCount,
+      hasReview: hasOrderReview,
+      orderReviewText,
       items: order.items.map((item) => {
         const price = Number(item.price);
         return {
@@ -133,10 +139,8 @@ export async function GET(
           customizations: item.customizations as Record<string, unknown>,
           unitPrice: price,
           itemTotal: Math.round((price * item.quantity + Number.EPSILON) * 100) / 100,
-          hasReview: hasOrderReview,
         };
       }),
-      orderReviewText,
       statusTimeline: [
         { status: "PENDING" as const, label: "Order Placed", date: order.createdAt.toISOString() },
         { status: "CONFIRMED" as const, label: "Confirmed", date: null },

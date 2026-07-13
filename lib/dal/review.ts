@@ -62,14 +62,17 @@ export async function getProductReviews(
 
   const skip = (page - 1) * limit;
 
-  // Fetch reviews for this product (newest first)
-  const reviewsData = (await prisma.review.findMany({
-    where: { productId },
-    include: reviewWithUserInclude,
-    orderBy: { createdAt: 'desc' },
-    skip,
-    take: limit + 1, // +1 to check if more exist
-  })) as ReviewWithUser[];
+  // Fetch reviews and stats concurrently
+  const [reviewsData, stats] = await Promise.all([
+    prisma.review.findMany({
+      where: { productId },
+      include: reviewWithUserInclude,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit + 1, // +1 to check if more exist
+    }) as unknown as Promise<ReviewWithUser[]>,
+    getReviewStats(productId),
+  ]);
 
   const hasMore = reviewsData.length > limit;
   const paginatedReviews = reviewsData.slice(0, limit);
@@ -82,9 +85,6 @@ export async function getProductReviews(
     createdAt: r.createdAt,
     authorName: r.user.name ? r.user.name.split(' ')[0] : 'Anonymous',
   }));
-
-  // Calculate stats
-  const stats = await getReviewStats(productId);
 
   return {
     reviews: transformedReviews,

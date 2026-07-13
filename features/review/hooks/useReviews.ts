@@ -55,13 +55,16 @@ async function fetchReviews(
 
 /**
  * TanStack Query hook for fetching paginated product reviews.
- * Caches for 5 minutes. Uses manual multi-page tracking.
+ * Caches for 5 minutes. Merges reviews from all loaded pages
+ * so loadOlder appends older reviews without replacing the current view.
  */
 export function useReviews(productId: string): UseReviewsReturn {
+  // Track all fetched pages so we can merge them
+  const [pageData, setPageData] = useState<Map<number, ReviewItem[]>>(new Map());
+
   const [pages, setPages] = useState<number[]>([1]);
   const latestPage = pages[pages.length - 1];
 
-  // Fetch latest page
   const {
     data,
     isLoading: isQueryLoading,
@@ -73,16 +76,27 @@ export function useReviews(productId: string): UseReviewsReturn {
     enabled: !!productId,
   });
 
-  // Merge all fetched pages
+  // Store fetched page data on success
+  if (data?.data.reviews && !pageData.has(latestPage)) {
+    setPageData((prev) => {
+      const next = new Map(prev);
+      next.set(latestPage, data.data.reviews);
+      return next;
+    });
+  }
+
+  // Merge reviews from all loaded pages in descending page order (newest first)
   const allReviews: ReviewItem[] = [];
+  const sortedPages = [...pages].sort((a, b) => a - b); // page 1 = newest, page 2 = older
+  for (const page of sortedPages) {
+    const pageReviews = pageData.get(page);
+    if (pageReviews) {
+      allReviews.push(...pageReviews);
+    }
+  }
+
   const stats: ReviewStats = data?.data?.stats ?? { averageRating: 0, totalReviews: 0 };
   const hasMore = data?.data?.hasMore ?? false;
-
-  // We can't merge across pages without keeping page data; for now,
-  // data from the current page is returned and loadOlder appends pages
-  if (data?.data.reviews) {
-    allReviews.push(...data.data.reviews);
-  }
 
   const loadOlder = () => {
     if (!hasMore || isQueryLoading) return;

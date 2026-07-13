@@ -1,13 +1,9 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { CreateReviewInput } from '@/lib/validators/review';
 
 // ── Types ─────────────────────────────────────────────
-
-interface CreateReviewInput {
-  rating: number;
-  text?: string;
-}
 
 interface CreateReviewResponse {
   data: {
@@ -24,7 +20,7 @@ interface CreateReviewResponse {
 /**
  * TanStack Query mutation for creating a review.
  * POST /api/products/[productId]/reviews?orderId=<orderId>
- * Invalidates product reviews cache on success.
+ * Invalidates product reviews + order detail cache on success.
  */
 export function useCreateReview(productId: string, orderId: string) {
   const queryClient = useQueryClient();
@@ -51,6 +47,8 @@ export function useCreateReview(productId: string, orderId: string) {
       queryClient.invalidateQueries({ queryKey: ['products', productId, 'reviews'] });
       // Also invalidate the product detail data to update avgRating
       queryClient.invalidateQueries({ queryKey: ['products', productId] });
+      // Refresh order detail to mark item as reviewed
+      queryClient.invalidateQueries({ queryKey: ['order', orderId] });
     },
   });
 

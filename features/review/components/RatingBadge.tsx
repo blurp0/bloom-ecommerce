@@ -35,6 +35,7 @@ export default function RatingBadge({ rating, count, size = 'default', href }: R
     );
   }
 
+  const displayRating = Math.round(rating * 10) / 10;
   const starSize = isSmall ? 'h-3.5 w-3.5' : 'h-4 w-4';
   const textSize = isSmall ? 'text-xs' : 'text-sm';
   const gap = isSmall ? 'gap-1' : 'gap-2';
@@ -46,7 +47,7 @@ export default function RatingBadge({ rating, count, size = 'default', href }: R
         aria-hidden="true"
       />
       <span className={`${textSize} font-semibold text-[var(--text-primary)]`}>
-        {rating}
+        {displayRating}
       </span>
       <span className={`${textSize} text-[var(--text-muted)]`}>
         ({count} {isSmall ? '' : count === 1 ? 'review' : 'reviews'})
@@ -59,7 +60,7 @@ export default function RatingBadge({ rating, count, size = 'default', href }: R
       <a
         href={href}
         className="cursor-pointer"
-        aria-label={`Rated ${rating} out of 5 based on ${count} ${count === 1 ? 'review' : 'reviews'}. Click to see reviews.`}
+        aria-label={`Rated ${displayRating} out of 5 based on ${count} ${count === 1 ? 'review' : 'reviews'}. Click to see reviews.`}
       >
         {content}
       </a>
@@ -68,7 +69,7 @@ export default function RatingBadge({ rating, count, size = 'default', href }: R
 
   return (
     <div
-      aria-label={`Rated ${rating} out of 5 based on ${count} ${count === 1 ? 'review' : 'reviews'}`}
+      aria-label={`Rated ${displayRating} out of 5 based on ${count} ${count === 1 ? 'review' : 'reviews'}`}
     >
       {content}
     </div>

@@ -83,13 +83,15 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             {product.name}
           </h1>
 
-          {/* Rating */}
-          <RatingBadge
-            rating={stats.averageRating}
-            count={stats.totalReviews}
-            size="default"
-            href="#reviews"
-          />
+          {/* Rating — hidden while loading to avoid "No ratings yet" flash */}
+          {!reviewsLoading && (
+            <RatingBadge
+              rating={stats.averageRating}
+              count={stats.totalReviews}
+              size="default"
+              href="#reviews"
+            />
+          )}
 
           {/* Price */}
           <p className="text-2xl font-semibold text-[var(--accent-secondary)]">

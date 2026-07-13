@@ -22,7 +22,6 @@ export interface OrderItemDetail {
   customizations: Record<string, unknown>;
   unitPrice: number;
   itemTotal: number;
-  hasReview?: boolean;
 }
 
 export interface StatusTimelineEntry {
@@ -44,9 +43,10 @@ export interface OrderDetailData {
   createdAt: string;
   updatedAt: string;
   itemCount: number;
+  hasReview: boolean;
+  orderReviewText?: string;
   items: OrderItemDetail[];
   statusTimeline: StatusTimelineEntry[];
-  orderReviewText?: string;
 }
 
 interface OrdersResponse {

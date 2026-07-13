@@ -408,7 +408,7 @@ function OrderDetailContent({ order }: OrderDetailContentProps) {
           orderId={order.id}
           orderStatus={liveStatus}
           productId={order.items[0].productId}
-          hasExistingReview={order.items[0].hasReview ?? false}
+          hasExistingReview={order.hasReview ?? false}
           existingReviewText={order.orderReviewText}
         />
       )}
