@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { getProductReviews, createReview } from '@/lib/dal/review';
+import { getProductReviews, createReview } from '@/features/review/dal/review';
 import { CreateReviewSchema } from '@/lib/validators/review';
 import { prisma } from '@/lib/prisma/client';
 

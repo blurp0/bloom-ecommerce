@@ -4,6 +4,8 @@ import { useCallback, useState, useRef, type FormEvent } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
+import { OCCASIONS } from "@/lib/occasions-config";
+
 /**
  * Sort options matching the API's sort parameter.
  */
@@ -19,16 +21,8 @@ const SORT_OPTIONS = [
  */
 const OCCASION_OPTIONS = [
   { value: "", label: "All Occasions" },
-  { value: "wedding", label: "Wedding" },
-  { value: "birthday", label: "Birthday" },
-  { value: "anniversary", label: "Anniversary" },
-  { value: "sympathy", label: "Sympathy" },
-  { value: "graduation", label: "Graduation" },
-  { value: "congratulations", label: "Congratulations" },
-  { value: "just-because", label: "Just Because" },
-  { value: "valentines", label: "Valentine's Day" },
-  { value: "christmas", label: "Christmas" },
-] as const;
+  ...OCCASIONS.map((o) => ({ value: o.slug, label: o.label })),
+];
 
 type ProductFiltersProps = {
   categories: Array<{ slug: string; name: string }>;

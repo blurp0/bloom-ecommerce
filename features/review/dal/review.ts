@@ -1,26 +1,6 @@
 import { prisma } from '@/lib/prisma/client';
 import { Prisma } from '@prisma/client';
-
-// ── Types ─────────────────────────────────────────────
-
-export interface ReviewResult {
-  id: string;
-  rating: number;
-  text: string | null;
-  createdAt: Date;
-  authorName: string;
-}
-
-export interface ReviewStats {
-  averageRating: number;
-  totalReviews: number;
-}
-
-export interface PaginatedReviews {
-  reviews: ReviewResult[];
-  stats: ReviewStats;
-  hasMore: boolean;
-}
+import type { ReviewResult, ReviewStats, PaginatedReviews } from '../types';
 
 // ── Prisma Types ───────────────────────────────────────
 

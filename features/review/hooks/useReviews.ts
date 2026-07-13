@@ -3,38 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-// ── Types ─────────────────────────────────────────────
-
-export interface ReviewItem {
-  id: string;
-  rating: number;
-  text: string | null;
-  createdAt: string;
-  authorName: string;
-}
-
-interface ReviewStats {
-  averageRating: number;
-  totalReviews: number;
-}
-
-interface FetchReviewsResponse {
-  data: {
-    reviews: ReviewItem[];
-    stats: ReviewStats;
-    hasMore: boolean;
-  };
-}
-
-interface UseReviewsReturn {
-  reviews: ReviewItem[];
-  stats: ReviewStats;
-  isLoading: boolean;
-  error: Error | null;
-  hasMore: boolean;
-  loadOlder: () => void;
-  isLoadOlderLoading: boolean;
-}
+import type { ReviewItem, ReviewStats, FetchReviewsResponse, UseReviewsReturn } from '../types';
 
 // ── Fetch helper ──────────────────────────────────────
 

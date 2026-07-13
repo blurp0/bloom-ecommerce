@@ -8,6 +8,8 @@ import { BentoGrid } from "@/components/shared/BentoGrid"
 import { useProducts } from "@/features/product/hooks/useProducts"
 import { Skeleton } from "@/components/ui/skeleton"
 
+import { OCCASIONS } from "@/lib/occasions-config"
+
 function formatPrice(price: number) {
   return new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -17,12 +19,12 @@ function formatPrice(price: number) {
   }).format(price)
 }
 
-const OCCASION_TILES = [
-  { label: "Weddings", emoji: "💍", slug: "wedding" },
-  { label: "Birthdays", emoji: "🎂", slug: "birthday" },
-  { label: "Anniversary", emoji: "🥂", slug: "anniversary" },
-  { label: "Just Because", emoji: "🎁", slug: "just-because" },
-]
+// Map the first 4 occasions for the homepage tiles
+const OCCASION_TILES = OCCASIONS.slice(0, 4).map((o) => ({
+  label: o.label,
+  emoji: o.emoji,
+  slug: o.slug,
+}))
 
 export function HomeBento() {
   const router = useRouter()

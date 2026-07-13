@@ -15,18 +15,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
+import { formatDate } from "@/lib/date";
+
 type ProposalStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 function formatPhp(amount: number | string) {
   const n = typeof amount === "string" ? Number(amount) : amount;
   if (Number.isNaN(n)) return "₱0.00";
   return new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(n);
-}
-
-function formatDate(value: string | Date) {
-  const d = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "2-digit" });
 }
 
 function statusBadgeVariant(status: ProposalStatus) {

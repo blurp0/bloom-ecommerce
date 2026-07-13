@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
+import { OCCASIONS } from "@/lib/occasions-config";
+
 type FieldKey =
   | "flowers"
   | "colors"
@@ -25,13 +27,7 @@ type FieldKey =
   | "referenceImages";
 
 const OCCASION_OPTIONS = [
-  "Wedding",
-  "Birthday",
-  "Anniversary",
-  "Sympathy",
-  "Graduation",
-  "Corporate",
-  "Get Well",
+  ...OCCASIONS.map((o) => o.label),
   "Other",
 ] as const;
 
