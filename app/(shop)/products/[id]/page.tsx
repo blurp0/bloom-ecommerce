@@ -15,10 +15,6 @@ const productInclude = {
   category: true,
   images: { orderBy: { order: "asc" as const } },
   variants: { orderBy: { price: "asc" as const } },
-  reviews: {
-    orderBy: { createdAt: "desc" as const },
-    include: { user: { select: { name: true } } },
-  },
 } satisfies Prisma.ProductInclude;
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
@@ -31,6 +27,7 @@ const VALID_SLUG = /^[a-z0-9-]{2,100}$/;
 /**
  * React.cache() ensures generateMetadata and ProductDetailPage share a
  * single Prisma call per request — no double-fetch per server render.
+ * Reviews are now fetched client-side via /api/products/[id]/reviews.
  */
 const fetchProduct = cache(
   async (slug: string): Promise<ProductWithRelations | null> => {
@@ -43,12 +40,6 @@ const fetchProduct = cache(
 );
 
 function toDetailData(product: ProductWithRelations) {
-  const reviewCount = product.reviews.length;
-  const averageRating =
-    reviewCount > 0
-      ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
-      : null;
-
   return {
     id: product.id,
     name: product.name,
@@ -62,16 +53,6 @@ function toDetailData(product: ProductWithRelations) {
       id: v.id,
       name: v.name,
       price: Number(v.price),
-    })),
-    averageRating:
-      averageRating !== null ? Math.round(averageRating * 10) / 10 : null,
-    reviewCount,
-    reviews: product.reviews.map((r) => ({
-      id: r.id,
-      rating: r.rating,
-      comment: r.comment,
-      createdAt: r.createdAt.toISOString(),
-      user: { name: r.user.name },
     })),
   };
 }

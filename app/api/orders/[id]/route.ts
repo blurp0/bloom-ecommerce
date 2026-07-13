@@ -35,6 +35,10 @@ type OrderWithItems = Prisma.OrderGetPayload<{
         };
       };
     };
+    reviews: {
+      where: { userId: string };
+      select: { id: true; comment: true };
+    };
   };
 }>;
 
@@ -82,6 +86,10 @@ export async function GET(
             },
           },
         },
+        reviews: {
+          where: { userId: internalUserId },
+          select: { id: true, comment: true },
+        },
       },
     }) as OrderWithItems | null;
 
@@ -90,6 +98,8 @@ export async function GET(
     }
 
     const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+    const hasOrderReview = order.reviews.length > 0;
+    const orderReviewText = order.reviews[0]?.comment ?? undefined;
 
     const STATUS_ORDER: Record<string, number> = {
       PENDING: 0,
@@ -114,6 +124,8 @@ export async function GET(
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
       itemCount,
+      hasReview: hasOrderReview,
+      orderReviewText,
       items: order.items.map((item) => {
         const price = Number(item.price);
         return {

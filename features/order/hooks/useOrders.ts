@@ -43,6 +43,8 @@ export interface OrderDetailData {
   createdAt: string;
   updatedAt: string;
   itemCount: number;
+  hasReview: boolean;
+  orderReviewText?: string;
   items: OrderItemDetail[];
   statusTimeline: StatusTimelineEntry[];
 }

@@ -11,12 +11,14 @@ import {
   MapPin,
   CreditCard,
   Calendar,
-  MessageSquare,
   ChevronLeft,
+  MessageSquare,
   XCircle,
 } from "lucide-react";
 import { useOrder, type OrderDetailData } from "@/features/order/hooks/useOrders";
 import { useOrderStatus } from "@/features/order/hooks/useOrderStatus";
+import { useChatModalStore } from "@/features/order/store/chat-modal-store";
+import ReviewSection from "@/features/review/components/ReviewSection";
 
 // ── Status Timeline Configuration ─────────────────────
 
@@ -199,6 +201,7 @@ interface OrderDetailContentProps {
 function OrderDetailContent({ order }: OrderDetailContentProps) {
   const { status: liveStatus } = useOrderStatus(order.id, order.status);
   const [isVisible, setIsVisible] = useState(false);
+  const openMessages = useChatModalStore((s) => s.openModal);
 
   // Entrance animation
   useEffect(() => {
@@ -399,8 +402,19 @@ function OrderDetailContent({ order }: OrderDetailContentProps) {
         <StatusTimeline currentStatus={liveStatus} />
       )}
 
+      {/* Review section — only for DELIVERED orders */}
+      {order.items.length > 0 && (
+        <ReviewSection
+          orderId={order.id}
+          orderStatus={liveStatus}
+          productId={order.items[0].productId}
+          hasExistingReview={order.hasReview ?? false}
+          existingReviewText={order.orderReviewText}
+        />
+      )}
+
       {/* Action buttons */}
-      <div className="flex flex-col sm:flex-row items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <Link
           href="/orders"
           className={[
@@ -416,25 +430,20 @@ function OrderDetailContent({ order }: OrderDetailContentProps) {
           Back to Orders
         </Link>
 
-        {/* Message Seller — disabled placeholder until Phase 8 */}
-        <div className="group relative">
-          <button
-            type="button"
-            disabled
-            className={[
-              "inline-flex items-center gap-2 rounded-[12px] px-6 py-2.5 text-sm font-semibold",
-              "text-[var(--text-muted)] bg-[var(--bg-elevated)] border border-[var(--border-default)]",
-              "cursor-not-allowed opacity-60",
-              "transition-all duration-200 ease-out",
-            ].join(" ")}
-          >
-            <MessageSquare className="h-4 w-4" />
-            Message Seller
-          </button>
-          <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[var(--text-primary)] px-2 py-1 text-xs text-[var(--bg-surface)] opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-            Coming in a future update
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={() => openMessages(order.id)}
+          className={[
+            "inline-flex items-center gap-2 rounded-[12px] px-6 py-2.5 text-sm font-semibold",
+            "text-[var(--accent-secondary)] bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20",
+            "hover:bg-[var(--accent-primary)]/20 active:scale-95",
+            "transition-all duration-200 ease-out",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
+          ].join(" ")}
+        >
+          <MessageSquare className="h-4 w-4" />
+          Contact Seller
+        </button>
       </div>
     </div>
   );
