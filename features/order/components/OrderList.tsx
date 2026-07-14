@@ -9,57 +9,11 @@ import {
   AlertCircle,
   ArrowRight,
 } from "lucide-react";
-import { useOrders, type OrderListItem } from "@/features/order/hooks/useOrders";
+import { useOrders } from "@/features/order/hooks/useOrders";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { toast } from "sonner";
-
-// ── Status Badge Configuration ────────────────────────
-
-interface StatusStyle {
-  bg: string;
-  text: string;
-  dot: string;
-  label: string;
-}
-
-const STATUS_STYLES: Record<string, StatusStyle> = {
-  PENDING: {
-    bg: "bg-[var(--state-warning)]/10",
-    text: "text-[var(--state-warning)]",
-    dot: "bg-[var(--state-warning)]",
-    label: "Pending",
-  },
-  CONFIRMED: {
-    bg: "bg-[var(--accent-primary)]/30",
-    text: "text-[var(--accent-primary-foreground)]",
-    dot: "bg-[var(--accent-secondary)]",
-    label: "Confirmed",
-  },
-  PREPARING: {
-    bg: "bg-purple-100 dark:bg-purple-900/20",
-    text: "text-purple-700 dark:text-purple-300",
-    dot: "bg-purple-500",
-    label: "Preparing",
-  },
-  OUT_FOR_DELIVERY: {
-    bg: "bg-orange-100 dark:bg-orange-900/20",
-    text: "text-orange-700 dark:text-orange-300",
-    dot: "bg-orange-500",
-    label: "Out for Delivery",
-  },
-  DELIVERED: {
-    bg: "bg-[var(--state-success)]/10",
-    text: "text-[var(--state-success)]",
-    dot: "bg-[var(--state-success)]",
-    label: "Delivered",
-  },
-  CANCELLED: {
-    bg: "bg-[var(--state-error)]/10",
-    text: "text-[var(--state-error)]",
-    dot: "bg-[var(--state-error)]",
-    label: "Cancelled",
-  },
-};
+import type { OrderListItem } from "../types";
+import { STATUS_STYLES, formatOrderDate, formatPHP } from "../utils/formatting";
 
 function StatusBadge({ status }: { status: string }) {
   const style = STATUS_STYLES[status] ?? {
@@ -162,11 +116,7 @@ function OrderRow({ order }: OrderRowProps) {
     }
   };
 
-  const orderDate = new Date(order.createdAt).toLocaleDateString("en-PH", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  const orderDate = formatOrderDate(order.createdAt);
 
   return (
     <div
@@ -197,10 +147,7 @@ function OrderRow({ order }: OrderRowProps) {
         {/* Right: total */}
         <div className="flex flex-col items-end gap-2 shrink-0">
           <span className="text-base font-bold text-[var(--text-primary)]">
-            ₱{order.orderTotal.toLocaleString("en-PH", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+            {formatPHP(order.orderTotal)}
           </span>
         </div>
       </Link>

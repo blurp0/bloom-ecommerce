@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import type { CheckoutStep } from "../store/checkout-store";
+import type { CheckoutStep } from "../types";
 
 const STEP_LABELS: Record<CheckoutStep, string> = {
   1: "Address",

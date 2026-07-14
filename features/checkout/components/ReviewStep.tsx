@@ -2,7 +2,9 @@
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useCheckoutStore, type CheckoutStep } from "../store/checkout-store";
+import { useCheckoutStore } from "../store/checkout-store";
+import type { CheckoutStep } from "../types";
+import { timeSlotLabel } from "../utils/formatting";
 import { useCart } from "@/features/cart/hooks/useCart";
 import { useCreateOrder } from "../hooks/useCreateOrder";
 import { Loader2, ShoppingBag } from "lucide-react";
@@ -25,23 +27,14 @@ export default function ReviewStep({ onBack }: ReviewStepProps) {
   const { data: cart, isLoading: cartLoading } = useCart();
   const createOrder = useCreateOrder();
 
-  const timeSlotLabel =
-    timeSlot === "MORNING"
-      ? "Morning (8AM – 12PM)"
-      : timeSlot === "AFTERNOON"
-        ? "Afternoon (12PM – 5PM)"
-        : timeSlot === "EVENING"
-          ? "Evening (5PM – 8PM)"
-          : "Not selected";
-
-  const paymentLabel =
-    paymentMethod === "COD"
+  const slotLabel = timeSlot ? timeSlotLabel(timeSlot) : "Not selected";
+  const payLabel = paymentMethod
+    ? paymentMethod === "COD"
       ? "Cash on Delivery"
       : paymentMethod === "EWALLET"
         ? "E-wallet Transfer"
-        : paymentMethod === "MANUAL"
-          ? "Manual Arrangement"
-          : "Not selected";
+        : "Manual Arrangement"
+    : "Not selected";
 
   const handleEditStep = useCallback(
     (step: CheckoutStep) => {
@@ -147,7 +140,7 @@ export default function ReviewStep({ onBack }: ReviewStepProps) {
             </button>
           </div>
           <p className="text-sm text-[var(--text-primary)]">
-            {deliveryDate || "—"} &middot; {timeSlotLabel}
+            {deliveryDate || "—"} &middot; {slotLabel}
           </p>
         </section>
 
@@ -167,7 +160,7 @@ export default function ReviewStep({ onBack }: ReviewStepProps) {
               Edit
             </button>
           </div>
-          <p className="text-sm text-[var(--text-primary)]">{paymentLabel}</p>
+          <p className="text-sm text-[var(--text-primary)]">{payLabel}</p>
         </section>
 
         <div className="h-px bg-[var(--border-default)] my-4" />

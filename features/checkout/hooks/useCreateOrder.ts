@@ -3,21 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
-export interface CreateOrderInput {
-  addressId: string;
-  deliveryDate: string;
-  timeSlot: "MORNING" | "AFTERNOON" | "EVENING";
-  paymentMethod: "COD" | "EWALLET" | "MANUAL";
-  selectedItemIds: string[];
-}
-
-export interface CreateOrderResult {
-  orderId: string;
-  orderNumber: string;
-  orderTotal: number;
-  estimatedDelivery: string | null;
-}
+import type { CreateOrderInput, CreateOrderResult } from "../types";
 
 /**
  * TanStack Query mutation for POST /api/orders.

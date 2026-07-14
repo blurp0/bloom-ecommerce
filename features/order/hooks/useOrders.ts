@@ -1,63 +1,15 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import type {
+  OrderListItem,
+  OrderDetailData,
+  OrdersResponse,
+  OrderDetailResponse,
+} from "../types";
 
-export interface OrderListItem {
-  id: string;
-  orderNumber: string;
-  status: string;
-  orderTotal: number;
-  createdAt: string;
-  itemCount: number;
-}
-
-export interface OrderItemDetail {
-  id: string;
-  productId: string;
-  productName: string;
-  productImage: string | null;
-  variantId: string | null;
-  variantName: string | null;
-  quantity: number;
-  customizations: Record<string, unknown>;
-  unitPrice: number;
-  itemTotal: number;
-}
-
-export interface StatusTimelineEntry {
-  status: string;
-  label: string;
-  date: string | null;
-}
-
-export interface OrderDetailData {
-  id: string;
-  orderNumber: string;
-  status: string;
-  orderTotal: number;
-  deliveryAddress: string;
-  deliveryDate: string;
-  deliverySlot: string;
-  paymentMethod: string;
-  notes: string | null;
-  createdAt: string;
-  updatedAt: string;
-  itemCount: number;
-  hasReview: boolean;
-  orderReviewText?: string;
-  items: OrderItemDetail[];
-  statusTimeline: StatusTimelineEntry[];
-}
-
-interface OrdersResponse {
-  data: OrderListItem[];
-  meta: {
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
-  };
-}
+// Re-export types for consumers that import from hooks (backward compat)
+export type { OrderListItem, OrderDetailData, OrdersResponse, OrderDetailResponse } from "../types";
 
 /**
  * Fetch the authenticated user's orders list.
@@ -83,7 +35,7 @@ export function useOrders(page: number = 1) {
  * Stale time 0 — detail view should always be fresh.
  */
 export function useOrder(id: string) {
-  return useQuery<{ data: OrderDetailData }>({
+  return useQuery<OrderDetailResponse>({
     queryKey: ["order", id],
     queryFn: async () => {
       const res = await fetch(`/api/orders/${id}`);
