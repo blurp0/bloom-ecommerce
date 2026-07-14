@@ -9,13 +9,15 @@ import { SkeletonCartLineItem } from "@/components/shared/Skeletons";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useState, useMemo, useRef } from "react";
+import { calculateSubtotal, calculateItemCount } from "../utils/calculate-total";
+import { useCartUIStore } from "../store/useCartUIStore";
 
 export default function CartDrawer() {
   const { data: cart, isLoading, isError } = useCart();
   const updateCartItem = useUpdateCartItem();
   const removeCartItem = useRemoveCartItem();
 
-  const [open, setOpen] = useState(false);
+  const { isOpen: open, openCart, closeCart } = useCartUIStore();
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const focusInsideRef = useRef(false);
 
@@ -30,16 +32,16 @@ export default function CartDrawer() {
     () => items.filter((i) => selectedIds.has(i.id)),
     [items, selectedIds]
   );
-  const selectedCount = selectedItems.reduce((sum, i) => sum + i.quantity, 0);
-  const selectedSubtotal = selectedItems.reduce((sum, i) => sum + i.itemTotal, 0);
+  const selectedCount = useMemo(() => calculateItemCount(selectedItems), [selectedItems]);
+  const selectedSubtotal = useMemo(() => calculateSubtotal(selectedItems), [selectedItems]);
 
   const scheduleClose = () => {
-    closeTimer.current = setTimeout(() => setOpen(false), 200);
+    closeTimer.current = setTimeout(() => closeCart(), 200);
   };
   const cancelClose = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
   };
-  const handleFocus = () => { cancelClose(); setOpen(true); focusInsideRef.current = true; };
+  const handleFocus = () => { cancelClose(); openCart(); focusInsideRef.current = true; };
   const handleBlur = () => {
     focusInsideRef.current = false;
     // Defer so the next focusin (if within the panel) can cancel the close
@@ -82,7 +84,7 @@ export default function CartDrawer() {
   return (
     <div
       className="relative"
-      onMouseEnter={() => { cancelClose(); setOpen(true); }}
+      onMouseEnter={() => { cancelClose(); openCart(); }}
       onMouseLeave={scheduleClose}
     >
       {/* Cart icon — click navigates to /cart */}

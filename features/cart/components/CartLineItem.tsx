@@ -4,7 +4,8 @@ import Image from "next/image";
 import { useState, useRef, useCallback } from "react";
 import { ChevronDown, ChevronUp, Trash2, ImageIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { CartItemResult } from "../hooks/useCart";
+import type { CartItemResult } from "../types";
+import { formatCartPrice } from "../utils/formatting";
 import QuantityStepper from "./QuantityStepper";
 
 interface CartLineItemProps {
@@ -17,14 +18,6 @@ interface CartLineItemProps {
   quantityDebounceMs?: number;
   showCheckbox?: boolean;
 }
-
-const formatPrice = (amount: number) => {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 2,
-  }).format(amount);
-};
 
 function getCustomizationSummary(customization: Record<string, unknown>): {
   size?: string;
@@ -126,7 +119,7 @@ export default function CartLineItem({
                 {item.productName}
               </p>
               <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                {formatPrice(item.unitPrice)} each
+                {formatCartPrice(item.unitPrice)} each
               </p>
             </div>
 
@@ -157,7 +150,7 @@ export default function CartLineItem({
               onChange={handleQuantity}
             />
             <span className="text-sm font-bold text-[var(--accent-secondary)]">
-              {formatPrice(item.itemTotal)}
+              {formatCartPrice(item.itemTotal)}
             </span>
           </div>
         </div>

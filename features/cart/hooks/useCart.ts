@@ -2,40 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-
-/**
- * Cart item shape returned by the API.
- */
-export interface CartItemResult {
-  id: string;
-  productId: string;
-  productName: string;
-  productImage: string | null;
-  quantity: number;
-  unitPrice: number;
-  customization: Record<string, unknown>;
-  itemTotal: number;
-}
-
-export interface CartResult {
-  id: string;
-  items: CartItemResult[];
-  subtotal: number;
-  itemCount: number;
-}
-
-export interface AddCartItemInput {
-  productId: string;
-  variantId?: string;
-  quantity: number;
-  customization?: {
-    size?: string;
-    color?: string;
-    addOns?: string[];
-    messageCard?: string;
-  };
-  customRequestId?: string;
-}
+import type { CartItemResult, CartResult, AddCartItemInput } from "../types";
+import { calculateSubtotal, calculateItemCount } from "../utils/calculate-total";
 
 const CART_QUERY_KEY = ["cart"] as const;
 
@@ -170,8 +138,8 @@ export function useUpdateCartItem() {
           }
           return item;
         });
-        const subtotal = items.reduce((sum, i) => sum + i.itemTotal, 0);
-        const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+        const subtotal = calculateSubtotal(items);
+        const itemCount = calculateItemCount(items);
         return { ...old, items, subtotal, itemCount };
       });
 
@@ -215,8 +183,8 @@ export function useRemoveCartItem() {
       queryClient.setQueryData<CartResult>(CART_QUERY_KEY, (old) => {
         if (!old) return old;
         const items = old.items.filter((item) => item.id !== itemId);
-        const subtotal = items.reduce((sum, i) => sum + i.itemTotal, 0);
-        const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+        const subtotal = calculateSubtotal(items);
+        const itemCount = calculateItemCount(items);
         return { ...old, items, subtotal, itemCount };
       });
 
