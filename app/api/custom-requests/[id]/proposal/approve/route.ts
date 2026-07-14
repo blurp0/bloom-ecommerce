@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { resolveProposal } from "../resolveProposal";
+import { resolveProposalHandler } from "../resolveProposal";
 
 export async function PUT(
   request: NextRequest,
@@ -7,5 +7,5 @@ export async function PUT(
 ) {
   void request;
   const { id: customRequestId } = await context.params;
-  return resolveProposal(customRequestId, "APPROVED");
+  return resolveProposalHandler(customRequestId, "APPROVED");
 }

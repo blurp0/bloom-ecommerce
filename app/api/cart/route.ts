@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/prisma/client";
 import { AddToCartSchema } from "@/lib/validators/cart";
 import { getCart, addCartItem } from "@/lib/dal/cart";
 
@@ -18,15 +17,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 2. Look up User by clerkId
-  const user = await prisma.user.findUnique({ where: { clerkId: session.userId } });
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // 3. Fetch cart (upserts if none exists)
+  // 2. Fetch cart (DAL handles clerk→userId resolution, upserts if none exists)
   try {
-    const cart = await getCart(user.id);
+    const cart = await getCart(session.userId);
     return NextResponse.json({ data: cart });
   } catch (error) {
     console.error("cart GET error:", error);
@@ -39,8 +32,8 @@ export async function GET() {
  *
  * Add an item to the cart. Server-fetches product price and recomputes
  * unitPrice — never trusts a client-supplied price.
- * For customRequestId items: verifies the CustomRequest is APPROVED
- * and belongs to the authenticated user.
+ * DAL handles: clerk→userId resolution, customRequestId verification,
+ * price computation server-side.
  */
 export async function POST(request: NextRequest) {
   // 1. Authenticate
@@ -49,13 +42,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 2. Look up User by clerkId
-  const user = await prisma.user.findUnique({ where: { clerkId: session.userId } });
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // 3. Validate body
+  // 2. Validate body
   const body = await request.json().catch(() => null);
   const parsed = AddToCartSchema.safeParse(body);
   if (!parsed.success) {
@@ -65,27 +52,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4. If customRequestId is provided, verify it's APPROVED and belongs to user
-  if (parsed.data.customRequestId) {
-    const customRequest = await prisma.customRequest.findFirst({
-      where: {
-        id: parsed.data.customRequestId,
-        userId: user.id,
-        status: "APPROVED",
-      },
-      select: { id: true },
-    });
-    if (!customRequest) {
-      return NextResponse.json(
-        { error: "Custom request not found, not approved, or not yours" },
-        { status: 400 }
-      );
-    }
-  }
-
-  // 5. Add item via DAL
+  // 3. Add item via DAL (handles customRequestId verification + price computation)
   try {
-    const item = await addCartItem(user.id, {
+    const item = await addCartItem(session.userId, {
       productId: parsed.data.productId,
       variantId: parsed.data.variantId ?? null,
       quantity: parsed.data.quantity,

@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/prisma/client";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { CreateOrderSchema } from "@/lib/validators/order";
-import { createOrder } from "@/lib/dal/order";
+import { getOrders, createOrder } from "@/lib/dal/order";
 
 function correlationId(): string {
   return `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
-
-/**
- * Resolve Clerk ID to internal User.id.
- */
-async function resolveUserId(clerkId: string): Promise<string> {
-  const rows = await prisma.$queryRaw<{ id: string }[]>`
-    SELECT id FROM "User" WHERE "clerkId" = ${clerkId} LIMIT 1
-  `;
-  if (!rows[0]) throw new Error("User not found");
-  return rows[0].id;
 }
 
 /**
@@ -31,64 +19,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let internalUserId: string;
-  try {
-    internalUserId = await resolveUserId(userId);
-  } catch {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
   try {
     const page = Math.max(1, Number(request.nextUrl.searchParams.get("page") ?? "1") || 1);
-    const pageSize = 20;
-    const skip = (page - 1) * pageSize;
-
-    const ordersRaw = await prisma.order.findMany({
-      where: { userId: internalUserId },
-      select: {
-        id: true,
-        orderNumber: true,
-        status: true,
-        total: true,
-        createdAt: true,
-        items: {
-          select: { quantity: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      skip,
-      take: pageSize,
-    });
-
-    const total = await prisma.order.count({ where: { userId: internalUserId } });
-
-    const orders = ordersRaw as unknown as Array<{
-      id: string;
-      orderNumber: string;
-      status: string;
-      total: unknown;
-      createdAt: Date;
-      items: Array<{ quantity: number }>;
-    }>;
-
-    const data = orders.map((order) => ({
-      id: order.id,
-      orderNumber: order.orderNumber,
-      status: order.status,
-      orderTotal: Number(order.total),
-      createdAt: order.createdAt.toISOString(),
-      itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
-    }));
-
-    return NextResponse.json({
-      data,
-      meta: {
-        page,
-        pageSize,
-        total,
-        totalPages: Math.max(1, Math.ceil(total / pageSize)),
-      },
-    });
+    const result = await getOrders(userId, page);
+    return NextResponse.json(result);
   } catch (error) {
     console.error("GET /api/orders error:", error);
     return NextResponse.json(

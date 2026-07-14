@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/prisma/client";
 import { UpdateCartItemSchema } from "@/lib/validators/cart";
 import { updateCartItem, removeCartItem } from "@/lib/dal/cart";
 
@@ -23,13 +22,7 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 2. Look up User by clerkId
-  const user = await prisma.user.findUnique({ where: { clerkId: session.userId } });
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // 3. Validate body — only quantity is accepted
+  // 2. Validate body — only quantity is accepted
   const body = await request.json().catch(() => null);
   const parsed = UpdateCartItemSchema.safeParse(body);
   if (!parsed.success) {
@@ -39,9 +32,9 @@ export async function PUT(
     );
   }
 
-  // 4. Update via DAL (ownership in query)
+  // 3. Update via DAL (handles clerk→userId resolution + ownership in query)
   try {
-    const updated = await updateCartItem(user.id, itemId, parsed.data.quantity);
+    const updated = await updateCartItem(session.userId, itemId, parsed.data.quantity);
     if (!updated) {
       return NextResponse.json({ error: "Cart item not found" }, { status: 404 });
     }
@@ -72,15 +65,9 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 2. Look up User by clerkId
-  const user = await prisma.user.findUnique({ where: { clerkId: session.userId } });
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // 3. Remove via DAL (ownership in query)
+  // 2. Remove via DAL (handles clerk→userId resolution + ownership in query)
   try {
-    const removed = await removeCartItem(user.id, itemId);
+    const removed = await removeCartItem(session.userId, itemId);
     if (!removed) {
       return NextResponse.json({ error: "Cart item not found" }, { status: 404 });
     }

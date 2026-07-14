@@ -1,6 +1,16 @@
 import { prisma } from '@/lib/prisma/client';
 import { Prisma } from '@prisma/client';
-import type { ReviewResult, ReviewStats, PaginatedReviews } from '../types';
+import type { ReviewResult, ReviewStats, PaginatedReviews } from '@/features/review/types';
+
+// ── Resolver (shared DAL pattern) ──────────────────────
+
+async function resolveUserId(clerkId: string): Promise<string> {
+  const rows = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id FROM "User" WHERE "clerkId" = ${clerkId} LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("User not found");
+  return rows[0].id;
+}
 
 // ── Prisma Types ───────────────────────────────────────
 
@@ -98,13 +108,15 @@ export async function getReviewStats(productId: string): Promise<ReviewStats> {
  * Returns true/false and details about any existing review.
  */
 export async function checkReviewEligibility(
-  userId: string,
+  clerkId: string,
   productId: string,
 ): Promise<{
   isEligible: boolean;
   hasReviewed: boolean;
   orderIds: string[];
 }> {
+  const userId = await resolveUserId(clerkId);
+
   // Find all DELIVERED orders for this user that contain this product
   const eligibleOrders = await prisma.order.findMany({
     where: {
@@ -142,6 +154,7 @@ export async function checkReviewEligibility(
 
 /**
  * Create a review for a product.
+ * Accepts clerkId (resolves to internal userId via shared pattern).
  * User must have a DELIVERED order for this product.
  * Enforces unique constraint: one review per [userId, orderId].
  *
@@ -151,13 +164,15 @@ export async function checkReviewEligibility(
  * - 400 if already reviewed this order
  */
 export async function createReview(
-  userId: string,
+  clerkId: string,
   orderId: string,
   productId: string,
   rating: number,
   text?: string,
 ): Promise<ReviewResult> {
-  // Verify user exists
+  const userId = await resolveUserId(clerkId);
+
+  // Verify user name
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { name: true },
