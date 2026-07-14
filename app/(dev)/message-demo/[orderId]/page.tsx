@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { notFound } from "next/navigation";
 import { Shield, User } from "lucide-react";
-import MessageThread from "@/features/order/components/MessageThread";
-import MessageInput from "@/features/order/components/MessageInput";
+import MessageThread from "@/features/messages/components/MessageThread";
+import MessageInput from "@/features/messages/components/MessageInput";
 
 /**
  * Dev-only demo page for testing MessageThread + MessageInput with both roles.

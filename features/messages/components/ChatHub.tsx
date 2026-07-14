@@ -6,8 +6,8 @@ import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ExternalLink, MessageSquare } from "lucide-react";
 import { useConversations } from "@/features/messages/hooks/useConversations";
 import ConversationList from "@/features/messages/components/ConversationList";
-import MessageThread from "@/features/order/components/MessageThread";
-import MessageInput from "@/features/order/components/MessageInput";
+import MessageThread from "@/features/messages/components/MessageThread";
+import MessageInput from "@/features/messages/components/MessageInput";
 
 // ── Chat Room (right panel on desktop, full-width on mobile) ──
 

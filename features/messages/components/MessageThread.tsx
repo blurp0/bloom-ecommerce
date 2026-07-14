@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { useMessages, type Message } from "@/features/order/hooks/useMessages";
-import { useMessageChannel } from "@/features/order/hooks/useMessageChannel";
+import { useMessages } from "@/features/messages/hooks/useMessages";
+import { useMessageChannel } from "@/features/messages/hooks/useMessageChannel";
+import type { Message } from "@/features/messages/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Props ──────────────────────────────────────────────

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useOrder, type OrderDetailData } from "@/features/order/hooks/useOrders";
 import { useOrderStatus } from "@/features/order/hooks/useOrderStatus";
-import { useChatModalStore } from "@/features/order/store/chat-modal-store";
+import { useChatModalStore } from "@/features/messages/store/chat-modal-store";
 import ReviewSection from "@/features/review/components/ReviewSection";
 
 // ── Status Timeline Configuration ─────────────────────

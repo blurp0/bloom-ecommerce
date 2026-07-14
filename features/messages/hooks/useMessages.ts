@@ -2,46 +2,12 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-// ── Types ─────────────────────────────────────────────
-
-export interface Message {
-  id: string;
-  orderId: string;
-  senderId: string;
-  senderName: string;
-  senderRole: "CUSTOMER" | "SELLER";
-  text: string;
-  createdAt: string;
-}
-
-interface FetchMessagesResponse {
-  data: {
-    messages: Message[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      hasMore: boolean;
-    };
-  };
-}
-
-interface SendMessageResponse {
-  data: Message;
-}
-
-interface UseMessagesReturn {
-  messages: Message[];
-  isLoading: boolean;
-  error: Error | null;
-  page: number;
-  hasMore: boolean;
-  loadMore: () => void;
-  sendMessage: (text: string) => Promise<Message>;
-  isSending: boolean;
-  sendError: Error | null;
-}
+import type {
+  Message,
+  FetchMessagesResponse,
+  SendMessageResponse,
+  UseMessagesReturn,
+} from "@/features/messages/types";
 
 // ── Fetch helper ──────────────────────────────────────
 

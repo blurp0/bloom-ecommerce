@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useMessages, type Message } from "@/features/order/hooks/useMessages";
+import { useMessages } from "@/features/messages/hooks/useMessages";
+import type { Message } from "@/features/messages/types";
 
 // ── Props ──────────────────────────────────────────────
 

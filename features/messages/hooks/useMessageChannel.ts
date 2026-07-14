@@ -2,41 +2,14 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { getAblyClient } from "@/lib/ably/client";
-import { useMessageStore } from "@/features/order/store/message-store";
+import { useMessageStore } from "@/features/messages/store/message-store";
 import type { messageCallback, InboundMessage } from "ably";
-
-// ── Types ─────────────────────────────────────────────
-
-export interface LiveMessage {
-  messageId: string;
-  senderId: string;
-  senderName: string;
-  senderRole: string;
-  text: string;
-  createdAt: string;
-}
-
-type ConnectionState =
-  | "initialized"
-  | "connecting"
-  | "connected"
-  | "suspended"
-  | "failed"
-  | "closed";
-
-interface UseMessageChannelOptions {
-  /** Order ID to subscribe to. */
-  orderId: string;
-  /** Whether the message thread is currently visible/focused. */
-  isThreadVisible: boolean;
-}
-
-interface UseMessageChannelReturn {
-  /** Real-time messages received via Ably since mount. */
-  liveMessages: LiveMessage[];
-  /** True when Ably is in suspended or failed state. */
-  hasConnectionError: boolean;
-}
+import type {
+  LiveMessage,
+  ConnectionState,
+  UseMessageChannelOptions,
+  UseMessageChannelReturn,
+} from "@/features/messages/types";
 
 // ── Hook ──────────────────────────────────────────────
 

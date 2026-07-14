@@ -1,8 +1,8 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
-import { useMessageStore } from "@/features/order/store/message-store";
-import { useChatModalStore } from "@/features/order/store/chat-modal-store";
+import { useMessageStore } from "@/features/messages/store/message-store";
+import { useChatModalStore } from "@/features/messages/store/chat-modal-store";
 
 /**
  * Fixed floating message button — visible on all shop pages.
