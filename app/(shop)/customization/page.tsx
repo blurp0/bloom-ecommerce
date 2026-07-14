@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles, ArrowRight } from "lucide-react";
-import CustomizationLanding from "@/features/customization/components/CustomizationLanding";
+import { CustomizationLanding } from "@/features/customization/components";
 
 export const metadata: Metadata = {
   title: "Customize a Bouquet | Bloom & Bind",

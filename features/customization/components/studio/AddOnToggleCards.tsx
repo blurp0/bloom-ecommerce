@@ -3,18 +3,8 @@
 import Image from "next/image";
 import { Check, ImageIcon } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
-import { formatPrice } from "@/features/customization/utils/pricing";
-
-interface AddOnData {
-  id: string;
-  name: string;
-  price: number;
-  image?: string | null;
-}
-
-interface AddOnToggleCardsProps {
-  addOns: AddOnData[];
-}
+import { formatPrice } from "@/features/customization/utils";
+import type { AddOnData, AddOnToggleCardsProps } from "@/features/customization/types";
 
 /**
  * AddOnToggleCards — grid of toggle cards for add-ons.

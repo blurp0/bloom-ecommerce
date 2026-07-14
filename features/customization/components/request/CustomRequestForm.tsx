@@ -16,15 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
 import { OCCASIONS } from "@/lib/occasions-config";
-
-type FieldKey =
-  | "flowers"
-  | "colors"
-  | "size"
-  | "occasion"
-  | "budget"
-  | "instructions"
-  | "referenceImages";
+import type { FieldKey, UploadState } from "@/features/customization/types";
 
 const OCCASION_OPTIONS = [
   ...OCCASIONS.map((o) => o.label),
@@ -40,14 +32,6 @@ const BUDGET_OPTIONS = [
   "₱2,500–₱5,000",
   "₱5,000+",
 ] as const;
-
-type UploadState = {
-  status: "empty" | "ready" | "uploading" | "failed" | "uploaded";
-  error?: string;
-  file?: File;
-  previewUrl?: string; // object URL
-  url?: string; // cloudinary URL after upload
-};
 
 function getImageError(file: File): string | null {
   if (!file.type.startsWith("image/")) return "Reference image must be an image file";

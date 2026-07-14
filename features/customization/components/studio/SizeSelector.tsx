@@ -2,18 +2,8 @@
 
 import { Check } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
-import { formatPrice } from "@/features/customization/utils/pricing";
-
-interface VariantData {
-  id: string;
-  name: string;
-  price: number;
-}
-
-interface SizeSelectorProps {
-  variants: VariantData[];
-  basePrice: number;
-}
+import { formatPrice } from "@/features/customization/utils";
+import type { VariantData, SizeSelectorProps } from "@/features/customization/types";
 
 /**
  * SizeSelector — renders variant cards with name, price delta badge,

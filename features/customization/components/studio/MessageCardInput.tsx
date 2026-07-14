@@ -1,8 +1,7 @@
 "use client";
 
 import { MessageSquare } from "lucide-react";
-import { useCustomizationStore } from "@/features/customization/store";
-import { MESSAGE_CARD_MAX_CHARS } from "@/features/customization/store/useCustomizationStore";
+import { useCustomizationStore, MESSAGE_CARD_MAX_CHARS } from "@/features/customization/store";
 
 const MAX_CHARS = MESSAGE_CARD_MAX_CHARS;
 

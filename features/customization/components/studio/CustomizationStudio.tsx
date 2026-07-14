@@ -3,50 +3,17 @@
 import { useEffect, useState } from "react";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
+import type {
+  VariantData,
+  AddOnData,
+  ProductImageData,
+  StudioProductData,
+  CustomizationStudioProps,
+} from "@/features/customization/types";
 import SizeSelector from "./SizeSelector";
 import AddOnToggleCards from "./AddOnToggleCards";
 import MessageCardInput from "./MessageCardInput";
 import CustomizationSummary from "./CustomizationSummary";
-
-interface VariantData {
-  id: string;
-  name: string;
-  price: number;
-  color?: string;
-}
-
-interface AddOnData {
-  id: string;
-  name: string;
-  price: number;
-  image?: string | null;
-  slug?: string | null;
-  type?: string | null;
-  isMessageCard?: boolean | null;
-}
-
-interface ProductImageData {
-  url: string;
-  alt?: string | null;
-}
-
-export interface StudioProductData {
-  id: string;
-  name: string;
-  description: string;
-  basePrice: number;
-  images: ProductImageData[];
-  variants: VariantData[];
-  addOns: AddOnData[];
-  categoryName?: string;
-  categorySlug?: string;
-}
-
-interface CustomizationStudioProps {
-  product: StudioProductData;
-  initialVariantId?: string | null;
-  initialVariantName?: string | null;
-}
 
 const STEPS = [
   { number: 1, label: "Select the Size of the Bouquet" },

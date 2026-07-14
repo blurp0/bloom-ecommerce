@@ -6,34 +6,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Minus, Plus, ShoppingCart, ImageIcon } from "lucide-react";
 import { useCustomizationStore } from "@/features/customization/store";
-import { formatPrice, computePrice, computeLineTotal } from "@/features/customization/utils/pricing";
-
-interface VariantData {
-  id: string;
-  name: string;
-  price: number;
-}
-
-interface AddOnData {
-  id: string;
-  name: string;
-  price: number;
-}
-
-interface ProductImageData {
-  url: string;
-  alt?: string | null;
-}
-
-interface CustomizationSummaryProps {
-  productId: string;
-  productName: string;
-  basePrice: number;
-  variants: VariantData[];
-  addOns: AddOnData[];
-  images: ProductImageData[];
-  hasVariants: boolean;
-}
+import { formatPrice, computePrice, computeLineTotal } from "@/features/customization/utils";
+import type {
+  VariantData,
+  AddOnData,
+  ProductImageData,
+  CustomizationSummaryProps,
+} from "@/features/customization/types";
 
 /**
  * CustomizationSummary — sticky panel (desktop right / mobile bottom bar).

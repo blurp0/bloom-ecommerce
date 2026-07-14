@@ -5,8 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/prisma/client";
 import { Prisma } from "@prisma/client";
-import CustomizationStudio from "@/features/customization/components/CustomizationStudio";
-import type { StudioProductData } from "@/features/customization/components/CustomizationStudio";
+import { CustomizationStudio, StudioProductData } from "@/features/customization/components";
 
 interface CustomizationPageParams {
   params: Promise<{ productId: string }>;

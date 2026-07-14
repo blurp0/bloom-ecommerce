@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma/client";
-import { CustomRequestForm } from "@/features/customization/components/CustomRequestForm";
+import { CustomRequestForm } from "@/features/customization/components";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/date";

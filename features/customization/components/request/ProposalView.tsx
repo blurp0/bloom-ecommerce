@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -16,14 +15,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 import { formatDate } from "@/lib/date";
-
-type ProposalStatus = "PENDING" | "APPROVED" | "REJECTED";
-
-function formatPhp(amount: number | string) {
-  const n = typeof amount === "string" ? Number(amount) : amount;
-  if (Number.isNaN(n)) return "₱0.00";
-  return new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(n);
-}
+import { formatPrice } from "@/features/customization/utils";
+import { useProposalStatus } from "@/features/customization/hooks";
+import type { ProposalStatus, ProposalViewProps } from "@/features/customization/types";
 
 function statusBadgeVariant(status: ProposalStatus) {
   switch (status) {
@@ -37,62 +31,9 @@ function statusBadgeVariant(status: ProposalStatus) {
   }
 }
 
-async function updateProposalStatus(endpoint: string) {
-  const res = await fetch(endpoint, { method: "PUT" });
-  const json = await res.json().catch(() => null);
-  if (!res.ok) {
-    const msg = json?.error || "Request failed";
-    throw new Error(msg);
-  }
-  return json as { data?: { status?: ProposalStatus } };
-}
-
-export type ProposalViewProps = {
-  proposalId: string;
-  customRequestId: string;
-  designConcept: string;
-  price: number | string;
-  estimatedDelivery: string | Date;
-  status: ProposalStatus;
-};
-
 export function ProposalView(props: ProposalViewProps) {
-  const [status, setStatus] = useState<ProposalStatus>(props.status);
-  const [isWorking, setIsWorking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const canAct = status === "PENDING";
-
-  const approveEndpoint = `/api/custom-requests/${props.customRequestId}/proposal/approve`;
-  const rejectEndpoint = `/api/custom-requests/${props.customRequestId}/proposal/reject`;
-
-  async function handleApprove() {
-    setIsWorking(true);
-    setError(null);
-    try {
-      const json = await updateProposalStatus(approveEndpoint);
-      const next = json?.data?.status;
-      if (next) setStatus(next);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to approve proposal");
-    } finally {
-      setIsWorking(false);
-    }
-  }
-
-  async function handleReject() {
-    setIsWorking(true);
-    setError(null);
-    try {
-      const json = await updateProposalStatus(rejectEndpoint);
-      const next = json?.data?.status;
-      if (next) setStatus(next);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to reject proposal");
-    } finally {
-      setIsWorking(false);
-    }
-  }
+  const { status, isWorking, error, canAct, handleApprove, handleReject } =
+    useProposalStatus(props.customRequestId, props.status);
 
   return (
     <Card className="border-interactive/60 p-6">
@@ -116,7 +57,7 @@ export function ProposalView(props: ProposalViewProps) {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <h2 className="text-sm font-medium text-muted-foreground">Proposed price</h2>
-            <p className="text-xl font-semibold">{formatPhp(props.price)}</p>
+            <p className="text-xl font-semibold">{formatPrice(typeof props.price === "string" ? Number(props.price) : props.price)}</p>
           </div>
 
           <div className="space-y-2">

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Star } from "lucide-react";
 import { useProducts } from "@/features/product/hooks/useProducts";
 import { SkeletonCardGrid } from "@/components/shared/Skeletons";
-import { formatPrice } from "@/features/customization/utils/pricing";
+import { formatPrice } from "@/features/customization/utils";
 
 /**
  * CustomizationLanding — fetches suggested products (featured, then all)
