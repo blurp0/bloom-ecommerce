@@ -20,16 +20,18 @@ async function fetchCart(): Promise<CartResult> {
 /**
  * Hook that returns the current user's cart.
  * staleTime: 0 ensures we always refetch on mount (cart changes frequently).
- * Only fetches when the user is authenticated to avoid 401 errors for guests.
+ * Only fetches when Clerk has loaded AND user is signed in — avoids firing
+ * the query before auth is ready (premature 401) or after sign-out.
  */
 export function useCart() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   return useQuery({
     queryKey: CART_QUERY_KEY,
     queryFn: fetchCart,
     staleTime: 0,
-    retry: 1,
-    enabled: !!isSignedIn,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+    enabled: isLoaded && !!isSignedIn,
   });
 }
 

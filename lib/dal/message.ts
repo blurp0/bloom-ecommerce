@@ -235,7 +235,7 @@ export async function getConversations(
       lm."createdAt" AS "lastMessageCreatedAt",
       COUNT(m."id") AS "messageCount"
     FROM "Order" o
-    JOIN "Message" m ON m."orderId" = o."id"
+    LEFT JOIN "Message" m ON m."orderId" = o."id"
     LEFT JOIN LATERAL (
       SELECT "content", "senderId", "createdAt"
       FROM "Message"

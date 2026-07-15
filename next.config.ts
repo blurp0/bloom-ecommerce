@@ -41,16 +41,18 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "base-uri 'self'",
               "frame-ancestors 'none'",
-              // Images (Cloudinary allowlist for common hosted assets)
-              "img-src 'self' https://res.cloudinary.com https://*.cloudinary.com",
-              // Conservative connect-src: keep to same-origin for now; CSP report-only
-              // will surface any needed Ably/Clerk domains without breaking the app.
-              "connect-src 'self'",
-              // Keep script/style restrictive to avoid breaking Next.js; if the app
-              // needs additional sources, report-only will tell us during testing.
-              "script-src 'self'",
-              "style-src 'self'",
+              // Images: Cloudinary + Clerk avatar proxies
+              "img-src 'self' https://res.cloudinary.com https://*.cloudinary.com https://img.clerk.com",
+              // connect-src: Clerk API + Ably (when added)
+              "connect-src 'self' https://*.clerk.accounts.dev",
+              // script-src: 'unsafe-inline' needed for Next.js HMR + Clerk inline scripts
+              // ponytail: tighten to nonces/hashes in production
+              "script-src 'self' 'unsafe-inline'",
+              // style-src: 'unsafe-inline' needed for React/Next inline styles
+              // ponytail: tighten to nonces/hashes in production
+              "style-src 'self' 'unsafe-inline'",
               "object-src 'none'",
+              "worker-src 'self' blob:",
               "upgrade-insecure-requests",
             ].join("; "),
           },

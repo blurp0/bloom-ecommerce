@@ -34,13 +34,13 @@ function formatEmptyState() {
 export default async function CustomRequestProposalDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await auth();
   const clerkUserId = session?.userId;
   if (!clerkUserId) notFound();
 
-  const requestId = params.id;
+  const { id: requestId } = await params;
 
   const user = await prisma.user.findUnique({
     where: { clerkId: clerkUserId },
