@@ -1,16 +1,12 @@
-import { redirect } from "next/navigation";
-import { requireRole } from "@/lib/clerk/roles";
+import { requireAdminRoleOrRedirect } from "@/lib/admin/auth";
+import { AdminShell } from "@/features/admin/components/AdminShell";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  try {
-    await requireRole("SELLER");
-  } catch {
-    redirect("/");
-  }
+  await requireAdminRoleOrRedirect();
 
-  return <>{children}</>;
+  return <AdminShell>{children}</AdminShell>;
 }

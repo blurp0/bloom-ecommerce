@@ -15,28 +15,21 @@ import {
   MessageSquare,
   XCircle,
 } from "lucide-react";
-import { useOrder, type OrderDetailData } from "@/features/order/hooks/useOrders";
+import { useOrder } from "@/features/order/hooks/useOrders";
 import { useOrderStatus } from "@/features/order/hooks/useOrderStatus";
-import { useChatModalStore } from "@/features/order/store/chat-modal-store";
+import { useChatModalStore } from "@/features/messages/store/chat-modal-store";
 import ReviewSection from "@/features/review/components/ReviewSection";
-
-// ── Status Timeline Configuration ─────────────────────
-
-const STATUS_ORDER: Record<string, number> = {
-  PENDING: 0,
-  CONFIRMED: 1,
-  PREPARING: 2,
-  OUT_FOR_DELIVERY: 3,
-  DELIVERED: 4,
-};
-
-const STATUS_LABELS: Array<{ status: string; label: string }> = [
-  { status: "PENDING", label: "Order Placed" },
-  { status: "CONFIRMED", label: "Confirmed" },
-  { status: "PREPARING", label: "Preparing" },
-  { status: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
-  { status: "DELIVERED", label: "Delivered" },
-];
+import type { OrderDetailData } from "../types";
+import {
+  STATUS_ORDER,
+  STATUS_LABELS,
+  timeSlotLabel,
+  paymentLabel,
+  parseDeliveryAddress,
+  formatAddress,
+  formatOrderDateFull,
+  formatPHP,
+} from "../utils/formatting";
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
   PENDING: <Clock className="h-5 w-5" />,
@@ -44,34 +37,6 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
   PREPARING: <Package className="h-5 w-5" />,
   OUT_FOR_DELIVERY: <Truck className="h-5 w-5" />,
   DELIVERED: <ShoppingBag className="h-5 w-5" />,
-};
-
-// ── Helpers ───────────────────────────────────────────
-
-const timeSlotLabel = (slot: string): string => {
-  switch (slot) {
-    case "MORNING":
-      return "Morning (8AM – 12PM)";
-    case "AFTERNOON":
-      return "Afternoon (12PM – 5PM)";
-    case "EVENING":
-      return "Evening (5PM – 8PM)";
-    default:
-      return slot;
-  }
-};
-
-const paymentLabel = (method: string): string => {
-  switch (method) {
-    case "COD":
-      return "Cash on Delivery";
-    case "EWALLET":
-      return "E-wallet Transfer";
-    case "MANUAL":
-      return "Manual Arrangement";
-    default:
-      return method;
-  }
 };
 
 // ── Status Timeline ───────────────────────────────────
@@ -211,32 +176,8 @@ function OrderDetailContent({ order }: OrderDetailContentProps) {
     return () => cancelAnimationFrame(timer);
   }, []);
 
-  // Parse delivery address from JSON string
-  let parsedAddress: Record<string, string> = {};
-  try {
-    parsedAddress = JSON.parse(order.deliveryAddress);
-  } catch {
-    parsedAddress = { raw: order.deliveryAddress };
-  }
-
-  const formatAddress = (addr: Record<string, string>): string => {
-    const parts = [
-      addr.recipientName || addr.fullName,
-      addr.street,
-      addr.barangay,
-      addr.city,
-      addr.province,
-      addr.zipCode,
-    ].filter(Boolean);
-    return parts.join(", ");
-  };
-
-  const orderDate = new Date(order.createdAt).toLocaleDateString("en-PH", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const parsedAddress = parseDeliveryAddress(order.deliveryAddress);
+  const orderDate = formatOrderDateFull(order.createdAt);
 
   return (
     <div className="mx-auto max-w-2xl flex flex-col gap-6 py-6 md:py-8">
@@ -320,10 +261,7 @@ function OrderDetailContent({ order }: OrderDetailContentProps) {
                     </p>
                   </div>
                   <span className="text-sm font-semibold text-[var(--text-primary)] shrink-0">
-                    ₱{item.itemTotal.toLocaleString("en-PH", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                    {formatPHP(item.itemTotal)}
                   </span>
                 </div>
               </li>
@@ -387,10 +325,7 @@ function OrderDetailContent({ order }: OrderDetailContentProps) {
             Order Total
           </span>
           <span className="text-base font-bold text-[var(--text-primary)]">
-            ₱{order.orderTotal.toLocaleString("en-PH", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+            {formatPHP(order.orderTotal)}
           </span>
         </section>
       </div>

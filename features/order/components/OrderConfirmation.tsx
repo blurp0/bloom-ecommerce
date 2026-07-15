@@ -2,37 +2,29 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, ShoppingBag, Truck, Package, Clock, MapPin, CreditCard, Calendar, AlertCircle, MessageSquare } from "lucide-react";
+import { Check, ShoppingBag, Truck, Package, Clock, AlertCircle, MapPin, CreditCard, Calendar, MessageSquare } from "lucide-react";
+import type { OrderDetailData } from "../types";
+import {
+  STATUS_ORDER,
+  STATUS_LABELS,
+  timeSlotLabel,
+  paymentLabel,
+  parseDeliveryAddress,
+  formatAddress,
+  formatPHP,
+} from "../utils/formatting";
 
-/**
- * Order data shape passed from the server page.
- */
-export interface OrderConfirmationData {
-  id: string;
-  orderNumber: string;
-  status: string;
-  orderTotal: number;
-  deliveryAddress: string;
-  deliveryDate: string;
-  deliverySlot: string;
-  paymentMethod: string;
-  notes: string | null;
-  createdAt: string;
-  items: Array<{
-    id: string;
-    productId: string;
-    productName: string;
-    productImage: string | null;
-    variantName: string | null;
-    quantity: number;
-    customizations: Record<string, unknown>;
-    unitPrice: number;
-    itemTotal: number;
-  }>;
-}
+const STATUS_ICONS: Record<string, React.ReactNode> = {
+  PENDING: <Clock className="h-5 w-5" />,
+  CONFIRMED: <Check className="h-5 w-5" />,
+  PREPARING: <Package className="h-5 w-5" />,
+  OUT_FOR_DELIVERY: <Truck className="h-5 w-5" />,
+  DELIVERED: <ShoppingBag className="h-5 w-5" />,
+  CANCELLED: <AlertCircle className="h-5 w-5" />,
+};
 
 interface OrderConfirmationProps {
-  order: OrderConfirmationData;
+  order: OrderDetailData;
 }
 
 /**
@@ -45,59 +37,6 @@ interface TimelineStep {
   isActive: boolean;
   isCompleted: boolean;
 }
-
-const STATUS_ORDER: Record<string, number> = {
-  PENDING: 0,
-  CONFIRMED: 1,
-  PREPARING: 2,
-  OUT_FOR_DELIVERY: 3,
-  DELIVERED: 4,
-  CANCELLED: -1,
-};
-
-const STATUS_LABELS: Array<{ status: string; label: string }> = [
-  { status: "PENDING", label: "Order Placed" },
-  { status: "CONFIRMED", label: "Confirmed" },
-  { status: "PREPARING", label: "Preparing" },
-  { status: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
-  { status: "DELIVERED", label: "Delivered" },
-  { status: "CANCELLED", label: "Cancelled" },
-];
-
-const STATUS_ICONS: Record<string, React.ReactNode> = {
-  PENDING: <Clock className="h-5 w-5" />,
-  CONFIRMED: <Check className="h-5 w-5" />,
-  PREPARING: <Package className="h-5 w-5" />,
-  OUT_FOR_DELIVERY: <Truck className="h-5 w-5" />,
-  DELIVERED: <ShoppingBag className="h-5 w-5" />,
-  CANCELLED: <AlertCircle className="h-5 w-5" />,
-};
-
-const timeSlotLabel = (slot: string): string => {
-  switch (slot) {
-    case "MORNING":
-      return "Morning (8AM – 12PM)";
-    case "AFTERNOON":
-      return "Afternoon (12PM – 5PM)";
-    case "EVENING":
-      return "Evening (5PM – 8PM)";
-    default:
-      return slot;
-  }
-};
-
-const paymentLabel = (method: string): string => {
-  switch (method) {
-    case "COD":
-      return "Cash on Delivery";
-    case "EWALLET":
-      return "E-wallet Transfer";
-    case "MANUAL":
-      return "Manual Arrangement";
-    default:
-      return method;
-  }
-};
 
 /**
  * OrderConfirmation — the post-checkout success page.
@@ -128,25 +67,7 @@ export default function OrderConfirmation({ order }: OrderConfirmationProps) {
     isCompleted: isCancelled ? false : index < currentStatusIndex,
   }));
 
-  // Parse delivery address from JSON string
-  let parsedAddress: Record<string, string> = {};
-  try {
-    parsedAddress = JSON.parse(order.deliveryAddress);
-  } catch {
-    parsedAddress = { raw: order.deliveryAddress };
-  }
-
-  const formatAddress = (addr: Record<string, string>): string => {
-    const parts = [
-      addr.recipientName || addr.fullName,
-      addr.street,
-      addr.barangay,
-      addr.city,
-      addr.province,
-      addr.zipCode,
-    ].filter(Boolean);
-    return parts.join(", ");
-  };
+  const parsedAddress = parseDeliveryAddress(order.deliveryAddress);
 
   return (
     <div className="mx-auto max-w-2xl flex flex-col gap-8 py-8 md:py-12">
@@ -220,7 +141,7 @@ export default function OrderConfirmation({ order }: OrderConfirmationProps) {
                     </p>
                   </div>
                   <span className="text-sm font-semibold text-[var(--text-primary)] shrink-0">
-                    ₱{item.itemTotal.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {formatPHP(item.itemTotal)}
                   </span>
                 </div>
               </li>
@@ -299,7 +220,7 @@ export default function OrderConfirmation({ order }: OrderConfirmationProps) {
             Order Total
           </span>
           <span className="text-base font-bold text-[var(--text-primary)]">
-            ₱{order.orderTotal.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formatPHP(order.orderTotal)}
           </span>
         </section>
       </div>

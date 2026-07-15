@@ -1,6 +1,16 @@
 import { prisma } from "@/lib/prisma/client";
 import type { Prisma } from "@prisma/client";
 
+// ── Resolver (shared DAL pattern) ──────────────────────
+
+async function resolveUserId(clerkId: string): Promise<string> {
+  const rows = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id FROM "User" WHERE "clerkId" = ${clerkId} LIMIT 1
+  `;
+  if (!rows[0]) throw new Error("User not found");
+  return rows[0].id;
+}
+
 function toItemTotal(price: { toNumber: () => number } | number, quantity: number): number {
   const p = typeof price === "number" ? price : price.toNumber();
   return Math.round((p * quantity + Number.EPSILON) * 100) / 100;
@@ -29,9 +39,10 @@ export interface CartResult {
 
 /**
  * Get or create the cart for a user, returning items with computed totals.
- * Ownership is scoped by userId in the query.
+ * Accepts clerkId — resolves to internal userId internally.
  */
-export async function getCart(userId: string): Promise<CartResult> {
+export async function getCart(clerkId: string): Promise<CartResult> {
+  const userId = await resolveUserId(clerkId);
   const cart = await prisma.cart.upsert({
     where: { userId },
     create: { userId },
@@ -92,9 +103,10 @@ export interface AddCartItemData {
  * Ownership is scoped by userId in the query.
  */
 export async function addCartItem(
-  userId: string,
+  clerkId: string,
   data: AddCartItemData
 ): Promise<CartItemResult> {
+  const userId = await resolveUserId(clerkId);
   // Fetch product price server-side — never trust client-supplied price
   const product = await prisma.product.findUnique({
     where: { id: data.productId },
@@ -247,10 +259,11 @@ export async function addCartItem(
  * Ownership is scoped in the query — returns null if not found or not owned.
  */
 export async function updateCartItem(
-  userId: string,
+  clerkId: string,
   itemId: string,
   quantity: number
 ): Promise<CartItemResult | null> {
+  const userId = await resolveUserId(clerkId);
   try {
     const updated = await prisma.cartItem.update({
       where: {
@@ -297,9 +310,10 @@ export async function updateCartItem(
  * Ownership is scoped in the query — returns false if not found or not owned.
  */
 export async function removeCartItem(
-  userId: string,
+  clerkId: string,
   itemId: string
 ): Promise<boolean> {
+  const userId = await resolveUserId(clerkId);
   try {
     await prisma.cartItem.delete({
       where: {

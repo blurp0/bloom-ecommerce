@@ -1,1 +1,1 @@
-export { computePrice, computeLineTotal } from "./pricing";
+export { formatPrice, computePrice, computeLineTotal } from "./pricing";

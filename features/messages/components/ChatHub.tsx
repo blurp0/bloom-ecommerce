@@ -6,8 +6,8 @@ import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ExternalLink, MessageSquare } from "lucide-react";
 import { useConversations } from "@/features/messages/hooks/useConversations";
 import ConversationList from "@/features/messages/components/ConversationList";
-import MessageThread from "@/features/order/components/MessageThread";
-import MessageInput from "@/features/order/components/MessageInput";
+import MessageThread from "@/features/messages/components/MessageThread";
+import MessageInput from "@/features/messages/components/MessageInput";
 
 // ── Chat Room (right panel on desktop, full-width on mobile) ──
 
@@ -116,7 +116,7 @@ function NoConversationSelected() {
 export default function ChatHub() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { conversations, isLoading, refetch } = useConversations();
+  const { conversations, isLoading, error, refetch } = useConversations();
 
   const initialOrderId = searchParams.get("orderId") ?? null;
 
@@ -184,6 +184,13 @@ export default function ChatHub() {
           Messages
         </h1>
       </div>
+
+      {/* Error banner */}
+      {error && (
+        <div className="mb-4 flex items-center gap-2 rounded-[12px] border border-[var(--state-error)]/30 bg-[var(--state-error)]/10 px-4 py-3 text-sm text-[var(--state-error)]">
+          <span className="flex-1">Couldn&apos;t load conversations. <button type="button" onClick={() => refetch()} className="underline font-semibold hover:no-underline cursor-pointer">Try again</button></span>
+        </div>
+      )}
 
       {/* Split panel */}
       <div className="flex flex-1 min-h-0 rounded-[16px] border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-clay-sm overflow-hidden">

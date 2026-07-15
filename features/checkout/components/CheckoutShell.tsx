@@ -1,6 +1,7 @@
 "use client";
 
-import { useCheckoutStore, type CheckoutStep } from "../store/checkout-store";
+import { useCheckoutStore } from "../store/checkout-store";
+import type { CheckoutStep } from "../types";
 import StepIndicator from "./StepIndicator";
 import AddressStep from "./AddressStep";
 import DeliveryStep from "./DeliveryStep";

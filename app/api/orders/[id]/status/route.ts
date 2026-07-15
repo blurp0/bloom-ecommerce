@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/clerk/roles";
-import { prisma } from "@/lib/prisma/client";
 import { ablyServer } from "@/lib/ably/server";
 import { UpdateOrderStatusSchema } from "@/lib/validators/order";
 import { isValidTransition } from "@/lib/order/state-machine";
-import { updateOrderStatus as updateOrderStatusDAL } from "@/lib/dal/order";
+import { getOrderForTransition, updateOrderStatus } from "@/lib/dal/order";
 import type { OrderStatus } from "@prisma/client";
 
 /**
@@ -46,11 +45,8 @@ export async function PUT(
     );
   }
 
-  // 3. Fetch current order
-  const currentOrder = await prisma.order.findUnique({
-    where: { id: orderId },
-    select: { id: true, status: true, orderNumber: true },
-  });
+  // 3. Fetch current order (DAL)
+  const currentOrder = await getOrderForTransition(orderId);
 
   if (!currentOrder) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -70,7 +66,7 @@ export async function PUT(
   }
 
   // 5. Update in DB (constrained by currentStatus to prevent stale transitions)
-  const updated = await updateOrderStatusDAL(orderId, currentStatus, newStatus);
+  const updated = await updateOrderStatus(orderId, currentStatus, newStatus);
 
   if (!updated) {
     return NextResponse.json(

@@ -5,10 +5,10 @@ import Link from "next/link";
 import { ArrowLeft, ChevronDown, ExternalLink, MapPin, Calendar, CreditCard } from "lucide-react";
 import { useConversations } from "@/features/messages/hooks/useConversations";
 import { useOrder, type OrderDetailData } from "@/features/order/hooks/useOrders";
-import { useChatModalStore } from "@/features/order/store/chat-modal-store";
+import { useChatModalStore } from "@/features/messages/store/chat-modal-store";
 import ConversationList from "@/features/messages/components/ConversationList";
-import MessageThread from "@/features/order/components/MessageThread";
-import MessageInput from "@/features/order/components/MessageInput";
+import MessageThread from "@/features/messages/components/MessageThread";
+import MessageInput from "@/features/messages/components/MessageInput";
 
 // ── Helpers ───────────────────────────────────────────
 

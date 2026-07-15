@@ -1,52 +1,15 @@
 "use client";
 
 import { create } from "zustand";
+import type {
+  CustomizationState,
+  VariantInput,
+  AddOnInput,
+  CustomizationStore,
+} from "@/features/customization/types";
 
 export const MESSAGE_CARD_MAX_CHARS = 200;
 const QUANTITY_MAX = 999;
-
-/**
- * Types for customization store actions and state.
- */
-export interface CustomizationState {
-  /** The product ID being customized, or null if not set */
-  productId: string | null;
-  /** The selected product variant ID, or null if none selected */
-  selectedVariantId: string | null;
-  /** Array of selected add-on IDs */
-  selectedAddOnIds: string[];
-  /** Message card text (capped at 200 characters) */
-  messageCardText: string;
-  /** Quantity to add to cart (minimum 1) */
-  quantity: number;
-}
-
-interface VariantInput {
-  id: string;
-  priceAdjustment: number;
-}
-
-interface AddOnInput {
-  id: string;
-  price: number;
-}
-
-export interface CustomizationActions {
-  /** Set the product being customized */
-  setProduct: (productId: string) => void;
-  /** Set the selected variant by ID */
-  setVariant: (variantId: string | null) => void;
-  /** Toggle an add-on by ID: adds if absent, removes if present */
-  toggleAddOn: (addOnId: string) => void;
-  /** Set the message card text. Silently truncates to 200 characters. */
-  setMessageCardText: (text: string) => void;
-  /** Set the quantity. Ignores values below 1. */
-  setQuantity: (n: number) => void;
-  /** Reset all fields to their initial values */
-  reset: () => void;
-}
-
-export type CustomizationStore = CustomizationState & CustomizationActions;
 
 const initialState: CustomizationState = {
   productId: null,

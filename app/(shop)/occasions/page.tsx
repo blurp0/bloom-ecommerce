@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import OccasionsClient from "@/features/occasions/OccasionsClient";
+import OccasionsClient from "@/features/occasions/components/OccasionsClient";
 
 export const metadata: Metadata = {
   title: "Shop by Occasion | Bloom & Bind",

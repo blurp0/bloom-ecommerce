@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
+import { formatCartPrice } from "../utils/formatting";
 
 interface CartSummaryProps {
   subtotal: number;
@@ -28,14 +29,6 @@ export default function CartSummary({
     }
   };
 
-  const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
-
   const isDisabled = checkoutDisabled || itemCount === 0;
 
   return (
@@ -46,7 +39,7 @@ export default function CartSummary({
           Subtotal ({itemCount} item{itemCount !== 1 ? "s" : ""})
         </span>
         <span className="text-sm font-semibold text-[var(--text-primary)]">
-          {formatPrice(subtotal)}
+          {formatCartPrice(subtotal)}
         </span>
       </div>
 
@@ -64,7 +57,7 @@ export default function CartSummary({
       <div className="flex items-center justify-between">
         <span className="text-base font-semibold text-[var(--text-primary)]">Total</span>
         <span className="text-lg font-bold text-[var(--accent-secondary)]">
-          {formatPrice(subtotal)}
+          {formatCartPrice(subtotal)}
         </span>
       </div>
 

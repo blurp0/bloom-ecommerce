@@ -1,35 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-
-// ── Types ─────────────────────────────────────────────
-
-export interface Conversation {
-  orderId: string;
-  orderNumber: string;
-  orderStatus: string;
-  /** First product name(s) for display — "Rose Bouquet" or "Rose Bouquet & 2 more" */
-  itemLabel: string;
-  lastMessage: {
-    text: string;
-    senderRole: "CUSTOMER" | "SELLER";
-    createdAt: string;
-  } | null;
-  messageCount: number;
-}
-
-interface ConversationsResponse {
-  data: {
-    conversations: Conversation[];
-  };
-}
-
-interface UseConversationsReturn {
-  conversations: Conversation[];
-  isLoading: boolean;
-  error: Error | null;
-  refetch: () => void;
-}
+import type {
+  Conversation,
+  ConversationsResponse,
+  UseConversationsReturn,
+} from "@/features/messages/types";
 
 // ── Hook ──────────────────────────────────────────────
 

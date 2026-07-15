@@ -22,6 +22,11 @@ or making any architectural decision:
 6. `context/progress-tracker.md` — current phase,
    completed work, open questions, and next steps
 
+For folder architecture and organization rules, reference
+`context/reorganization_plan/FOLDER_ARCHITECTURE.md` —
+defines feature module structure, DAL pattern, and
+import dependency rules.
+
 After reading context files, check `context/current-issue.md`
 — if it has content, fix that bug before doing anything else.
 

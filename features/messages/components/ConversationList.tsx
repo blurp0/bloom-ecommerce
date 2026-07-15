@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useMessageStore } from "@/features/order/store/message-store";
+import { useMessageStore } from "@/features/messages/store/message-store";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Conversation } from "@/features/messages/hooks/useConversations";
+import type { Conversation } from "@/features/messages/types";
 
 // ── Helpers ───────────────────────────────────────────
 

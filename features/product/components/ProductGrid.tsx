@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import ProductCard from "./ProductCard";
-import type { ProductCardProduct } from "./ProductCard";
+import type { ProductCardProduct } from "../types";
 
 type ProductGridProps = {
   products: ProductCardProduct[];
@@ -72,7 +72,7 @@ export default function ProductGrid({
   );
 }
 
-import type { ProductsResponse } from "@/features/product/hooks/useProducts";
+import type { ProductsResponse } from "../types";
 
 /**
  * Fetches products from the API and returns a typed response.

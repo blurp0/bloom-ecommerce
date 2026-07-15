@@ -2,15 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma/client";
-import { ProposalView } from "@/features/customization/components/ProposalView";
+import { ProposalView } from "@/features/customization/components";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import type { ProposalStatus } from "@/features/customization/types";
 
 export const metadata: Metadata = {
   title: "Proposal | Bloom & Bind",
 };
-
-type ProposalStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 function formatEmptyState() {
   return (
@@ -35,13 +34,13 @@ function formatEmptyState() {
 export default async function CustomRequestProposalDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await auth();
   const clerkUserId = session?.userId;
   if (!clerkUserId) notFound();
 
-  const requestId = params.id;
+  const { id: requestId } = await params;
 
   const user = await prisma.user.findUnique({
     where: { clerkId: clerkUserId },

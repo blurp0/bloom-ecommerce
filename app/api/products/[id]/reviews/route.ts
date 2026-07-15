@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { getProductReviews, createReview } from '@/lib/dal/review';
 import { CreateReviewSchema } from '@/lib/validators/review';
-import { prisma } from '@/lib/prisma/client';
 
 /**
  * GET /api/products/[id]/reviews
@@ -60,16 +59,6 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Resolve internal userId from Clerk ID
-    const internalUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-      select: { id: true },
-    });
-
-    if (!internalUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 401 });
-    }
-
     const orderId = request.nextUrl.searchParams.get('orderId');
     if (!orderId) {
       return NextResponse.json({ error: 'orderId query parameter is required' }, { status: 400 });
@@ -88,8 +77,8 @@ export async function POST(
 
     const { rating, text } = result.data;
 
-    // 3. Create review (DAL handles eligibility + ownership checks)
-    const review = await createReview(internalUser.id, orderId, productId, rating, text);
+    // 3. Create review (DAL handles clerk→userId resolution, eligibility + ownership checks)
+    const review = await createReview(user.id, orderId, productId, rating, text);
 
     return NextResponse.json({ data: review }, { status: 201 });
   } catch (err) {

@@ -11,6 +11,7 @@ import CartSummary from "@/features/cart/components/CartSummary";
 import { SkeletonCartLineItem } from "@/components/shared/Skeletons";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { calculateSubtotal, calculateItemCount } from "@/features/cart/utils/calculate-total";
 
 export default function CartPageClient() {
   const { userId, isLoaded } = useAuth();
@@ -38,8 +39,8 @@ export default function CartPageClient() {
     () => items.filter((i) => selectedIds.has(i.id)),
     [items, selectedIds]
   );
-  const selectedCount = selectedItems.reduce((sum, i) => sum + i.quantity, 0);
-  const selectedSubtotal = selectedItems.reduce((sum, i) => sum + i.itemTotal, 0);
+  const selectedCount = useMemo(() => calculateItemCount(selectedItems), [selectedItems]);
+  const selectedSubtotal = useMemo(() => calculateSubtotal(selectedItems), [selectedItems]);
 
   const handleToggleSelectAll = () => {
     if (allSelected) {

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma/client";
-import { CustomRequestForm } from "@/features/customization/components/CustomRequestForm";
+import { CustomRequestForm } from "@/features/customization/components";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/date";
 
 export const metadata: Metadata = {
   title: "Custom Request | Bloom & Bind",
@@ -58,11 +59,7 @@ export default async function CustomRequestPage() {
                     <div className="min-w-0">
                       <div className="truncate font-medium">Request #{r.id}</div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        {r.createdAt.toLocaleDateString("en-PH", {
-                          year: "numeric",
-                          month: "short",
-                          day: "2-digit",
-                        })}
+                        {formatDate(r.createdAt)}
                       </div>
                     </div>
 

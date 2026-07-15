@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma/client";
+import { Prisma } from "@prisma/client";
 import { type CreateOrderInput, type UpdateOrderStatusInput } from "@/lib/validators/order";
 import type { OrderStatus } from "@prisma/client";
 
@@ -226,6 +227,193 @@ export async function createOrder(clerkId: string, data: CreateOrderInput): Prom
   });
 
   return result;
+}
+
+/**
+ * Get paginated orders for a user.
+ * Returns order list with item count, 20 per page.
+ */
+export async function getOrders(
+  clerkId: string,
+  page: number = 1,
+  pageSize: number = 20,
+) {
+  const userId = await resolveUserId(clerkId);
+  const skip = (page - 1) * pageSize;
+
+  const [ordersRaw, total] = await Promise.all([
+    prisma.order.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        total: true,
+        createdAt: true,
+        items: {
+          select: { quantity: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
+    }),
+    prisma.order.count({ where: { userId } }),
+  ]);
+
+  // ponytail: accelerate extension strips select inference, cast is safe
+  const orders = ordersRaw as unknown as Array<{
+    id: string;
+    orderNumber: string;
+    status: string;
+    total: { toNumber: () => number } | number;
+    createdAt: Date;
+    items: Array<{ quantity: number }>;
+  }>;
+
+  const data = orders.map((order) => ({
+    id: order.id,
+    orderNumber: order.orderNumber,
+    status: order.status,
+    orderTotal: Number(order.total),
+    createdAt: order.createdAt.toISOString(),
+    itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
+  }));
+
+  return {
+    data,
+    meta: {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    },
+  };
+}
+
+/**
+ * Get full order detail for the authenticated user.
+ * Returns null if order not found or wrong owner.
+ */
+export async function getOrderDetail(
+  clerkId: string,
+  orderId: string,
+) {
+  const userId = await resolveUserId(clerkId);
+
+  // ponytail: Prisma include inference gets confused when spreading an include
+  // object and then overriding a nested field with a where clause. Cast through
+  // unknown to the payload type we actually receive.
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId },
+    include: {
+      items: {
+        include: {
+          product: {
+            select: {
+              name: true,
+              images: { take: 1, orderBy: { order: "asc" as const }, select: { url: true } },
+            },
+          },
+          variant: { select: { name: true } },
+        },
+      },
+      reviews: {
+        where: { userId },
+        select: { id: true, comment: true },
+      },
+    },
+  }) as unknown as {
+    id: string;
+    orderNumber: string;
+    status: string;
+    total: { toNumber: () => number } | number;
+    deliveryAddress: string;
+    deliveryDate: Date;
+    deliverySlot: string | null;
+    paymentMethod: string | null;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    items: Array<{
+      id: string;
+      productId: string;
+      variantId: string | null;
+      quantity: number;
+      customizations: Prisma.JsonValue;
+      price: { toNumber: () => number } | number;
+      product: { name: string; images: Array<{ url: string }> };
+      variant: { name: string } | null;
+    }>;
+    reviews: Array<{ id: string; comment: string | null }>;
+  } | null;
+
+  if (!order) return null;
+
+  const STATUS_ORDER: Record<string, number> = {
+    PENDING: 0,
+    CONFIRMED: 1,
+    PREPARING: 2,
+    OUT_FOR_DELIVERY: 3,
+    DELIVERED: 4,
+  };
+
+  const currentStatusIndex = STATUS_ORDER[order.status] ?? 0;
+
+  return {
+    id: order.id,
+    orderNumber: order.orderNumber,
+    status: order.status,
+    orderTotal: Number(order.total),
+    deliveryAddress: order.deliveryAddress,
+    deliveryDate: order.deliveryDate.toISOString(),
+    deliverySlot: order.deliverySlot,
+    paymentMethod: order.paymentMethod,
+    notes: order.notes,
+    createdAt: order.createdAt.toISOString(),
+    updatedAt: order.updatedAt.toISOString(),
+    itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
+    hasReview: order.reviews.length > 0,
+    orderReviewText: order.reviews[0]?.comment ?? undefined,
+    items: order.items.map((item) => {
+      const price = Number(item.price);
+      return {
+        id: item.id,
+        productId: item.productId,
+        productName: item.product.name,
+        productImage: item.product.images[0]?.url ?? null,
+        variantId: item.variantId,
+        variantName: item.variant?.name ?? null,
+        quantity: item.quantity,
+        customizations: item.customizations as Record<string, unknown>,
+        unitPrice: price,
+        itemTotal: Math.round((price * item.quantity + Number.EPSILON) * 100) / 100,
+      };
+    }),
+    statusTimeline: [
+      { status: "PENDING" as const, label: "Order Placed", date: order.createdAt.toISOString() },
+      { status: "CONFIRMED" as const, label: "Confirmed", date: null },
+      { status: "PREPARING" as const, label: "Preparing", date: null },
+      { status: "OUT_FOR_DELIVERY" as const, label: "Out for Delivery", date: null },
+      { status: "DELIVERED" as const, label: "Delivered", date: null },
+    ].filter((step) => (STATUS_ORDER[step.status] ?? 0) <= currentStatusIndex),
+  };
+}
+
+/**
+ * Fetch current order state for status transition validation.
+ * Caller must enforce seller-only authorization.
+ */
+export async function getOrderForTransition(orderId: string): Promise<{
+  id: string;
+  status: string;
+  orderNumber: string;
+} | null> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { id: true, status: true, orderNumber: true },
+  });
+  return order;
 }
 
 /**
