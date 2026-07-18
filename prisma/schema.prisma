@@ -101,8 +101,8 @@ model Product {
   slug         String           @unique
   description  String
   basePrice    Decimal          @db.Decimal(10, 2)
-  categoryId   String
-  category     Category         @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+  category     Category?        @relation(fields: [categoryId], references: [id])
   occasionTags String[]
   cartItems    CartItem[]
   images       ProductImage[]
