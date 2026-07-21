@@ -15,11 +15,18 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
-import { OCCASIONS } from "@/lib/occasions-config";
 import type { FieldKey, UploadState } from "@/features/customization/types";
 
 const OCCASION_OPTIONS = [
-  ...OCCASIONS.map((o) => o.label),
+  "Birthday",
+  "Wedding",
+  "Anniversary",
+  "Sympathy",
+  "Graduation",
+  "Get Well",
+  "Romance",
+  "Just Because",
+  "Valentine's Day",
   "Other",
 ] as const;
 

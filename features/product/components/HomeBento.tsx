@@ -8,8 +8,6 @@ import { BentoGrid } from "@/components/shared/BentoGrid"
 import { useProducts } from "@/features/product/hooks/useProducts"
 import { Skeleton } from "@/components/ui/skeleton"
 
-import { OCCASIONS } from "@/lib/occasions-config"
-
 function formatPrice(price: number) {
   return new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -19,12 +17,12 @@ function formatPrice(price: number) {
   }).format(price)
 }
 
-// Map the first 4 occasions for the homepage tiles
-const OCCASION_TILES = OCCASIONS.slice(0, 4).map((o) => ({
-  label: o.label,
-  emoji: o.emoji,
-  slug: o.slug,
-}))
+const CATEGORY_TILES = [
+  { label: "Wedding", slug: "wedding", emoji: "💐" },
+  { label: "Birthday", slug: "birthday", emoji: "🎂" },
+  { label: "Romance", slug: "romance", emoji: "💕" },
+  { label: "Anniversary", slug: "anniversary", emoji: "💍" },
+]
 
 export function HomeBento() {
   const router = useRouter()
@@ -62,20 +60,20 @@ export function HomeBento() {
       {/* Bento grid — 4 cols desktop, 1 col mobile */}
       <BentoGrid columns={4} gap="md" className="auto-rows-[200px]">
 
-        {/* ── Tile 1: Occasion showcase — col-span-2 row-span-2 ── */}
+        {/* ── Tile 1: Category showcase — col-span-2 row-span-2 ── */}
         <div
           role="link"
           tabIndex={0}
-          onClick={() => router.push("/occasions")}
+          onClick={() => router.push("/products")}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault()
-              router.push("/occasions")
+              router.push("/products")
             }
           }}
           className="bento-occasion-bg clay-card clay-hover-lift relative overflow-hidden col-span-1 md:col-span-2 md:row-span-2 border cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:outline-none group"
           style={{ borderColor: "var(--border-default)" }}
-          aria-label="Shop by occasion"
+          aria-label="Shop by category"
         >
           {/* Decorative large emoji */}
           <div
@@ -85,17 +83,17 @@ export function HomeBento() {
             🌸
           </div>
 
-          {/* Occasion pill chips — each links to /occasions?occasion=slug */}
+          {/* Category pill chips — each links to /products?category=slug */}
           <div className="absolute top-6 left-6 right-6 flex flex-wrap gap-2">
-            {OCCASION_TILES.map((o) => (
+            {CATEGORY_TILES.map((cat) => (
               <Link
-                key={o.slug}
-                href={`/occasions?occasion=${o.slug}`}
+                key={cat.slug}
+                href={`/products?category=${cat.slug}`}
                 onClick={(e) => e.stopPropagation()}
                 className="bento-occasion-pill inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:outline-none"
                 style={{ color: "var(--text-primary)" }}
               >
-                {o.emoji} {o.label}
+                {cat.emoji} {cat.label}
               </Link>
             ))}
           </div>
@@ -106,16 +104,16 @@ export function HomeBento() {
               className="text-[22px] leading-7 font-semibold mb-1"
               style={{ fontFamily: "var(--font-heading)", color: "var(--text-primary)" }}
             >
-              Shop by Occasion
+              Shop by Category
             </p>
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              Weddings, birthdays, anniversaries & more
+              Find your perfect bouquet for any celebration
             </p>
             <span
               className="mt-3 inline-flex items-center gap-1 text-xs font-medium transition-transform duration-200 group-hover:translate-x-1"
               style={{ color: "var(--accent-secondary)" }}
             >
-              Explore all occasions <ArrowRight className="h-3 w-3" aria-hidden="true" />
+              Browse all categories <ArrowRight className="h-3 w-3" aria-hidden="true" />
             </span>
           </div>
         </div>

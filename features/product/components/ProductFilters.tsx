@@ -4,7 +4,6 @@ import { useCallback, useState, useRef, type FormEvent } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
-import { OCCASIONS } from "@/lib/occasions-config";
 
 /**
  * Sort options matching the API's sort parameter.
@@ -15,14 +14,6 @@ const SORT_OPTIONS = [
   { value: "price_desc", label: "Price: High to Low" },
   { value: "rating_desc", label: "Customer Rating" },
 ] as const;
-
-/**
- * Occasion options.
- */
-const OCCASION_OPTIONS = [
-  { value: "", label: "All Occasions" },
-  ...OCCASIONS.map((o) => ({ value: o.slug, label: o.label })),
-];
 
 type ProductFiltersProps = {
   categories: Array<{ slug: string; name: string }>;
@@ -45,7 +36,6 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
 
   // Derived filter values from URL
   const currentCategory = searchParams.get("category") ?? "";
-  const currentOccasion = searchParams.get("occasion") ?? "";
   const currentMinPrice = searchParams.get("minPrice") ?? "";
   const currentMaxPrice = searchParams.get("maxPrice") ?? "";
   const currentSort = searchParams.get("sort") ?? "";
@@ -102,7 +92,7 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
    * Whether any filter is active.
    */
   const hasActiveFilters = Boolean(
-    currentCategory || currentOccasion || currentMinPrice || currentMaxPrice || currentSort || currentSearch
+    currentCategory || currentMinPrice || currentMaxPrice || currentSort || currentSearch
   );
 
   /**
@@ -219,28 +209,6 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
         </div>
       </fieldset>
 
-      {/* Occasion filter */}
-      <fieldset className="flex flex-col gap-2">
-        <legend className="font-body font-semibold text-body text-text-primary">
-          Occasion
-        </legend>
-        <div className="relative">
-          <select
-            value={currentOccasion}
-            onChange={(e) => updateUrl({ occasion: e.target.value || undefined })}
-            className="filter-select w-full appearance-none rounded-[12px] border border-[var(--border-interactive)] bg-surface px-3 py-2.5 pr-8 text-body text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
-            aria-label="Filter by occasion"
-          >
-            {OCCASION_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-text-muted" aria-hidden="true">▼</span>
-        </div>
-      </fieldset>
-
       {/* Price range */}
       <fieldset className="flex flex-col gap-2">
         <legend className="font-body font-semibold text-body text-text-primary">
@@ -339,7 +307,6 @@ export default function ProductFilters({ categories }: ProductFiltersProps) {
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-primary text-caption font-bold text-accent-primary-foreground">
               {[
                 currentCategory,
-                currentOccasion,
                 currentMinPrice || currentMaxPrice ? "price" : "",
                 currentSort,
                 currentSearch,

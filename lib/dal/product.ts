@@ -11,7 +11,7 @@ import type { z } from "zod";
 // ── Prisma Includes ────────────────────────────────────
 
 const productListInclude = {
-  category: true,
+  categories: true,
   images: { orderBy: { order: "asc" as const } },
   variants: { orderBy: { price: "asc" as const } },
   reviews: { select: { rating: true } },
@@ -22,7 +22,7 @@ type ProductListItem = Prisma.ProductGetPayload<{
 }>;
 
 const productDetailInclude = {
-  category: true,
+  categories: true,
   images: { orderBy: { order: "asc" as const } },
   variants: { orderBy: { price: "asc" as const } },
   addOns: true,
@@ -46,9 +46,7 @@ export interface ProductListResult {
   slug: string;
   description: string;
   basePrice: number;
-  categoryId: string | null;
-  category: { id: string; name: string; slug: string } | null;
-  occasionTags: string[];
+  categories: { id: string; name: string; slug: string }[];
   featured: boolean;
   isActive: boolean;
   createdAt: Date;
@@ -65,9 +63,7 @@ export interface ProductDetailResult {
   slug: string;
   description: string;
   basePrice: number;
-  categoryId: string | null;
-  category: { id: string; name: string; slug: string } | null;
-  occasionTags: string[];
+  categories: { id: string; name: string; slug: string }[];
   featured: boolean;
   isActive: boolean;
   createdAt: Date;
@@ -113,9 +109,7 @@ function formatProductListItem(product: ProductListItem): ProductListResult {
     slug: product.slug,
     description: product.description,
     basePrice: Number(product.basePrice),
-    categoryId: product.categoryId,
-    category: product.category,
-    occasionTags: product.occasionTags,
+    categories: product.categories,
     featured: product.featured,
     isActive: product.isActive,
     createdAt: product.createdAt,
@@ -150,9 +144,7 @@ function formatProductDetail(product: Prisma.ProductGetPayload<{
     slug: product.slug,
     description: product.description,
     basePrice: Number(product.basePrice),
-    categoryId: product.categoryId,
-    category: product.category,
-    occasionTags: product.occasionTags,
+    categories: product.categories,
     featured: product.featured,
     isActive: product.isActive,
     createdAt: product.createdAt,
@@ -161,6 +153,7 @@ function formatProductDetail(product: Prisma.ProductGetPayload<{
     variants: product.variants.map((v: DetailVariantItem) => ({
       ...v,
       price: Number(v.price),
+      color: v.color ?? undefined,
     })),
     addOns: product.addOns.map((a: DetailAddOnItem) => ({
       ...a,
@@ -187,16 +180,12 @@ function formatProductDetail(product: Prisma.ProductGetPayload<{
 export async function getProducts(
   filters: z.infer<typeof ProductQuerySchema>,
 ): Promise<PaginatedProducts> {
-  const { category, occasion, featured, minPrice, maxPrice, search, page, limit, sort } = filters;
+  const { category, featured, minPrice, maxPrice, search, page, limit, sort } = filters;
 
   const where: Prisma.ProductWhereInput = { isActive: true };
 
   if (category) {
-    where.category = { slug: category };
-  }
-
-  if (occasion) {
-    where.occasionTags = { has: occasion };
+    where.categories = { some: { slug: category } };
   }
 
   if (featured !== undefined) {
@@ -313,14 +302,14 @@ export async function getProductById(id: string): Promise<ProductDetailResult | 
 // ── Admin Includes & Types ────────────────────────────
 
 const adminProductListInclude = {
-  category: true,
+  categories: true,
   images: { take: 1, orderBy: { order: "asc" as const } },
   variants: true,
   inventory: true,
 } satisfies Prisma.ProductInclude;
 
 const adminProductDetailInclude = {
-  category: true,
+  categories: true,
   images: { orderBy: { order: "asc" as const } },
   variants: true,
   addOns: true,
@@ -337,7 +326,7 @@ export interface AdminProductListResult {
   slug: string;
   description: string;
   basePrice: number;
-  occasionTags: string[];
+  categories: { id: string; name: string }[];
   featured: boolean;
   isActive: boolean;
   createdAt: Date;
@@ -353,11 +342,11 @@ export interface AdminProductDetailResult {
   slug: string;
   description: string;
   basePrice: number;
-  occasionTags: string[];
+  categories: { id: string; name: string }[];
   featured: boolean;
   isActive: boolean;
   images: { url: string; alt: string | null; order: number }[];
-  variants: { id: string; name: string; price: number; sku: string | null }[];
+  variants: { id: string; name: string; price: number; sku: string | null; color?: string | null }[];
   addOns: { id: string; name: string; price: number }[];
   inventory: { quantity: number; unit: string; lowStock: number } | null;
 }
@@ -369,7 +358,7 @@ function formatAdminProductListItem(p: AdminProductListRaw): AdminProductListRes
     slug: p.slug,
     description: p.description,
     basePrice: Number(p.basePrice),
-    occasionTags: p.occasionTags,
+    categories: p.categories,
     featured: p.featured,
     isActive: p.isActive,
     createdAt: p.createdAt,
@@ -389,7 +378,7 @@ function formatAdminProductDetail(
     slug: p.slug,
     description: p.description,
     basePrice: Number(p.basePrice),
-    occasionTags: p.occasionTags,
+    categories: p.categories,
     featured: p.featured,
     isActive: p.isActive,
     images: p.images.map((img) => ({
@@ -402,6 +391,7 @@ function formatAdminProductDetail(
       name: v.name,
       price: Number(v.price),
       sku: v.sku,
+      color: v.color ?? null,
     })),
     addOns: p.addOns.map((a) => ({
       id: a.id,
@@ -436,7 +426,7 @@ export async function getProductsAdmin(
   if (search) {
     where.OR = [
       { name: { contains: search, mode: "insensitive" } },
-      { category: { name: { contains: search, mode: "insensitive" } } },
+      { categories: { some: { name: { contains: search, mode: "insensitive" } } } },
     ];
   }
 
@@ -502,8 +492,7 @@ export async function createProduct(
         slug,
         description: data.description,
         basePrice: data.basePrice,
-        categoryId: data.categoryId,
-        occasionTags: data.occasionTags,
+        categories: { connect: data.categoryIds.map((id) => ({ id })) },
         isActive: data.isActive,
         featured: false,
       },
@@ -526,6 +515,7 @@ export async function createProduct(
           productId: product.id,
           name: v.name,
           price: v.price,
+          color: v.color ?? null,
           sku: v.sku ?? null,
         })),
       });
@@ -607,9 +597,10 @@ export async function updateProduct(
         ...(data.name !== undefined && { name: data.name, slug }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.basePrice !== undefined && { basePrice: data.basePrice }),
-        ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
-        ...(data.occasionTags !== undefined && { occasionTags: data.occasionTags }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(data.categoryIds !== undefined && {
+          categories: { set: data.categoryIds.map((cid) => ({ id: cid })) },
+        }),
       },
     });
 
@@ -631,6 +622,7 @@ export async function updateProduct(
           productId: id,
           name: v.name,
           price: v.price,
+          color: v.color ?? null,
           sku: v.sku ?? null,
         })),
       });

@@ -35,10 +35,9 @@ const PRODUCTS_DATA: {
     slug: string;
     description: string;
     basePrice: number;
-    categorySlug: string;
-    occasionTags: string[];
+    categorySlugs: string[];
     images: { alt: string; order: number }[];
-    variants: { name: string; price: number; sku: string }[];
+    variants: { name: string; price: number; sku: string; color?: string }[];
     addOns: { name: string; price: number }[];
 }[] = [
         {
@@ -46,16 +45,15 @@ const PRODUCTS_DATA: {
             slug: "ivory-dream",
             description: "A timeless hand-tied bouquet of ivory crochet roses, eucalyptus stems, and delicate baby's breath. Perfect for brides or anyone who loves understated elegance.",
             basePrice: 1200,
-            categorySlug: "wedding",
-            occasionTags: ["wedding", "romance"],
+            categorySlugs: ["wedding", "romance"],
             images: [
                 { alt: "Ivory Dream bouquet front view", order: 0 },
                 { alt: "Ivory Dream bouquet detail", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "IVR-DRM-S" },
-                { name: "Medium", price: 200, sku: "IVR-DRM-M" },
-                { name: "Large", price: 450, sku: "IVR-DRM-L" },
+                { name: "Small", price: 0, sku: "IVR-DRM-S", color: "Ivory" },
+                { name: "Medium", price: 200, sku: "IVR-DRM-M", color: "Ivory" },
+                { name: "Large", price: 450, sku: "IVR-DRM-L", color: "Ivory" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -67,16 +65,15 @@ const PRODUCTS_DATA: {
             slug: "blush-garden",
             description: "A soft cascade of blush-pink tulips, peonies, and lavender sprigs — all handcrafted in premium yarn. A romantic favorite.",
             basePrice: 950,
-            categorySlug: "romance",
-            occasionTags: ["romance", "anniversary", "just-because"],
+            categorySlugs: ["romance", "anniversary", "just-because"],
             images: [
                 { alt: "Blush Garden bouquet front view", order: 0 },
                 { alt: "Blush Garden bouquet side view", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "BLSH-GDN-S" },
-                { name: "Medium", price: 150, sku: "BLSH-GDN-M" },
-                { name: "Large", price: 350, sku: "BLSH-GDN-L" },
+                { name: "Small", price: 0, sku: "BLSH-GDN-S", color: "Blush Pink" },
+                { name: "Medium", price: 150, sku: "BLSH-GDN-M", color: "Blush Pink" },
+                { name: "Large", price: 350, sku: "BLSH-GDN-L", color: "Blush Pink" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -87,15 +84,14 @@ const PRODUCTS_DATA: {
             slug: "sunshine-posy",
             description: "Cheerful yellow sunflowers and white daisies in a hand-tied bundle. Guaranteed to bring a smile.",
             basePrice: 700,
-            categorySlug: "get-well",
-            occasionTags: ["get-well", "birthday", "just-because"],
+            categorySlugs: ["get-well", "birthday", "just-because"],
             images: [
                 { alt: "Sunshine Posy bouquet front view", order: 0 },
                 { alt: "Sunshine Posy bouquet top view", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "SUN-POSY-S" },
-                { name: "Medium", price: 120, sku: "SUN-POSY-M" },
+                { name: "Small", price: 0, sku: "SUN-POSY-S", color: "Yellow" },
+                { name: "Medium", price: 120, sku: "SUN-POSY-M", color: "Yellow" },
             ],
             addOns: [
                 { name: "Gift Wrap +₱80", price: 80 },
@@ -106,16 +102,15 @@ const PRODUCTS_DATA: {
             slug: "lavender-fields",
             description: "A calming arrangement of lavender crochet stems, sage leaves, and cream accents. Ideal for sympathy or quiet moments.",
             basePrice: 850,
-            categorySlug: "sympathy",
-            occasionTags: ["sympathy", "just-because"],
+            categorySlugs: ["sympathy", "just-because"],
             images: [
                 { alt: "Lavender Fields bouquet front view", order: 0 },
                 { alt: "Lavender Fields bouquet detail", order: 1 },
                 { alt: "Lavender Fields bouquet arranged on table", order: 2 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "LAV-FLD-S" },
-                { name: "Medium", price: 160, sku: "LAV-FLD-M" },
+                { name: "Small", price: 0, sku: "LAV-FLD-S", color: "Lavender" },
+                { name: "Medium", price: 160, sku: "LAV-FLD-M", color: "Lavender" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -127,16 +122,15 @@ const PRODUCTS_DATA: {
             slug: "crimson-heart",
             description: "Deep red roses with burgundy accents and dark greenery. A bold statement of passion and devotion.",
             basePrice: 1100,
-            categorySlug: "romance",
-            occasionTags: ["romance", "anniversary", "valentines"],
+            categorySlugs: ["romance", "anniversary"],
             images: [
                 { alt: "Crimson Heart bouquet front view", order: 0 },
                 { alt: "Crimson Heart bouquet close-up", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "CRM-HRT-S" },
-                { name: "Medium", price: 180, sku: "CRM-HRT-M" },
-                { name: "Large", price: 400, sku: "CRM-HRT-L" },
+                { name: "Small", price: 0, sku: "CRM-HRT-S", color: "Red" },
+                { name: "Medium", price: 180, sku: "CRM-HRT-M", color: "Red" },
+                { name: "Large", price: 400, sku: "CRM-HRT-L", color: "Red" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -149,15 +143,14 @@ const PRODUCTS_DATA: {
             slug: "coral-sunset",
             description: "Vibrant coral and peach blooms with gold-thread accents. A modern favorite for celebratory occasions.",
             basePrice: 900,
-            categorySlug: "graduation",
-            occasionTags: ["graduation", "birthday", "just-because"],
+            categorySlugs: ["graduation", "birthday", "just-because"],
             images: [
                 { alt: "Coral Sunset bouquet front view", order: 0 },
                 { alt: "Coral Sunset bouquet angled view", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "CRL-SUN-S" },
-                { name: "Medium", price: 140, sku: "CRL-SUN-M" },
+                { name: "Small", price: 0, sku: "CRL-SUN-S", color: "Coral" },
+                { name: "Medium", price: 140, sku: "CRL-SUN-M", color: "Coral" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -169,15 +162,14 @@ const PRODUCTS_DATA: {
             slug: "snowdrop-serenity",
             description: "Pure white crochet snowdrops and silver foliage in a minimalist hand-tied bunch. Clean, elegant, and serene.",
             basePrice: 780,
-            categorySlug: "sympathy",
-            occasionTags: ["sympathy", "wedding"],
+            categorySlugs: ["sympathy", "wedding"],
             images: [
                 { alt: "Snowdrop Serenity bouquet front view", order: 0 },
                 { alt: "Snowdrop Serenity bouquet detail", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "SNW-SER-S" },
-                { name: "Medium", price: 130, sku: "SNW-SER-M" },
+                { name: "Small", price: 0, sku: "SNW-SER-S", color: "White" },
+                { name: "Medium", price: 130, sku: "SNW-SER-M", color: "White" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -188,16 +180,15 @@ const PRODUCTS_DATA: {
             slug: "birthday-burst",
             description: "A colorful explosion of multi-colored crochet blooms — tulips, roses, and daisies — tied with a cheerful ribbon.",
             basePrice: 820,
-            categorySlug: "birthday",
-            occasionTags: ["birthday", "just-because"],
+            categorySlugs: ["birthday", "just-because"],
             images: [
                 { alt: "Birthday Burst bouquet front view", order: 0 },
                 { alt: "Birthday Burst bouquet top view", order: 1 },
                 { alt: "Birthday Burst bouquet with ribbon", order: 2 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "BRT-BST-S" },
-                { name: "Medium", price: 150, sku: "BRT-BST-M" },
+                { name: "Small", price: 0, sku: "BRT-BST-S", color: "Multi" },
+                { name: "Medium", price: 150, sku: "BRT-BST-M", color: "Multi" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -209,15 +200,14 @@ const PRODUCTS_DATA: {
             slug: "golden-hour",
             description: "Warm golden and amber blooms with dried-look accents. Inspired by the glow of sunset.",
             basePrice: 930,
-            categorySlug: "anniversary",
-            occasionTags: ["anniversary", "romance"],
+            categorySlugs: ["anniversary", "romance"],
             images: [
                 { alt: "Golden Hour bouquet front view", order: 0 },
                 { alt: "Golden Hour bouquet side view", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "GLD-HR-S" },
-                { name: "Medium", price: 170, sku: "GLD-HR-M" },
+                { name: "Small", price: 0, sku: "GLD-HR-S", color: "Gold" },
+                { name: "Medium", price: 170, sku: "GLD-HR-M", color: "Gold" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -229,13 +219,12 @@ const PRODUCTS_DATA: {
             slug: "tiny-dancer",
             description: "A petite posy of mixed pastel mini blooms. Sweet, dainty, and perfect for a bedside or desk.",
             basePrice: 550,
-            categorySlug: "just-because",
-            occasionTags: ["just-because", "get-well"],
+            categorySlugs: ["just-because", "get-well"],
             images: [
                 { alt: "Tiny Dancer bouquet front view", order: 0 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "TNY-DNC-S" },
+                { name: "Small", price: 0, sku: "TNY-DNC-S", color: "Pastel" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -246,15 +235,14 @@ const PRODUCTS_DATA: {
             slug: "mountain-meadow",
             description: "Wildflower-inspired mix of blues, purples, and soft whites. Free-spirited and fresh.",
             basePrice: 880,
-            categorySlug: "birthday",
-            occasionTags: ["birthday", "graduation", "just-because"],
+            categorySlugs: ["birthday", "graduation", "just-because"],
             images: [
                 { alt: "Mountain Meadow bouquet front view", order: 0 },
                 { alt: "Mountain Meadow bouquet overhead", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "MTN-MDW-S" },
-                { name: "Medium", price: 140, sku: "MTN-MDW-M" },
+                { name: "Small", price: 0, sku: "MTN-MDW-S", color: "Blue" },
+                { name: "Medium", price: 140, sku: "MTN-MDW-M", color: "Blue" },
             ],
             addOns: [
                 { name: "Gift Wrap +₱80", price: 80 },
@@ -265,17 +253,16 @@ const PRODUCTS_DATA: {
             slug: "rustic-charm",
             description: "Earth-toned blooms with burlap-wrapped stems, dried lavender sprigs, and cinnamon sticks. Warm and farmhouse-style.",
             basePrice: 1020,
-            categorySlug: "wedding",
-            occasionTags: ["wedding", "anniversary"],
+            categorySlugs: ["wedding", "anniversary"],
             images: [
                 { alt: "Rustic Charm bouquet front view", order: 0 },
                 { alt: "Rustic Charm bouquet detail", order: 1 },
                 { alt: "Rustic Charm bouquet with burlap wrap", order: 2 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "RST-CHM-S" },
-                { name: "Medium", price: 190, sku: "RST-CHM-M" },
-                { name: "Large", price: 420, sku: "RST-CHM-L" },
+                { name: "Small", price: 0, sku: "RST-CHM-S", color: "Earth" },
+                { name: "Medium", price: 190, sku: "RST-CHM-M", color: "Earth" },
+                { name: "Large", price: 420, sku: "RST-CHM-L", color: "Earth" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -287,15 +274,14 @@ const PRODUCTS_DATA: {
             slug: "lilac-reverie",
             description: "Purple and mauve blooms with trailing ivy vines. Romantic and dreamy — a showstopper for any occasion.",
             basePrice: 1050,
-            categorySlug: "romance",
-            occasionTags: ["romance", "anniversary", "wedding"],
+            categorySlugs: ["romance", "anniversary", "wedding"],
             images: [
                 { alt: "Lilac Reverie bouquet front view", order: 0 },
                 { alt: "Lilac Reverie bouquet side angle", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "LIL-REV-S" },
-                { name: "Medium", price: 180, sku: "LIL-REV-M" },
+                { name: "Small", price: 0, sku: "LIL-REV-S", color: "Lilac" },
+                { name: "Medium", price: 180, sku: "LIL-REV-M", color: "Lilac" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -308,15 +294,14 @@ const PRODUCTS_DATA: {
             slug: "capri-breeze",
             description: "Cool blues and crisp whites with ocean-inspired accents. Light, airy, and vacation-ready.",
             basePrice: 760,
-            categorySlug: "graduation",
-            occasionTags: ["graduation", "birthday"],
+            categorySlugs: ["graduation", "birthday"],
             images: [
                 { alt: "Capri Breeze bouquet front view", order: 0 },
                 { alt: "Capri Breeze bouquet overhead", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "CAP-BRZ-S" },
-                { name: "Medium", price: 120, sku: "CAP-BRZ-M" },
+                { name: "Small", price: 0, sku: "CAP-BRZ-S", color: "Blue" },
+                { name: "Medium", price: 120, sku: "CAP-BRZ-M", color: "Blue" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -327,15 +312,14 @@ const PRODUCTS_DATA: {
             slug: "cozy-cottage",
             description: "A warm, gathered bunch of rust, mustard, and cream blooms in a homespun style. Like a hug in flower form.",
             basePrice: 680,
-            categorySlug: "just-because",
-            occasionTags: ["just-because", "get-well"],
+            categorySlugs: ["just-because", "get-well"],
             images: [
                 { alt: "Cozy Cottage bouquet front view", order: 0 },
                 { alt: "Cozy Cottage bouquet detail", order: 1 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "COZ-COT-S" },
-                { name: "Medium", price: 110, sku: "COZ-COT-M" },
+                { name: "Small", price: 0, sku: "COZ-COT-S", color: "Rust" },
+                { name: "Medium", price: 110, sku: "COZ-COT-M", color: "Rust" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -347,17 +331,16 @@ const PRODUCTS_DATA: {
             slug: "velvet-noir",
             description: "Deep burgundy and nearly-black roses with charcoal foliage. Dramatic and sophisticated.",
             basePrice: 1300,
-            categorySlug: "anniversary",
-            occasionTags: ["anniversary", "romance"],
+            categorySlugs: ["anniversary", "romance"],
             images: [
                 { alt: "Velvet Noir bouquet front view", order: 0 },
                 { alt: "Velvet Noir bouquet detail", order: 1 },
                 { alt: "Velvet Noir bouquet dark setting", order: 2 },
             ],
             variants: [
-                { name: "Small", price: 0, sku: "VLV-NR-S" },
-                { name: "Medium", price: 220, sku: "VLV-NR-M" },
-                { name: "Large", price: 500, sku: "VLV-NR-L" },
+                { name: "Small", price: 0, sku: "VLV-NR-S", color: "Burgundy" },
+                { name: "Medium", price: 220, sku: "VLV-NR-M", color: "Burgundy" },
+                { name: "Large", price: 500, sku: "VLV-NR-L", color: "Burgundy" },
             ],
             addOns: [
                 { name: "Message Card +₱50", price: 50 },
@@ -489,8 +472,10 @@ async function main() {
     const productBasePriceMap = new Map<string, number>();
 
     for (const pd of PRODUCTS_DATA) {
-        const categoryId = categoryMap.get(pd.categorySlug);
-        if (!categoryId) throw new Error(`Category not found: ${pd.categorySlug}`);
+        const categoryIds = pd.categorySlugs
+            .map((slug) => categoryMap.get(slug))
+            .filter(Boolean) as string[];
+        if (categoryIds.length === 0) throw new Error(`No categories found for: ${pd.slug}`);
 
         const product = await prisma.product.create({
             data: {
@@ -498,8 +483,7 @@ async function main() {
                 slug: pd.slug,
                 description: pd.description,
                 basePrice: pd.basePrice,
-                categoryId,
-                occasionTags: pd.occasionTags,
+                categories: { connect: categoryIds.map((id) => ({ id })) },
                 isActive: true,
                 images: {
                     createMany: {
@@ -516,6 +500,7 @@ async function main() {
                             name: v.name,
                             price: v.price,
                             sku: v.sku,
+                            color: v.color ?? null,
                         })),
                     },
                 },

@@ -210,7 +210,7 @@ export function ProductManagementClient() {
                 <th className="p-3 cursor-pointer select-none" onClick={() => handleSort("name")}>
                   Name {sortIndicator("name")}
                 </th>
-                <th className="p-3">Occasions</th>
+                <th className="p-3">Categories</th>
                 <th className="p-3 cursor-pointer select-none" onClick={() => handleSort("price")}>
                   Price {sortIndicator("price")}
                 </th>
@@ -253,8 +253,8 @@ export function ProductManagementClient() {
                     {product.name}
                   </td>
                   <td className="p-3 text-text-muted text-xs">
-                    {product.occasionTags.length > 0
-                      ? product.occasionTags.join(", ")
+                    {product.categories.length > 0
+                      ? product.categories.map((c: { name: string }) => c.name).join(", ")
                       : "—"}
                   </td>
                   <td className="p-3 text-text-primary">

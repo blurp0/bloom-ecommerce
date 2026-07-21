@@ -1,0 +1,21 @@
+◇ injected env (11) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+🌱 Seeding Bloom & Bind database...
+   Cleared existing data.
+   Created 8 categories.
+   Created 1 seller + 2 customers.
+   Created 16 products with images, variants, and add-ons.
+   Created 5 inventory rows.
+   Created 5 sample orders.
+   Created 2 reviews.
+
+✅ Seed complete! Summary:
+   categories: 8
+   products: 16
+   productImages: 35
+   productVariants: 36
+   addOns: 29
+   users: 3
+   orders: 5
+   orderItems: 5
+   reviews: 2
+   inventory: 5

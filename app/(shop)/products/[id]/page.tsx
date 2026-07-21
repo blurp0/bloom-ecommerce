@@ -12,7 +12,7 @@ interface ProductPageParams {
 }
 
 const productInclude = {
-  category: true,
+  categories: true,
   images: { orderBy: { order: "asc" as const } },
   variants: { orderBy: { price: "asc" as const } },
 } satisfies Prisma.ProductInclude;
@@ -45,14 +45,13 @@ function toDetailData(product: ProductWithRelations) {
     name: product.name,
     description: product.description ?? "",
     basePrice: Number(product.basePrice),
-    category: product.category
-      ? { name: product.category.name, slug: product.category.slug }
-      : null,
+    categories: product.categories,
     images: product.images,
     variants: product.variants.map((v) => ({
       id: v.id,
       name: v.name,
       price: Number(v.price),
+      color: v.color ?? null,
     })),
   };
 }
@@ -111,14 +110,14 @@ export default async function ProductDetailPage({
           <li aria-hidden="true">
             <ChevronRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
           </li>
-          {product.category && (
+          {product.categories[0] && (
             <>
               <li>
                 <Link
-                  href={`/products?category=${product.category.slug}`}
+                  href={`/products?category=${product.categories[0].slug}`}
                   className="text-[var(--accent-primary)] hover:text-[var(--accent-primary-hover)] transition-colors duration-150"
                 >
-                  {product.category.name}
+                  {product.categories[0].name}
                 </Link>
               </li>
               <li aria-hidden="true">

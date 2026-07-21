@@ -13,7 +13,7 @@ interface CustomizationPageParams {
 }
 
 const customizationInclude = {
-  category: { select: { name: true, slug: true } },
+  categories: { select: { name: true, slug: true } },
   images: { orderBy: { order: "asc" as const }, select: { url: true, alt: true } },
   variants: { orderBy: { price: "asc" as const } },
   addOns: true,
@@ -54,6 +54,7 @@ function toStudioData(product: ProductWithRelations): StudioProductData {
       id: v.id,
       name: v.name,
       price: Number(v.price),
+      color: v.color ?? undefined,
     })),
     addOns: product.addOns.map((a) => ({
       id: a.id,
@@ -68,8 +69,8 @@ function toStudioData(product: ProductWithRelations): StudioProductData {
         : undefined,
       isMessageCard: /message\s*card|greeting\s*card/i.test(a.name),
     })),
-    categoryName: product.category?.name,
-    categorySlug: product.category?.slug,
+    categoryName: product.categories[0]?.name,
+    categorySlug: product.categories[0]?.slug,
   };
 }
 

@@ -4,7 +4,7 @@ export const CreateProductSchema = z.strictObject({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
   basePrice: z.number().positive("Base price must be a positive number"),
-  categoryId: z.string().min(1, "Category ID is required"),
+  categoryIds: z.array(z.string()).min(1, "At least one category is required"),
   isActive: z.boolean().default(true),
 });
 
@@ -12,13 +12,12 @@ export const UpdateProductSchema = z.strictObject({
   name: z.string().min(1, "Name is required").optional(),
   description: z.string().min(1, "Description is required").optional(),
   basePrice: z.number().positive("Base price must be a positive number").optional(),
-  categoryId: z.string().min(1, "Category ID is required").optional(),
+  categoryIds: z.array(z.string()).optional(),
   isActive: z.boolean().optional(),
 });
 
 export const ProductQuerySchema = z.strictObject({
   category: z.string().optional(),
-  occasion: z.string().optional(),
   featured: z.enum(["true", "false"]).optional(),
   minPrice: z.coerce.number().min(0, "minPrice must be >= 0").optional(),
   maxPrice: z.coerce.number().min(0, "maxPrice must be >= 0").optional(),
@@ -52,13 +51,14 @@ export const AdminProductQuerySchema = z.strictObject({
 });
 
 const ImageItemSchema = z.strictObject({
-  url: z.string().url(),
+  url: z.string().min(1, "Image is required"),
   alt: z.string().max(200).optional(),
 });
 
 const VariantItemSchema = z.strictObject({
   name: z.string().min(1, "Variant name is required"),
   price: z.coerce.number({ error: "Variant price is required" }),
+  color: z.string().optional(),
   sku: z.string().optional(),
 });
 
@@ -77,8 +77,7 @@ export const AdminCreateProductSchema = z.strictObject({
   name: z.string().min(1, "Name is required").max(200),
   description: z.string().min(1, "Description is required"),
   basePrice: z.coerce.number().positive("Base price must be positive"),
-  categoryId: z.string().min(1, "Category is required"),
-  occasionTags: z.array(z.string()).default([]),
+  categoryIds: z.array(z.string()).min(1, "At least one category is required"),
   isActive: z.boolean().default(true),
   images: z.array(ImageItemSchema).min(1, "At least 1 image is required"),
   variants: z.array(VariantItemSchema).default([]),
@@ -90,8 +89,7 @@ export const AdminUpdateProductSchema = z.strictObject({
   name: z.string().min(1, "Name is required").max(200).optional(),
   description: z.string().min(1, "Description is required").optional(),
   basePrice: z.coerce.number().positive("Base price must be positive").optional(),
-  categoryId: z.string().min(1, "Category is required").optional(),
-  occasionTags: z.array(z.string()).optional(),
+  categoryIds: z.array(z.string()).optional(),
   isActive: z.boolean().optional(),
   images: z.array(ImageItemSchema).min(1, "At least 1 image is required").optional(),
   variants: z.array(VariantItemSchema).optional(),

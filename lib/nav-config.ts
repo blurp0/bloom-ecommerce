@@ -7,7 +7,6 @@ export type TabItem = { href: string; label: string; icon: LucideIcon };
 export const navLinks: NavLink[] = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Shop" },
-    { href: "/occasions", label: "Occasions" },
     { href: "/customization", label: "Custom" },
 ];
 
