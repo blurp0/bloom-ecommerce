@@ -3,6 +3,7 @@
 export interface CustomizationState {
   productId: string | null;
   selectedVariantId: string | null;
+  selectedColor: string | null;
   selectedAddOnIds: string[];
   messageCardText: string;
   quantity: number;
@@ -21,6 +22,7 @@ export interface AddOnInput {
 export interface CustomizationActions {
   setProduct: (productId: string) => void;
   setVariant: (variantId: string | null) => void;
+  setColor: (color: string | null) => void;
   toggleAddOn: (addOnId: string) => void;
   setMessageCardText: (text: string) => void;
   setQuantity: (n: number) => void;

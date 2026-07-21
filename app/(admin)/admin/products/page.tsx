@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
+import { ProductManagementClient } from "@/features/admin/components/ProductManagementClient";
 
 export const metadata: Metadata = {
   title: "Products — Admin — Bloom & Bind",
 };
 
 export default function AdminProductsPage() {
-  return (
-    <div>
-      <h1 className="font-heading text-[32px] leading-[38px] font-normal text-text-primary">
-        Products
-      </h1>
-      <p className="mt-2 text-text-muted text-sm">Product management coming soon.</p>
-    </div>
-  );
+  return <ProductManagementClient />;
 }

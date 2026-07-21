@@ -27,6 +27,10 @@ export async function requireAdminRole(): Promise<User> {
   }
 
   const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+
+  // ponytail: temp debug — remove after admin redirect is fixed
+  console.log("[admin-auth]", { clerkId: userId, found: !!user, role: user?.role });
+
   if (!user || user.role !== "SELLER") {
     const err = new Error("Forbidden");
     (err as NodeJS.ErrnoException).code = "403";

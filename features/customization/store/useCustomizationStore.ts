@@ -14,6 +14,7 @@ const QUANTITY_MAX = 999;
 const initialState: CustomizationState = {
   productId: null,
   selectedVariantId: null,
+  selectedColor: null,
   selectedAddOnIds: [],
   messageCardText: "",
   quantity: 1,
@@ -40,6 +41,8 @@ export const useCustomizationStore = create<CustomizationStore>((set) => ({
     }),
 
   setVariant: (variantId: string | null) => set({ selectedVariantId: variantId }),
+
+  setColor: (color: string | null) => set({ selectedColor: color }),
 
   toggleAddOn: (addOnId: string) =>
     set((state) => {

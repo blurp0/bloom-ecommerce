@@ -12,6 +12,7 @@ interface Variant {
   id: string;
   name: string;
   price: number;
+  color?: string | null;
 }
 
 export interface ProductDetailData {
@@ -19,7 +20,7 @@ export interface ProductDetailData {
   name: string;
   description: string;
   basePrice: number;
-  category: { name: string; slug: string } | null;
+  categories: { name: string; slug: string }[];
   images: GalleryImage[];
   variants: Variant[];
 }
@@ -47,6 +48,13 @@ function formatPrice(price: number): string {
  * Desktop: CTA is inline in the right column.
  */
 export default function ProductDetail({ product }: ProductDetailProps) {
+  // Collect unique colors from variants for color picker
+  const uniqueColors = Array.from(
+    new Set(product.variants.map((v) => v.color).filter((c): c is string => !!c))
+  );
+  const [selectedColor, setSelectedColor] = useState<string | null>(
+    uniqueColors.length === 1 ? (uniqueColors[0] ?? null) : null
+  );
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(
     product.variants[0] ?? null
   );
@@ -63,11 +71,19 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   // Treat `variant.price` as a price adjustment relative to the product base price.
   // This matches the customization studio's pricing model where the studio
   // combines basePrice with the variant adjustment.
-  const displayPrice = selectedVariant
-    ? product.basePrice + selectedVariant.price
+  // When both color and size are selected, find matching variant
+  const actualVariant =
+    selectedColor && selectedVariant
+      ? product.variants.find(
+          (v) => v.name === selectedVariant.name && v.color === selectedColor,
+        ) ?? selectedVariant
+      : selectedVariant;
+
+  const displayPrice = actualVariant
+    ? product.basePrice + actualVariant.price
     : product.basePrice;
 
-  const ctaHref = `/customization/${product.id}${selectedVariant ? `?variantId=${selectedVariant.id}&variantName=${encodeURIComponent(selectedVariant.name)}` : ""}`;
+  const ctaHref = `/customization/${product.id}${actualVariant ? `?variantId=${actualVariant.id}&variantName=${encodeURIComponent(actualVariant.name)}` : ""}`;
 
   return (
     <>
@@ -103,22 +119,55 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             {product.description}
           </p>
 
-          {/* Variant selector */}
+          {/* Color selector */}
+          {uniqueColors.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium text-[var(--text-primary)]">
+                Color
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {uniqueColors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor(color ?? null)}
+                    aria-pressed={selectedColor === color}
+                    className={[
+                      "px-4 py-2 rounded-[9999px] text-sm font-medium border transition-all duration-150 cursor-pointer",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
+                      selectedColor === color
+                        ? "bg-[var(--accent-primary)] text-[var(--accent-primary-foreground)] border-[var(--accent-primary)]"
+                        : "bg-transparent text-[var(--text-primary)] border-[var(--border-interactive)] hover:border-[var(--accent-primary)]",
+                    ].join(" ")}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Variant selector (size) */}
           {product.variants.length > 0 && (
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium text-[var(--text-primary)]">
                 Size
               </span>
               <div className="flex flex-wrap gap-2">
-                {product.variants.map((v) => (
+                {[
+                  ...new Map(
+                    product.variants
+                      .filter((v) => !selectedColor || v.color === selectedColor)
+                      .map((v) => [v.name, v]),
+                  ).values(),
+                ].map((v) => (
                   <button
                     key={v.id}
                     onClick={() => setSelectedVariant(v)}
-                    aria-pressed={selectedVariant?.id === v.id}
+                    aria-pressed={selectedVariant?.name === v.name}
                     className={[
                       "px-4 py-2 rounded-[9999px] text-sm font-medium border transition-all duration-150 cursor-pointer",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]",
-                      selectedVariant?.id === v.id
+                      selectedVariant?.name === v.name
                         ? "bg-[var(--accent-primary)] text-[var(--accent-primary-foreground)] border-[var(--accent-primary)]"
                         : "bg-transparent text-[var(--text-primary)] border-[var(--border-interactive)] hover:border-[var(--accent-primary)]",
                     ].join(" ")}

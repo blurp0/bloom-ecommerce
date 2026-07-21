@@ -14,10 +14,16 @@ import type { VariantData, SizeSelectorProps } from "@/features/customization/ty
  */
 export default function SizeSelector({ variants, basePrice }: SizeSelectorProps) {
   const selectedVariantId = useCustomizationStore((s) => s.selectedVariantId);
+  const selectedColor = useCustomizationStore((s) => s.selectedColor);
   const setVariant = useCustomizationStore((s) => s.setVariant);
 
+  // Filter variants by selected color, if any
+  const filteredVariants = selectedColor
+    ? variants.filter((v) => v.color === selectedColor)
+    : variants;
+
   // No variants available — show default option
-  if (variants.length === 0) {
+  if (filteredVariants.length === 0) {
     return (
       <div className="flex flex-col gap-3">
         <p className="text-sm text-[var(--text-muted)]">
@@ -60,7 +66,7 @@ export default function SizeSelector({ variants, basePrice }: SizeSelectorProps)
         Select a size. Price adjusts based on your choice.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {variants.map((variant) => {
+        {filteredVariants.map((variant) => {
           const isSelected = selectedVariantId === variant.id;
           // `variants[*].price` is treated as a price adjustment relative to base.
           const delta = variant.price;

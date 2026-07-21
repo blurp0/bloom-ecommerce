@@ -11,6 +11,7 @@ import type {
   CustomizationStudioProps,
 } from "@/features/customization/types";
 import SizeSelector from "./SizeSelector";
+import ColorSelector from "./ColorSelector";
 import AddOnToggleCards from "./AddOnToggleCards";
 import MessageCardInput from "./MessageCardInput";
 import CustomizationSummary from "./CustomizationSummary";
@@ -37,6 +38,8 @@ export default function CustomizationStudio({
   const setProduct = useCustomizationStore((s) => s.setProduct);
   const selectedVariantId = useCustomizationStore((s) => s.selectedVariantId);
   const setVariant = useCustomizationStore((s) => s.setVariant);
+  const selectedColor = useCustomizationStore((s) => s.selectedColor);
+  const setColor = useCustomizationStore((s) => s.setColor);
   const selectedAddOnIds = useCustomizationStore((s) => s.selectedAddOnIds);
   const [currentStep, setCurrentStep] = useState(1);
   const [returnStep, setReturnStep] = useState<number | null>(null);
@@ -54,6 +57,21 @@ export default function CustomizationStudio({
   );
 
   const hasVariants = product.variants.length > 0;
+
+  // Collect unique colors for color picker
+  const uniqueColors = Array.from(
+    new Set(product.variants.map((v) => v.color).filter(Boolean)),
+  );
+  const hasColors = uniqueColors.length > 0;
+  const hasColorSelected = !hasColors || selectedColor !== null;
+
+  // Auto-select first color when only one exists
+  useEffect(() => {
+    if (uniqueColors.length === 1 && !selectedColor) {
+      setColor(uniqueColors[0] ?? null);
+    }
+  }, [uniqueColors, selectedColor, setColor]);
+
   const hasVariantSelected = !hasVariants || selectedVariantId !== null;
 
   const displayStep = shouldShowMessageStep ? currentStep : currentStep === 3 ? 4 : currentStep;
@@ -81,8 +99,7 @@ export default function CustomizationStudio({
 
 
   const canGoNext = () => {
-    if (currentStep === 1) return hasVariantSelected;
-    // Step 2 always allowed; Step 3 is conditional via shouldShowMessageStep
+    if (currentStep === 1) return hasVariantSelected && (!hasColors || hasColorSelected);
     return true;
   };
 
@@ -198,6 +215,15 @@ export default function CustomizationStudio({
                 variants={product.variants}
                 basePrice={product.basePrice}
               />
+
+              {hasColors && (
+                <>
+                  <h2 className="font-heading text-xl text-[var(--text-primary)]">
+                    Choose Color
+                  </h2>
+                  <ColorSelector variants={product.variants} />
+                </>
+              )}
             </section>
           )}
 

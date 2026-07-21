@@ -34,6 +34,7 @@ export default function CustomizationSummary({
   hasVariants,
 }: CustomizationSummaryProps) {
   const selectedVariantId = useCustomizationStore((s) => s.selectedVariantId);
+  const selectedColor = useCustomizationStore((s) => s.selectedColor);
   const selectedAddOnIds = useCustomizationStore((s) => s.selectedAddOnIds);
   const messageCardText = useCustomizationStore((s) => s.messageCardText);
   const quantity = useCustomizationStore((s) => s.quantity);
@@ -82,6 +83,9 @@ export default function CustomizationSummary({
       const customization: Record<string, unknown> = {};
       if (selectedVariantId) {
         customization.size = selectedVariant?.name ?? undefined;
+      }
+      if (selectedColor) {
+        customization.color = selectedColor;
       }
       if (selectedAddOnObjects.length > 0) {
         customization.addOns = selectedAddOnObjects.map((a) => a.name);
@@ -170,6 +174,7 @@ export default function CustomizationSummary({
             {selectedVariant && (
               <span className="text-xs text-[var(--text-muted)]">
                 {selectedVariant.name}
+                {selectedColor && ` (${selectedColor})`}
               </span>
             )}
           </div>
